@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-fbfd90a2-8808-45cb-aa12-dc3b2fb8246d/styles.css">
+<script src="_ds/organic-fbfd90a2-8808-45cb-aa12-dc3b2fb8246d/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+a:hover { color: var(--color-accent-600); }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent-300); }
+</style>
+</helmet>
+<div style="background:var(--color-bg);min-height:100vh">
+<nav class="nav" style="padding:20px clamp(20px,5vw,64px);position:sticky;top:0;background:var(--color-neutral-900);color:var(--color-neutral-100);z-index:20;flex-wrap:wrap">
+<a href="./Home.dc.html" class="nav-brand" style="text-decoration:none">Берлан Джабраилова</a>
+<a href="./Home.dc.html" style="text-decoration:none">Главная</a>
+<a href="./Gallery.dc.html" aria-current="page" style="text-decoration:none">Галерея</a>
+<a href="./About.dc.html" style="text-decoration:none">О художнице</a>
+<a href="./Exhibitions.dc.html" style="text-decoration:none">Выставки</a>
+<a href="./Shop.dc.html" style="text-decoration:none">Магазин</a>
+<a href="./Blog.dc.html" style="text-decoration:none">Блог</a>
+<a href="./Press.dc.html" style="text-decoration:none">Пресса</a>
+<a href="./Contact.dc.html" class="btn btn-primary" style="text-decoration:none">Заказать картину</a>
+</nav>
+<main style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px)">
+
+<section style="padding:56px 0 32px;max-width:640px">
+<span style="display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin-bottom:16px">Галерея</span>
+<h1 style="font-size:clamp(32px,4.5vw,48px);margin:0 0 16px">Работы</h1>
+<p style="font-size:16px;line-height:1.65;color:color-mix(in srgb, var(--color-text) 82%, transparent);margin:0">Живопись маслом и акрилом. Каждая картина — оригинал, выполненный вручную.</p>
+</section>
+
+<section style="padding:0 0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button type="button" class="{{allBtnClass}}" onClick="{{setAll}}" style="text-decoration:none;border:none;cursor:pointer">Все</button>
+<button type="button" class="{{availableBtnClass}}" onClick="{{setAvailable}}" style="text-decoration:none;border:none;cursor:pointer">Доступные</button>
+<button type="button" class="{{soldBtnClass}}" onClick="{{setSold}}" style="text-decoration:none;border:none;cursor:pointer">Проданные</button>
+</div>
+<div class="seg">
+<label class="seg-opt"><input type="radio" name="view" checked="{{isWallView}}" onChange="{{setWallView}}"/><span>Стена</span></label>
+<label class="seg-opt"><input type="radio" name="view" checked="{{isListView}}" onChange="{{setListView}}"/><span>Список</span></label>
+</div>
+</section>
+
+<sc-if value="{{isWallView}}" hint-placeholder-val="{{true}}">
+<section style="padding:0 0 8px">
+<div style="width:100vw;position:relative;left:50%;transform:translateX(-50%);background:var(--color-neutral-900);padding:8px 0 64px">
+<div style="max-width:1200px;margin:0 auto;padding:40px clamp(20px,5vw,64px) 0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:130px;gap:20px" onMouseLeave="{{clearHover}}">
+<sc-for list="{{wallWorks}}" as="w" hint-placeholder-count="9">
+<div onMouseEnter="{{w.onHover}}" onClick="{{w.onOpen}}" style="{{w.wallStyle}}" role="button" tabIndex="0">
+<div class="washed" style="position:absolute;inset:0"><image-slot id="{{w.slotId}}" placeholder="{{w.title}}"></image-slot></div>
+<div style="{{w.overlayStyle}}">
+<p style="margin:0;font-size:14px;color:#f9f4ed;letter-spacing:.02em">{{w.title}}</p>
+<p style="margin:2px 0 0;font-size:11.5px;color:rgba(249,244,237,0.7)">{{w.medium}} · {{w.size}}</p>
+</div>
+<sc-if value="{{w.showTag}}" hint-placeholder-val="{{true}}"><span class="tag {{w.statusTagClass}}" style="position:absolute;top:14px;left:14px">{{w.statusLabel}}</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isListView}}" hint-placeholder-val="{{false}}">
+<section style="padding:0 0 72px">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{works}}" as="w" hint-placeholder-count="9">
+<div onClick="{{w.onOpen}}" style="display:grid;grid-template-columns:80px 1fr auto auto;align-items:center;gap:20px;padding:16px 8px;border-bottom:1px solid var(--color-divider);cursor:pointer">
+<div class="washed" style="border-radius:10px;overflow:hidden;aspect-ratio:1/1;width:80px"><image-slot id="{{w.slotIdList}}" placeholder="{{w.title}}"></image-slot></div>
+<div>
+<p class="card-title" style="margin:0">{{w.title}}</p>
+<p class="card-body" style="margin:2px 0 0">{{w.medium}} · {{w.size}}</p>
+</div>
+<sc-if value="{{w.showTag}}" hint-placeholder-val="{{true}}"><span class="tag {{w.statusTagClass}}">{{w.statusLabel}}</span></sc-if>
+<span style="font-weight:600;color:var(--color-accent-700)">→</span>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{lightboxOpen}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;inset:0;background:rgba(20,18,17,0.94);z-index:100;display:flex;align-items:center;justify-content:center" onClick="{{closeLightbox}}">
+<button type="button" onClick="{{closeLightbox}}" aria-label="Закрыть" style="position:absolute;top:24px;right:28px;background:none;border:none;color:#f9f4ed;font-size:28px;cursor:pointer;line-height:1">×</button>
+<button type="button" onClick="{{prevLightbox}}" aria-label="Предыдущая" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#f9f4ed;font-size:36px;cursor:pointer;padding:12px">‹</button>
+<button type="button" onClick="{{nextLightbox}}" aria-label="Следующая" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:#f9f4ed;font-size:36px;cursor:pointer;padding:12px">›</button>
+<div style="max-width:min(80vw,900px);max-height:80vh;display:flex;flex-direction:column;align-items:center;gap:16px" onClick="{{stopClick}}">
+<div class="washed" style="border-radius:12px;overflow:hidden;width:min(70vw,640px);aspect-ratio:4/5;box-shadow:0 30px 80px rgba(0,0,0,0.6)"><image-slot id="{{lightboxSlotId}}" placeholder="{{lightboxTitle}}"></image-slot></div>
+<div style="text-align:center;color:#f9f4ed">
+<p style="margin:0;font-size:18px">{{lightboxTitle}}</p>
+<p style="margin:4px 0 0;font-size:13px;color:rgba(249,244,237,0.7)">{{lightboxMeta}}</p>
+</div>
+</div>
+</div>
+</sc-if>
+
+</main>
+<footer style="background:var(--color-neutral-900);color:var(--color-neutral-100);margin-top:16px">
+<div style="max-width:1200px;margin:0 auto;padding:56px clamp(20px,5vw,64px) 40px;display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between">
+<div style="max-width:32ch">
+<div style="font-family:var(--font-heading);font-size:20px;margin-bottom:8px">Берлан Джабраилова</div>
+<p style="font-size:13px;line-height:1.6;color:color-mix(in srgb, var(--color-neutral-100) 65%, transparent);margin:0">Художница из Чеченской Республики. Живопись маслом и акрилом с 2020 года.</p>
+</div>
+<div style="display:flex;gap:56px;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-300);margin-bottom:2px">Разделы</span>
+<a href="./Gallery.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Галерея</a>
+<a href="./Exhibitions.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Выставки</a>
+<a href="./Shop.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Магазин</a>
+<a href="./Blog.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Блог</a>
+<a href="./Press.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Пресса</a>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-300);margin-bottom:2px">Контакты</span>
+<a href="mailto:hello@berlan-art.example" style="text-decoration:none;color:var(--color-accent-300)">hello@berlan-art.example</a>
+<span style="color:color-mix(in srgb, var(--color-neutral-100) 65%, transparent)">Грозный, Чеченская Республика</span>
+<a href="./Contact.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Написать →</a>
+</div>
+</div>
+</div>
+<p style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px) 32px;font-size:12px;color:color-mix(in srgb, var(--color-neutral-100) 50%, transparent)">© 2026 Берлан Джабраилова</p>
+</footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultFilter&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;all&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;all&quot;,&quot;available&quot;,&quot;sold&quot;]},&quot;showStatusTags&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  works = [
+    {id:1,title:'Утренний свет',medium:'Холст, масло',size:'50×70 см',status:'available'},
+    {id:2,title:'Полевые цветы',medium:'Холст, акрил',size:'40×50 см',status:'available'},
+    {id:3,title:'Старый двор',medium:'Холст, масло',size:'60×80 см',status:'sold'},
+    {id:4,title:'Тишина ущелья',medium:'Холст, масло',size:'70×90 см',status:'available'},
+    {id:5,title:'Зимний сад',medium:'Холст, акрил',size:'45×60 см',status:'sold'},
+    {id:6,title:'Дорога домой',medium:'Холст, масло',size:'50×60 см',status:'available'},
+    {id:7,title:'Вечер в горах',medium:'Холст, масло',size:'80×100 см',status:'available'},
+    {id:8,title:'Натюрморт с грушами',medium:'Холст, масло',size:'35×45 см',status:'sold'},
+    {id:9,title:'Осенний сад',medium:'Холст, акрил',size:'55×70 см',status:'available'}
+  ];
+  constructor(props){
+    super(props);
+    const def = (props && props.defaultFilter) || 'all';
+    this.state = { filter: def, view: 'wall', hoveredId: null, lightboxId: null };
+  }
+  componentDidMount(){
+    this._onKey = (e) => {
+      if (this.state.lightboxId == null) return;
+      if (e.key === 'Escape') this.closeLightbox();
+      if (e.key === 'ArrowRight') this.stepLightbox(1);
+      if (e.key === 'ArrowLeft') this.stepLightbox(-1);
+    };
+    window.addEventListener('keydown', this._onKey);
+  }
+  componentWillUnmount(){
+    window.removeEventListener('keydown', this._onKey);
+  }
+  setFilter(f){ this.setState({ filter: f }); }
+  setView(v){ this.setState({ view: v }); }
+  openLightbox(id){ this.setState({ lightboxId: id }); }
+  closeLightbox(){ this.setState({ lightboxId: null }); }
+  stepLightbox(dir){
+    const filtered = this.works.filter(w => this.state.filter === 'all' ? true : w.status === this.state.filter);
+    const idx = filtered.findIndex(w => w.id === this.state.lightboxId);
+    if (idx === -1) return;
+    const next = (idx + dir + filtered.length) % filtered.length;
+    this.setState({ lightboxId: filtered[next].id });
+  }
+  renderVals(){
+    const filter = this.state.filter;
+    const showTags = this.props.showStatusTags ?? true;
+    const filtered = this.works.filter(w => filter === 'all' ? true : w.status === filter);
+    const cls = (active) => 'btn ' + (active ? 'btn-primary' : 'btn-secondary');
+    const hovered = this.state.hoveredId;
+    const wallSizes = ['1 / 3 / span 1 / span 2', '2 / 3', '2 / 2', '3 / 3', '2 / 2', '3 / 2', '2 / 2', '2 / 2', '3 / 2'];
+    const decorated = filtered.map(w => ({
+      ...w,
+      slotId: 'gallery-work-' + w.id,
+      slotIdList: 'gallery-work-list-' + w.id,
+      statusLabel: w.status === 'available' ? 'Доступна' : 'Продана',
+      statusTagClass: w.status === 'available' ? 'tag-accent-2' : 'tag-neutral',
+      showTag: showTags,
+      onOpen: () => this.openLightbox(w.id)
+    }));
+    const wallWorks = decorated.map((w, i) => {
+      const rowSpan = (i % 5 === 0) ? 2 : 1;
+      const colSpan = (i % 7 === 3) ? 2 : 1;
+      const isHovered = hovered === w.id;
+      const isDimmed = hovered != null && !isHovered;
+      return {
+        ...w,
+        onHover: () => this.setState({ hoveredId: w.id }),
+        wallStyle: {
+          position: 'relative', gridRow: 'span ' + rowSpan, gridColumn: 'span ' + colSpan,
+          borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
+          transform: isHovered ? 'scale(1.03)' : 'scale(1)',
+          opacity: isDimmed ? 0.45 : 1,
+          filter: isDimmed ? 'saturate(0.7)' : 'none',
+          boxShadow: isHovered ? '0 24px 60px rgba(0,0,0,0.55)' : '0 8px 24px rgba(0,0,0,0.3)',
+          transition: 'transform .35s ease, opacity .35s ease, filter .35s ease, box-shadow .35s ease',
+          zIndex: isHovered ? 2 : 1
+        },
+        overlayStyle: {
+          position: 'absolute', left: 0, right: 0, bottom: 0, padding: '16px',
+          background: 'linear-gradient(0deg, rgba(20,18,17,0.85), transparent)',
+          opacity: isHovered ? 1 : 0, transition: 'opacity .3s ease'
+        }
+      };
+    });
+    const lightboxWork = decorated.find(w => w.id === this.state.lightboxId);
+    return {
+      allBtnClass: cls(filter === 'all'),
+      availableBtnClass: cls(filter === 'available'),
+      soldBtnClass: cls(filter === 'sold'),
+      setAll: () => this.setFilter('all'),
+      setAvailable: () => this.setFilter('available'),
+      setSold: () => this.setFilter('sold'),
+      isWallView: this.state.view === 'wall',
+      isListView: this.state.view === 'list',
+      setWallView: () => this.setView('wall'),
+      setListView: () => this.setView('list'),
+      clearHover: () => this.setState({ hoveredId: null }),
+      works: decorated,
+      wallWorks,
+      lightboxOpen: !!lightboxWork,
+      lightboxSlotId: lightboxWork ? 'gallery-work-' + lightboxWork.id : '',
+      lightboxTitle: lightboxWork ? lightboxWork.title : '',
+      lightboxMeta: lightboxWork ? (lightboxWork.medium + ' · ' + lightboxWork.size) : '',
+      closeLightbox: () => this.closeLightbox(),
+      prevLightbox: () => this.stepLightbox(-1),
+      nextLightbox: () => this.stepLightbox(1),
+      stopClick: (e) => e.stopPropagation()
+    };
+  }
+}
+</script>
+</body>
+</html>

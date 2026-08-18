@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-fbfd90a2-8808-45cb-aa12-dc3b2fb8246d/styles.css">
+<script src="_ds/organic-fbfd90a2-8808-45cb-aa12-dc3b2fb8246d/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+a:hover { color: var(--color-accent-600); }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent-300); }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { scrollbar-width: none; }
+</style>
+</helmet>
+<div style="background:var(--color-bg);min-height:100vh">
+<div style="position:relative;width:100%;min-height:100vh;overflow:hidden;background:var(--color-neutral-900);display:flex;flex-direction:column">
+<div class="washed" style="position:absolute;inset:0;filter:blur(2px)">
+<sc-for list="{{heroSlides}}" as="slide" hint-placeholder-count="3">
+<image-slot id="{{slide.id}}" shape="rect" placeholder="{{slide.label}}" style="{{slide.style}}"></image-slot>
+</sc-for>
+</div>
+<div style="position:absolute;inset:0;background:rgba(20,18,17,0.72);pointer-events:none"></div>
+<div style="position:absolute;inset:0;background:radial-gradient(ellipse 55% 55% at 50% 42%, rgba(214,127,72,0.22), transparent 70%);pointer-events:none"></div>
+<div style="position:absolute;inset:0;background:radial-gradient(ellipse 90% 60% at 50% 100%, rgba(0,0,0,0.65), transparent 70%);pointer-events:none"></div>
+
+<nav class="nav" style="position:relative;z-index:10;padding:20px clamp(20px,5vw,64px);background:transparent;flex-wrap:wrap">
+<a href="./Home.dc.html" class="nav-brand" style="text-decoration:none;color:#f9f4ed">Берлан Джабраилова</a>
+<a href="./Home.dc.html" aria-current="page" style="text-decoration:none;color:#f9f4ed">Главная</a>
+<a href="./Gallery.dc.html" style="text-decoration:none;color:#f9f4ed">Галерея</a>
+<a href="./About.dc.html" style="text-decoration:none;color:#f9f4ed">О художнице</a>
+<a href="./Exhibitions.dc.html" style="text-decoration:none;color:#f9f4ed">Выставки</a>
+<a href="./Shop.dc.html" style="text-decoration:none;color:#f9f4ed">Магазин</a>
+<a href="./Blog.dc.html" style="text-decoration:none;color:#f9f4ed">Блог</a>
+<a href="./Press.dc.html" style="text-decoration:none;color:#f9f4ed">Пресса</a>
+<a href="./Contact.dc.html" class="btn btn-primary" style="text-decoration:none">Заказать картину</a>
+</nav>
+
+<div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;padding:24px clamp(20px,5vw,64px) 56px;text-align:center;z-index:2">
+<div>
+<span style="display:block;font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--color-accent-300);margin-bottom:14px">Художница · Чеченская Республика</span>
+<h1 style="font-size:clamp(34px,5vw,58px);line-height:1.08;margin:0;color:#f9f4ed">Берлан Джабраилова</h1>
+</div>
+
+<div style="position:relative;width:min(78vw,420px)">
+<div style="position:absolute;left:50%;bottom:-26px;transform:translateX(-50%) rotate(-2deg);width:64%;height:14px;background:linear-gradient(180deg, rgba(90,64,42,0.9), rgba(60,42,28,0.95));border-radius:3px"></div>
+<div style="position:absolute;left:8%;bottom:-40px;width:10px;height:100px;background:linear-gradient(90deg, rgba(90,64,42,0.9), rgba(60,42,28,0.95));transform:rotate(8deg);border-radius:2px"></div>
+<div style="position:absolute;right:8%;bottom:-40px;width:10px;height:100px;background:linear-gradient(90deg, rgba(60,42,28,0.95), rgba(90,64,42,0.9));transform:rotate(-8deg);border-radius:2px"></div>
+<div style="position:relative;padding:14px;background:linear-gradient(160deg,#8a5c38,#5c3d26);border-radius:6px;box-shadow:0 40px 90px rgba(0,0,0,0.65), 0 0 70px rgba(214,127,72,0.2)">
+<div class="washed" style="border-radius:2px;overflow:hidden;aspect-ratio:4/5;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.25)">
+<image-slot id="home-easel-painting" placeholder="Главная картина"></image-slot>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:8px;margin-top:8px">
+<sc-for list="{{heroSlides}}" as="slide" hint-placeholder-count="3">
+<button type="button" onClick="{{slide.onDot}}" aria-label="{{slide.label}}" style="{{slide.dotStyle}}"></button>
+</sc-for>
+</div>
+
+<p style="font-size:16px;line-height:1.6;color:rgba(249,244,237,0.9);margin:0;max-width:52ch">Пишет маслом и акрилом с 2020 года. Взявшись за кисть в 55 лет, она прошла путь от первых этюдов до признания — сегодня её работы можно увидеть в галереях далеко за пределами республики.</p>
+<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+<a href="./Gallery.dc.html" class="btn btn-primary" style="text-decoration:none;padding:14px 28px;font-size:15px">Смотреть галерею</a>
+<a href="./About.dc.html" class="btn" style="text-decoration:none;padding:14px 28px;font-size:15px;background:rgba(249,244,237,0.16);color:#f9f4ed">О художнице</a>
+</div>
+</div>
+</div>
+
+<div style="width:100vw;position:relative;left:50%;transform:translateX(-50%);background:var(--color-neutral-900);overflow:hidden">
+<div style="position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle, rgba(214,127,72,0.22), transparent 70%);top:-160px;left:2%;pointer-events:none"></div>
+<div style="position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle, rgba(122,138,94,0.18), transparent 70%);bottom:10%;right:4%;pointer-events:none"></div>
+<div style="position:relative;max-width:1200px;margin:0 auto;padding:64px clamp(20px,5vw,64px) 72px">
+
+<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+<h2 style="font-size:30px;margin:0;color:var(--color-neutral-100)">Из мастерской Берлан</h2>
+<a href="./Gallery.dc.html" style="text-decoration:none;font-weight:600;color:var(--color-accent-300)">Вся галерея →</a>
+</div>
+<p style="margin:0 0 36px;font-size:14.5px;color:color-mix(in srgb, var(--color-neutral-100) 65%, transparent);max-width:56ch">Горные пейзажи, сад и двор, тихие натюрморты — работы разных лет, как на стене мастерской.</p>
+
+<div class="hide-scrollbar" style="display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x proximity;padding:8px 8px 40px">
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(214,127,72,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall1-1" placeholder="Тишина ущелья"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Тишина ущелья</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 70×90 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(214,127,72,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall1-2" placeholder="Вечер в горах"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Вечер в горах</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 80×100 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(122,138,94,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall1-3" placeholder="Дорога домой"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Дорога домой</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 50×60 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(122,138,94,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall2-1" placeholder="Осенний сад"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Осенний сад</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, акрил · 55×70 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(122,138,94,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall2-2" placeholder="Зимний сад"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Зимний сад</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, акрил · 45×60 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(122,138,94,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall2-3" placeholder="Старый двор"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Старый двор</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 60×80 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(214,127,72,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall3-1" placeholder="Натюрморт с грушами"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Натюрморт с грушами</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 35×45 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(214,127,72,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall3-2" placeholder="Полевые цветы"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Полевые цветы</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, акрил · 40×50 см</p>
+</div>
+<div style="flex:0 0 210px;scroll-snap-align:start">
+<div style="padding:10px;background:var(--color-neutral-800);border-radius:16px;box-shadow:0 0 46px rgba(214,127,72,0.28), 0 18px 40px rgba(0,0,0,0.45)"><div class="washed" style="border-radius:8px;overflow:hidden;aspect-ratio:3/4"><image-slot id="home-wall3-3" placeholder="Утренний свет"></image-slot></div></div>
+<p style="margin:14px 0 2px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-neutral-100)">Утренний свет</p>
+<p style="font-size:11.5px;margin:0;color:color-mix(in srgb, var(--color-neutral-100) 55%, transparent)">Холст, масло · 50×70 см</p>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<span class="tag" style="background:color-mix(in srgb, var(--color-accent-300) 20%, transparent);color:var(--color-accent-300)">С 2020 года в живописи</span>
+<span class="tag" style="background:color-mix(in srgb, var(--color-accent-2-300) 25%, transparent);color:var(--color-accent-2-300)">Начала в 55 лет</span>
+</div>
+
+</div>
+</div>
+
+<main style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px)">
+
+<section style="padding:56px 0 48px">
+<div style="background:var(--color-accent-2-100);border-radius:40px;padding:56px clamp(24px,5vw,72px)">
+<div style="max-width:640px">
+<h2 style="font-size:28px;margin:0 0 16px">От первого этюда — до узнаваемой манеры</h2>
+<p style="font-size:15.5px;line-height:1.65;color:color-mix(in srgb, var(--color-text) 82%, transparent);margin:0 0 24px">За несколько лет Берлан прошла путь от первых этюдов до признания дома, в Чеченской Республике. Её тёплый колорит и внимание к свету делают работы узнаваемыми с первого взгляда.</p>
+<a href="./About.dc.html" class="btn btn-secondary" style="text-decoration:none">Читать историю →</a>
+</div>
+</div>
+</section>
+
+<section style="padding:0 0 72px">
+<div style="border:1.5px dashed var(--color-divider);border-radius:32px;padding:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px">
+<div>
+<span class="tag tag-outline">Выставки</span>
+<h3 style="margin:16px 0 8px">Ближайшие события скоро появятся здесь</h3>
+<p style="margin:0;color:color-mix(in srgb, var(--color-text) 70%, transparent);max-width:48ch">Следите за расписанием выставок и показов работ Берлан.</p>
+</div>
+<a href="./Exhibitions.dc.html" class="btn btn-ghost" style="text-decoration:none">Все события →</a>
+</div>
+</section>
+
+</main>
+<footer style="background:var(--color-neutral-900);color:var(--color-neutral-100);margin-top:16px">
+<div style="max-width:1200px;margin:0 auto;padding:56px clamp(20px,5vw,64px) 40px;display:flex;flex-wrap:wrap;gap:40px;justify-content:space-between">
+<div style="max-width:32ch">
+<div style="font-family:var(--font-heading);font-size:20px;margin-bottom:8px">Берлан Джабраилова</div>
+<p style="font-size:13px;line-height:1.6;color:color-mix(in srgb, var(--color-neutral-100) 65%, transparent);margin:0">Художница из Чеченской Республики. Живопись маслом и акрилом с 2020 года.</p>
+</div>
+<div style="display:flex;gap:56px;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-300);margin-bottom:2px">Разделы</span>
+<a href="./Gallery.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Галерея</a>
+<a href="./Exhibitions.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Выставки</a>
+<a href="./Shop.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Магазин</a>
+<a href="./Blog.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Блог</a>
+<a href="./Press.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Пресса</a>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-300);margin-bottom:2px">Контакты</span>
+<a href="mailto:hello@berlan-art.example" style="text-decoration:none;color:var(--color-accent-300)">hello@berlan-art.example</a>
+<span style="color:color-mix(in srgb, var(--color-neutral-100) 65%, transparent)">Грозный, Чеченская Республика</span>
+<a href="./Contact.dc.html" style="text-decoration:none;color:var(--color-accent-300)">Написать →</a>
+</div>
+</div>
+</div>
+<p style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px) 32px;font-size:12px;color:color-mix(in srgb, var(--color-neutral-100) 50%, transparent)">© 2026 Берлан Джабраилова</p>
+</footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { heroIndex: 0 };
+  heroWorks = [
+    { id: 'home-banner-1', label: 'Утренний свет' },
+    { id: 'home-banner-2', label: 'Вечер в горах' },
+    { id: 'home-banner-3', label: 'Тишина ущелья' }
+  ];
+  componentDidMount(){
+    this._timer = setInterval(() => {
+      this.setState(s => ({ heroIndex: (s.heroIndex + 1) % this.heroWorks.length }));
+    }, 5000);
+  }
+  componentWillUnmount(){
+    clearInterval(this._timer);
+  }
+  goTo(i){
+    clearInterval(this._timer);
+    this.setState({ heroIndex: i });
+    this.componentDidMount();
+  }
+  renderVals(){
+    const active = this.state.heroIndex;
+    return {
+      heroSlides: this.heroWorks.map((w, i) => ({
+        id: w.id,
+        label: w.label,
+        style: { position: 'absolute', inset: 0, opacity: i === active ? 1 : 0, transition: 'opacity 1.4s ease' },
+        dotStyle: {
+          width: 9, height: 9, borderRadius: '50%', border: 'none', cursor: 'pointer',
+          background: i === active ? 'var(--color-accent-300)' : 'rgba(249,244,237,0.35)',
+          transition: 'background .3s ease'
+        },
+        onDot: () => this.goTo(i)
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

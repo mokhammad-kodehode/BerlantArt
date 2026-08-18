@@ -1,26 +1,374 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Дизайн-система «Берлан Джабраилова»
+
+   Источник — макет из Claude Design (design/tokens/organic.css, эталонные
+   страницы в design/mockups/). Значения цветов перенесены один в один.
+
+   Отличие от макета одно и оно намеренное: шрифты. В макете Caprasimo +
+   Figtree, здесь Fraunces + Work Sans — так договорились при выборе
+   типографики. Fraunces легче Caprasimo по насыщенности, поэтому
+   --font-heading-weight поднят с 400 до 600, чтобы заголовки держали в
+   композиции тот же вес.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* — базовые роли — */
+  --color-bg: #f5ead8;
+  --color-surface: #ebddc5;
+  --color-ink: #201e1d;
+  --color-accent: #c67139;
+  --color-accent-2: #7a8a5e;
+  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+
+  /* — тональные ряды: один шаг любого ряда совпадает по светлоте с тем же
+       шагом остальных (ряды построены в OKLCH на общей шкале) — */
+  --color-neutral-100: #f9f4ed;
+  --color-neutral-200: #eee7db;
+  --color-neutral-300: #dcd3c4;
+  --color-neutral-400: #c0b6a5;
+  --color-neutral-500: #a19786;
+  --color-neutral-600: #82796a;
+  --color-neutral-700: #645c50;
+  --color-neutral-800: #474238;
+  --color-neutral-900: #2e2b25;
+
+  --color-accent-100: #fff2eb;
+  --color-accent-200: #ffe1d0;
+  --color-accent-300: #ffc6a5;
+  --color-accent-400: #f6a06b;
+  --color-accent-500: #d67f48;
+  --color-accent-600: #b2622d;
+  --color-accent-700: #8c491a;
+  --color-accent-800: #643312;
+  --color-accent-900: #402310;
+
+  --color-accent-2-100: #f0fae1;
+  --color-accent-2-200: #e1eecc;
+  --color-accent-2-300: #ccdbb2;
+  --color-accent-2-400: #aebf92;
+  --color-accent-2-500: #8fa073;
+  --color-accent-2-600: #728157;
+  --color-accent-2-700: #56633f;
+  --color-accent-2-800: #3d472b;
+  --color-accent-2-900: #272e1b;
+
+  /* — дерево подрамника и мольберта в hero — */
+  --color-frame-light: #8a5c38;
+  --color-frame-dark: #5c3d26;
+
+  /* — шрифты — */
+  --font-heading: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-work-sans), system-ui, sans-serif;
+
+  /* — радиусы. Имена смысловые, а не размерные: в этой системе кнопки и теги
+       всегда таблетки, а карточки и панели — крупные скругления — */
+  --radius-pill: 999px;
+  --radius-tile: 16px;
+  --radius-card: 32px;
+  --radius-panel: 40px;
+
+  /* — тени: мягкие, подкрашенные в цвет чернил — */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Насыщенность заголовочного шрифта. Вынесено сюда, а не в @theme:
+     утилита из этого не нужна, значение читают только базовые правила ниже. */
+  --font-heading-weight: 600;
+
+  /* Шаг сетки из макета (база 4.4px). Используется внутри компонентных
+     классов; утилиты Tailwind (p-4, gap-6) живут на своей штатной шкале и
+     намеренно не переопределяются, чтобы p-4 означал привычные 16px. */
+  --space-1: 4.4px;
+  --space-2: 8.8px;
+  --space-3: 13.2px;
+  --space-4: 17.6px;
+  --space-6: 26.4px;
+  --space-8: 35.2px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ── база ─────────────────────────────────────────────────────────────── */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 30%, transparent);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── компоненты ───────────────────────────────────────────────────────── */
+
+@layer components {
+  /* — кнопки — */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--color-ink);
+    background: transparent;
+    border: 1px solid transparent;
+    padding: var(--space-2) calc(var(--space-3) * 1.2);
+    border-radius: var(--radius-pill);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .btn-primary:hover {
+    background: var(--color-accent-600);
+  }
+  .btn-primary:active {
+    background: var(--color-accent-700);
+  }
+
+  .btn-secondary {
+    border-color: var(--color-divider);
+  }
+  .btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+  .btn-secondary:active {
+    background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+
+  .btn-ghost {
+    color: var(--color-accent);
+    padding-inline: var(--space-1);
+  }
+  .btn-ghost:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .btn-ghost:active {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  /* Кнопка поверх тёмного фото: своего класса в макете нет (в hero задано
+     инлайном), но приём повторяется — вынесен сюда. */
+  .btn-on-dark {
+    background: rgb(249 244 237 / 0.16);
+    color: var(--color-neutral-100);
+  }
+  .btn-on-dark:hover {
+    background: rgb(249 244 237 / 0.26);
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
+
+  /* — теги — */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+  }
+  .tag-accent {
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
+  }
+  .tag-accent-2 {
+    background: var(--color-accent-2-100);
+    color: var(--color-accent-2-800);
+  }
+  .tag-neutral {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-800);
+  }
+  .tag-outline {
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* — карточки — */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  .card-kicker {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .card-title {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 17px;
+    line-height: 1.2;
+  }
+  .card-body {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.8;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+
+  .elev-sm {
+    box-shadow: var(--shadow-sm);
+  }
+  .elev-md {
+    box-shadow: var(--shadow-md);
+  }
+  .elev-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* — формы (понадобятся на /contact и в админке) — */
+  .field > label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+  .input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-ink);
+    caret-color: var(--color-accent);
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-pill);
+  }
+  .input:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+  .input:focus-visible {
+    border-color: var(--color-accent);
+    outline-offset: 0;
+  }
+  textarea.input {
+    min-height: 90px;
+    border-radius: var(--radius-tile);
+    resize: vertical;
+  }
+
+  /* Сегментный переключатель — режимы показа галереи на этапе 4. */
+  .seg {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-pill);
+  }
+  .seg-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .seg-opt + .seg-opt {
+    border-left: 1px solid var(--color-divider);
+  }
+  .seg-opt:has(input:checked) {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .seg-opt:not(:has(input:checked)):hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  }
+  .seg-opt input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* — приёмы оформления — */
+
+  /* Фирменный фильтр макета: приглушает фото, чтобы репродукции не спорили
+     по насыщенности с охрой интерфейса. */
+  .washed {
+    filter: saturate(0.6) contrast(0.85) brightness(1.1) opacity(0.94);
+  }
+
+  /* Пунктирная рамка пустого состояния — «здесь пока ничего нет». */
+  .panel-dashed {
+    border: 1.5px dashed var(--color-divider);
+    border-radius: var(--radius-card);
+  }
+
+  /* Полоса во всю ширину окна внутри колонки с ограниченной шириной. */
+  .bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
