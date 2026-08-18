@@ -54,10 +54,6 @@
   --color-accent-2-800: #3d472b;
   --color-accent-2-900: #272e1b;
 
-  /* — дерево подрамника и мольберта в hero — */
-  --color-frame-light: #8a5c38;
-  --color-frame-dark: #5c3d26;
-
   /* — шрифты — */
   --font-heading: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-work-sans), system-ui, sans-serif;

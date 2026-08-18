@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { Header } from "@/components/layout/Header";
@@ -56,7 +57,9 @@ export function Hero({ slides }: { slides: DemoArtwork[] }) {
 
       <Header variant="overlay" />
 
-      <div className="relative z-[2] flex flex-1 flex-col items-center justify-center gap-9 px-[clamp(20px,5vw,64px)] pt-6 pb-14 text-center">
+      {/* gap-7, а не gap-9: фотография мольберта выше прежней CSS-рамы, и с
+          прежними отступами кнопки уезжали за первый экран на ноутбуке. */}
+      <div className="relative z-[2] flex flex-1 flex-col items-center justify-center gap-7 px-[clamp(20px,5vw,64px)] pt-6 pb-12 text-center">
         <div>
           <span className="text-accent-300 mb-3.5 block text-[13px] font-semibold tracking-[0.1em] uppercase">
             {site.role}
@@ -69,24 +72,36 @@ export function Hero({ slides }: { slides: DemoArtwork[] }) {
           </p>
         </div>
 
-        {/* Мольберт */}
-        <div className="relative w-[min(78vw,420px)]">
-          {/* полка */}
-          <div className="absolute bottom-[-26px] left-1/2 h-3.5 w-[64%] -translate-x-1/2 -rotate-2 rounded-[3px] bg-[linear-gradient(180deg,rgb(90_64_42/0.9),rgb(60_42_28/0.95))]" />
-          {/* ноги */}
-          <div className="absolute bottom-[-40px] left-[8%] h-[100px] w-2.5 rotate-[8deg] rounded-[2px] bg-[linear-gradient(90deg,rgb(90_64_42/0.9),rgb(60_42_28/0.95))]" />
-          <div className="absolute right-[8%] bottom-[-40px] h-[100px] w-2.5 -rotate-[8deg] rounded-[2px] bg-[linear-gradient(90deg,rgb(60_42_28/0.95),rgb(90_64_42/0.9))]" />
+        {/* Мольберт: настоящая фотография деревянного мольберта с пустым
+            холстом, поверх которого встаёт работа. */}
+        <div className="relative aspect-800/1325 h-[clamp(280px,42vh,500px)] drop-shadow-[0_40px_70px_rgb(0_0_0/0.55)]">
+          <Image
+            src="/ui/easel.webp"
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 640px) 60vw, 340px"
+            className="object-contain"
+          />
 
-          {/* рама с холстом */}
-          <div className="relative rounded-md bg-[linear-gradient(160deg,var(--color-frame-light),var(--color-frame-dark))] p-3.5 shadow-[0_40px_90px_rgb(0_0_0/0.65),0_0_70px_rgb(214_127_72/0.2)]">
-            <div className="washed relative aspect-4/5 overflow-hidden rounded-[2px] shadow-[inset_0_0_0_1px_rgb(0_0_0/0.25)]">
-              <ArtworkImage
-                src={easelWork?.src}
-                alt={easelWork?.title ?? "Работа художницы"}
-                sizes="(max-width: 640px) 78vw, 420px"
-                priority
-              />
-            </div>
+          {/* Работа лежит ровно в границах холста. Проценты измерены по
+              пикселям самого файла, а не подобраны на глаз — поэтому
+              попадают точно и не поедут при смене размера.
+
+              Края холста на фотографии слегка неровные, поэтому взят полный
+              размах светлых пикселей: иначе по бокам проглядывала белая
+              полоска незакрашенного холста. Низ — исключение, там замер
+              цепляет светлую кромку полки, и граница задана по холсту. */}
+          <div
+            className="washed absolute overflow-hidden shadow-[inset_0_0_18px_rgb(0_0_0/0.28)]"
+            style={{ left: "6.25%", top: "9.13%", width: "87.38%", height: "44.15%" }}
+          >
+            <ArtworkImage
+              src={easelWork?.src}
+              alt={easelWork?.title ?? "Работа художницы"}
+              sizes="(max-width: 640px) 52vw, 300px"
+              priority
+            />
           </div>
         </div>
 
