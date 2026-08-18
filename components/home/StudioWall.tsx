@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import type { DemoArtwork } from "@/lib/demo-artworks";
+import { artworkCaption, type DemoArtwork } from "@/lib/demo-artworks";
 
 /**
  * Тёмная полоса «Из мастерской»: работы едут горизонтальной лентой, как на
@@ -43,9 +43,7 @@ export function StudioWall({ works }: { works: DemoArtwork[] }) {
               <p className="mt-3.5 mb-0.5 text-[13px] tracking-[0.04em] text-neutral-100 uppercase">
                 {work.title}
               </p>
-              <p className="m-0 text-[11.5px] text-neutral-100/55">
-                {work.medium} · {work.size}
-              </p>
+              <p className="m-0 text-[11.5px] text-neutral-100/55">{artworkCaption(work)}</p>
             </li>
           ))}
         </ul>
