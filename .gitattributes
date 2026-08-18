@@ -1,0 +1,8 @@
+# Единые переводы строк в репозитории, чтобы Windows/Linux не порождали
+# ложные диффы (локально и на Vercel).
+* text=auto eol=lf
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
