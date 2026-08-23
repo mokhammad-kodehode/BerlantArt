@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Сайт-портфолио Берлан Джабраиловой
 
-## Getting Started
+Художница из Чеченской Республики. Живопись маслом и акрилом с 2020 года.
 
-First, run the development server:
+## Документы проекта
+
+| Файл                                       | О чём                                          |
+| ------------------------------------------ | ---------------------------------------------- |
+| [ROADMAP.md](./ROADMAP.md)                 | план работ по этапам, что сделано и что дальше |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)       | принятые решения: стек, модель данных, дизайн  |
+| [AGENTS.md](./AGENTS.md)                   | правила работы над проектом                    |
+| [docs/foto-rabot.md](./docs/foto-rabot.md) | требования к фотографиям картин                |
+
+## Запуск
+
+```bash
+npm install
+```
+
+Скопировать `.env.example` в `.env.local` и заполнить. Пока обязательных
+переменных нет — на этапе 3 добавятся строки подключения к базе.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откроется на http://localhost:3000. Витрина дизайн-системы — `/styleguide`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Команды
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Команда             | Что делает              |
+| ------------------- | ----------------------- |
+| `npm run dev`       | сервер разработки       |
+| `npm run build`     | сборка для прода        |
+| `npm run lint`      | проверка ESLint         |
+| `npm run typecheck` | проверка типов          |
+| `npm run format`    | форматирование Prettier |
 
-## Learn More
+Перед тем как считать задачу законченной, должны проходить чисто `lint`,
+`typecheck` и `build`.
 
-To learn more about Next.js, take a look at the following resources:
+## Стек
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Next.js 16 (App Router) · TypeScript · Tailwind 4 · Prisma + PostgreSQL
+(Supabase) · Auth.js · Cloudflare R2 · деплой на Vercel.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Подробнее и с обоснованием выбора — в [ARCHITECTURE.md](./ARCHITECTURE.md).
