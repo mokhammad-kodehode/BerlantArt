@@ -13,14 +13,14 @@ import "./globals.css";
  * книжная пластика, переменное начертание, полный кириллический набор.
  */
 const literata = Literata({
-  variable: "--font-fraunces",
+  variable: "--font-heading-family",
   subsets: ["cyrillic", "latin"],
   display: "swap",
 });
 
 /** Гротеск для текста — роль Work Sans, тоже с кириллицей. */
 const manrope = Manrope({
-  variable: "--font-work-sans",
+  variable: "--font-body-family",
   subsets: ["cyrillic", "latin"],
   display: "swap",
 });

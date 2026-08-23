@@ -7,8 +7,9 @@
    страницы в design/mockups/). Значения цветов перенесены один в один.
 
    Отличие от макета одно и оно намеренное: шрифты. В макете Caprasimo +
-   Figtree, здесь Fraunces + Work Sans — так договорились при выборе
-   типографики. Fraunces легче Caprasimo по насыщенности, поэтому
+   Figtree, планировались Fraunces + Work Sans — но ни у одной из этих пар
+   нет кириллицы, а сайт целиком на русском. Стоят Literata (заголовки) +
+   Manrope (текст). Literata легче Caprasimo по насыщенности, поэтому
    --font-heading-weight поднят с 400 до 600, чтобы заголовки держали в
    композиции тот же вес.
    ═════════════════════════════════════════════════════════════════════════ */
@@ -55,8 +56,8 @@
   --color-accent-2-900: #272e1b;
 
   /* — шрифты — */
-  --font-heading: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-work-sans), system-ui, sans-serif;
+  --font-heading: var(--font-heading-family), Georgia, serif;
+  --font-body: var(--font-body-family), system-ui, sans-serif;
 
   /* — радиусы. Имена смысловые, а не размерные: в этой системе кнопки и теги
        всегда таблетки, а карточки и панели — крупные скругления — */
