@@ -69,11 +69,3 @@ export const demoArtworks: DemoArtwork[] = [
 export function artworkCaption(work: DemoArtwork): string {
   return [work.medium, work.size].filter(Boolean).join(" · ");
 }
-
-/**
- * Работы, которые крутятся фоном в hero. Выбраны самые атмосферные: в
- * размытии за текстом важнее общее пятно света, а не сюжет.
- */
-export const heroArtworks = demoArtworks.filter((w) =>
-  ["Башни в тумане", "Мост на закате", "Ночной свет"].includes(w.title),
-);

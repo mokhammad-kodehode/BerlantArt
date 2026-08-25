@@ -3,7 +3,7 @@ import { StudioWall } from "@/components/home/StudioWall";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { demoArtworks, heroArtworks } from "@/lib/demo-artworks";
+import { demoArtworks } from "@/lib/demo-artworks";
 
 /**
  * Главная. Собрана по макету design/mockups/Home.dc.html.
@@ -14,7 +14,7 @@ import { demoArtworks, heroArtworks } from "@/lib/demo-artworks";
 export default function HomePage() {
   return (
     <>
-      <Hero slides={heroArtworks} />
+      <Hero slides={demoArtworks} />
 
       <StudioWall works={demoArtworks} />
 
