@@ -12,6 +12,13 @@ import { site } from "@/lib/site";
 /** Сколько держится один слайд с картиной. */
 const SLIDE_MS = 3500;
 
+/**
+ * Скорость видео: в полтора раза медленнее обычной, по просьбе заказчика.
+ * Ролик длится 13 секунд, с этим замедлением — около 19.5.
+ * Замедление задаётся свойством playbackRate, файл не перекодируется.
+ */
+const PLAYBACK_RATE = 1 / 1.5;
+
 type Phase = "video" | "slides";
 
 /**
@@ -56,6 +63,9 @@ export function Hero({ slides }: { slides: DemoArtwork[] }) {
     const video = videoRef.current;
     if (!video) return;
 
+    // Эффект срабатывает и при первой отрисовке (фаза стартует с "video"),
+    // поэтому скорость задаётся здесь же — отдельный эффект не нужен.
+    video.playbackRate = PLAYBACK_RATE;
     video.currentTime = 0;
     void video.play().catch(() => {});
   }, [phase]);

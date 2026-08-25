@@ -1,4 +1,5 @@
 import { Hero } from "@/components/home/Hero";
+import { ScrollVideo } from "@/components/home/ScrollVideo";
 import { StudioWall } from "@/components/home/StudioWall";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -15,6 +16,8 @@ export default function HomePage() {
   return (
     <>
       <Hero slides={demoArtworks} />
+
+      <ScrollVideo />
 
       <StudioWall works={demoArtworks} />
 
