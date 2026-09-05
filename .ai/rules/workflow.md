@@ -61,6 +61,31 @@ npm run build
 Скриншоты в этом состоянии бесполезны, и **говорить «проверено глазами»
 про них нельзя**.
 
+## Как прогнать код из `lib/` мимо браузера
+
+Слой запросов удобно проверять напрямую, без страницы. Мешает одно: Node
+не понимает алиас `@/` и не достраивает расширение `.ts`, как это делает
+сборщик Next. Лечится хуком-резолвером во временной папке:
+
+```js
+// alias-hook.mjs
+import { pathToFileURL } from "node:url";
+const root = pathToFileURL("C:/Projects/ArtWebsite/").href;
+
+export function resolve(specifier, context, next) {
+  let spec = specifier.startsWith("@/") ? root + specifier.slice(2) : specifier;
+  if ((spec.startsWith("file:") || spec.startsWith(".")) && !/\.[a-z]+$/.test(spec)) {
+    spec += ".ts";
+  }
+  return next(spec, context);
+}
+```
+
+Скрипт грузит переменные через `process.loadEnvFile` и зовёт функции
+из `lib/artworks.ts` как есть. Так проверялись выборки и фильтр по
+категориям. **Складывать такие скрипты в проект не надо** — им место
+во временной папке сессии.
+
 ## Работа по этапам
 
 План — в [ROADMAP.md](../../ROADMAP.md), 9 этапов по зависимостям. Завершив
