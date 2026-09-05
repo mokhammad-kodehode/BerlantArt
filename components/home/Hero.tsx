@@ -6,7 +6,6 @@ import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ButtonLink } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import type { DemoArtwork } from "@/lib/demo-artworks";
 import { site } from "@/lib/site";
 
 /** Сколько держится один слайд с картиной. */
@@ -22,6 +21,20 @@ const PLAYBACK_RATE = 1 / 1.5;
 type Phase = "video" | "slides";
 
 /**
+ * Слайд — намеренно узкий тип, а не работа целиком.
+ *
+ * Hero клиентский: всё, что ему передали, уезжает в браузер внутри разметки
+ * страницы. Полная запись работы потащила бы туда описание, категорию, цену
+ * и обе даты, которых первый экран не касается, — и привязала бы компонент
+ * к модели базы: новое поле в схеме молча попадало бы в браузер.
+ */
+export type HeroSlide = {
+  id: string;
+  title: string;
+  imageUrl?: string;
+};
+
+/**
  * Первый экран: во всю ширину идёт видео, после его окончания — слайды
  * с работами художницы, затем видео начинается заново. Цикл бесконечный.
  *
@@ -33,7 +46,7 @@ type Phase = "video" | "slides";
  * прозрачность — так переход получается плавным, без чёрного провала между
  * фазами.
  */
-export function Hero({ slides }: { slides: DemoArtwork[] }) {
+export function Hero({ slides }: { slides: HeroSlide[] }) {
   const [phase, setPhase] = useState<Phase>("video");
   const [slideIndex, setSlideIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -86,6 +99,13 @@ export function Hero({ slides }: { slides: DemoArtwork[] }) {
           playsInline
           preload="auto"
           aria-hidden
+          /*
+            Работ может не быть вовсе — например, пока художница не отметила
+            ни одной для главной. Тогда ролик крутится сам по себе средствами
+            браузера, а событие ended не наступает и фаза слайдов не включается:
+            иначе после каждого ролика экран на 3.5 секунды оставался бы пустым.
+          */
+          loop={slides.length === 0}
           onEnded={() => setPhase("slides")}
           className={cn(
             "absolute inset-0 size-full object-cover transition-opacity duration-1000",
@@ -95,15 +115,15 @@ export function Hero({ slides }: { slides: DemoArtwork[] }) {
 
         {/* Слайды с работами. Фильтр washed приглушает репродукции, чтобы
             они не спорили по насыщенности с охрой интерфейса. */}
-        {slides.map((work, i) => (
+        {slides.map((slide, i) => (
           <div
-            key={work.id}
+            key={slide.id}
             className={cn(
               "washed absolute inset-0 transition-opacity duration-1000",
               phase === "slides" && i === slideIndex ? "opacity-100" : "opacity-0",
             )}
           >
-            <ArtworkImage src={work.src} alt={work.title} sizes="100vw" />
+            <ArtworkImage src={slide.imageUrl} alt={slide.title} sizes="100vw" />
           </div>
         ))}
       </div>

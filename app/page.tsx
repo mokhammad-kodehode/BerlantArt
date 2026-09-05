@@ -4,22 +4,50 @@ import { StudioWall } from "@/components/home/StudioWall";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { demoArtworks } from "@/lib/demo-artworks";
+import { getFeatured, primaryImageUrl } from "@/lib/artworks";
+
+/**
+ * Как часто страница перерисовывается заново, в секундах.
+ *
+ * Без этой строки главная стала бы динамической — запрос в базу на каждое
+ * открытие. С ней она снова готовится заранее: посетитель получает готовый
+ * HTML, а уснувшая база (бесплатный тариф Supabase засыпает через неделю
+ * простоя) не роняет главную — отдаётся последняя удачная версия.
+ *
+ * Значение обязано быть числом-литералом: Next читает его при сборке,
+ * и выражение вроде 60 * 5 он не разберёт.
+ *
+ * Плата — правка через админку появится с задержкой до пяти минут. На этапе 6
+ * админка вызовет revalidatePath("/"), и задержка исчезнет.
+ */
+export const revalidate = 300;
 
 /**
  * Главная. Собрана по макету design/mockups/Home.dc.html.
  *
- * Данные пока из lib/demo-artworks.ts — на этапе 4 их заменит выборка из
- * базы (getFeatured из lib/artworks.ts), разметка при этом не меняется.
+ * Работы для первого экрана и для ленты — одна и та же выборка: запрос
+ * в базу с этой страницы ровно один, и их число не растёт с числом картин.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const featured = await getFeatured();
+
   return (
     <>
-      <Hero slides={demoArtworks} />
+      {/*
+        Hero клиентский, поэтому получает не работы целиком, а три поля,
+        которые ему нужны: остальное просто уехало бы в браузер без пользы.
+      */}
+      <Hero
+        slides={featured.map((work) => ({
+          id: work.id,
+          title: work.title,
+          imageUrl: primaryImageUrl(work),
+        }))}
+      />
 
       <ScrollVideo />
 
-      <StudioWall works={demoArtworks} />
+      <StudioWall works={featured} />
 
       <main>
         <Container>
