@@ -41,17 +41,49 @@ if (!connectionString) {
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
-/** Фотографии лежат в public/. С этапа 5 их место займут ссылки на R2. */
+/**
+ * Категории проставлены по тому, что изображено на холсте, — так же, как
+ * названия и техника, и так же **требуют подтверждения художницы**.
+ * Это допустимо: сюжет виден на репродукции, в отличие от размера холста
+ * или года, которые выдумывать нельзя (.ai/rules/content.md).
+ *
+ * Перечень выбран по пяти имеющимся работам и рассчитан на рост:
+ * «Горный пейзаж» — горы и башни, «Сельский мотив» — дома и сады,
+ * «Архитектурный мотив» — постройки как главный герой.
+ *
+ * Фотографии лежат в public/. С этапа 5 их место займут ссылки на R2.
+ */
 const artworks = [
-  { title: "Башни в тумане", file: "bashni-v-tumane.jpg", status: "AVAILABLE" },
-  { title: "Башни на закате", file: "bashni-na-zakate.jpg", status: "AVAILABLE" },
+  {
+    title: "Башни в тумане",
+    file: "bashni-v-tumane.jpg",
+    category: "Горный пейзаж",
+    status: "AVAILABLE",
+  },
+  {
+    title: "Башни на закате",
+    file: "bashni-na-zakate.jpg",
+    category: "Горный пейзаж",
+    status: "AVAILABLE",
+  },
   {
     title: "Дом с бирюзовыми ставнями",
     file: "dom-s-biryuzovymi-stavnyami.jpg",
+    category: "Сельский мотив",
     status: "AVAILABLE",
   },
-  { title: "Мост на закате", file: "most-na-zakate.jpg", status: "SOLD" },
-  { title: "Ночной свет", file: "nochnoy-svet.jpg", status: "AVAILABLE" },
+  {
+    title: "Мост на закате",
+    file: "most-na-zakate.jpg",
+    category: "Архитектурный мотив",
+    status: "SOLD",
+  },
+  {
+    title: "Ночной свет",
+    file: "nochnoy-svet.jpg",
+    category: "Архитектурный мотив",
+    status: "AVAILABLE",
+  },
 ] as const;
 
 async function main() {
@@ -69,6 +101,7 @@ async function main() {
       data: {
         title: artwork.title,
         technique: "Холст, масло",
+        category: artwork.category,
         status: artwork.status,
         // Все пять пока показываем на главной: выбор сильнейших работ —
         // за художницей, она поменяет флаги через админку на этапе 6.
