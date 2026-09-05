@@ -348,6 +348,59 @@
     filter: saturate(0.6) contrast(0.85) brightness(1.1) opacity(0.94);
   }
 
+  /* Стена работ в галерее.
+     Наведение выделяет плитку и приглушает соседей — приём из макета.
+     Сделано на CSS, а не на состоянии React: эффект чисто визуальный,
+     тащить ради него клиентский компонент незачем. */
+  .wall-tile {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    transition:
+      transform 0.35s ease,
+      opacity 0.35s ease,
+      filter 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .wall:hover .wall-tile:not(:hover) {
+    opacity: 0.45;
+    filter: saturate(0.7);
+  }
+
+  .wall-tile:hover {
+    z-index: 2;
+    transform: scale(1.03);
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
+  }
+
+  /* Подпись видна всегда: на телефоне наведения нет, и спрятанное там
+     название работы посетитель не увидит никогда. */
+  .wall-caption {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  @media (hover: hover) {
+    .wall-caption {
+      opacity: 0;
+    }
+    .wall-tile:hover .wall-caption {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wall-tile,
+    .wall-caption {
+      transition: none;
+    }
+    .wall-tile:hover {
+      transform: none;
+    }
+  }
+
   /* Пунктирная рамка пустого состояния — «здесь пока ничего нет». */
   .panel-dashed {
     border: 1.5px dashed var(--color-divider);
