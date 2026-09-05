@@ -1,5 +1,4 @@
 import { Hero } from "@/components/home/Hero";
-import { ScrollVideo } from "@/components/home/ScrollVideo";
 import { StudioWall } from "@/components/home/StudioWall";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -44,8 +43,6 @@ export default async function HomePage() {
           imageUrl: primaryImageUrl(work),
         }))}
       />
-
-      <ScrollVideo />
 
       <StudioWall works={featured} />
 
