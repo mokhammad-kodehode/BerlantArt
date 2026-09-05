@@ -93,18 +93,19 @@
 
 **Цель:** схема БД, миграции, тестовые данные, слой запросов.
 
-**Что делаю:**
+**Сделано:**
 
-- Prisma schema: `Artwork` (title, description, category, technique, dimensions, year, price, status), `Image` (artworkId, url, alt, isPrimary, order), enum `ArtworkStatus`.
-- Подключение к Supabase: `DATABASE_URL` через pooler для приложения, `DIRECT_URL` для миграций (иначе миграции на serverless ломаются).
-- Индексы под фильтры: `category`, `technique`, `status`, `price`.
-- Первая миграция + `seed.ts` с 10–12 демо-работами и картинками-плейсхолдерами.
-- Singleton Prisma-клиента (`lib/db.ts`) — иначе в dev-режиме утекают подключения.
+- Prisma schema: `Artwork` (title, description, category, technique, dimensions, year, price, status, featured), `Image` (artworkId, url, alt, isPrimary, order), enum `ArtworkStatus`. Отступления от первоначального списка объяснены в [ARCHITECTURE.md](./ARCHITECTURE.md), раздел 3.
+- Подключение к Supabase: `DATABASE_URL` через pooler для приложения, `DIRECT_URL` для миграций.
+- Индексы под фильтры: `category`, `technique`, `status`, `price`, `featured`.
+- Две миграции: `init` и `status_order` (порядок значений enum, написана вручную).
+- Singleton Prisma-клиента (`lib/db.ts`) через драйверный адаптер `@prisma/adapter-pg` — в Prisma 7 он обязателен.
 - Слой запросов `lib/artworks.ts`: `getArtworks(filters)`, `getArtworkById`, `getFeatured` — вся фильтрация через Prisma `where` на сервере.
+- `prisma/seed.ts` — **пять работ, а не 10–12**: столько у нас фотографий. Добивать список выдуманными картинами в боевой базе нельзя, размеры и цены оставлены пустыми.
 
-**Выход:** база поднята, `npx prisma studio` показывает демо-работы, функции выборки готовы.
+**Выход:** база поднята, функции выборки проверены на живых данных, в том числе внутри Next.
 
-**Нужно от тебя:** `DATABASE_URL` и `DIRECT_URL` из Supabase (этап 0).
+**Осталось на этап 4:** страницы всё ещё читают `lib/demo-artworks.ts`. Переключение на базу и удаление временного файла — в составе этапа 4.
 
 ---
 
@@ -229,7 +230,7 @@
 - [x] Этап 0 — Подготовка _(в работе: аккаунты и контент за тобой)_
 - [x] Этап 1 — Каркас проекта
 - [x] Этап 2 — Дизайн-система
-- [ ] Этап 3 — Данные
+- [x] Этап 3 — Данные
 - [ ] Этап 4 — Публичные страницы
 - [ ] Этап 5 — Изображения и R2
 - [ ] Этап 6 — Аутентификация и админка

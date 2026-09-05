@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# сгенерированный клиент Prisma — пересобирается командой `prisma generate`
+/lib/generated
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

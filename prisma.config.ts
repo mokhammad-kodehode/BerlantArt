@@ -26,9 +26,16 @@ export default defineConfig({
    * Здесь именно DIRECT_URL, а не DATABASE_URL: этот адрес используют
    * миграции и интроспекция, а им нужно прямое соединение на порту 5432.
    * Через pooler (6543) сессионные операции миграций не проходят.
-   * Приложение в рантайме ходит по DATABASE_URL — он задан в schema.prisma.
+   * Приложение в рантайме ходит по DATABASE_URL — он передаётся драйверному
+   * адаптеру в lib/db.ts.
    */
   datasource: {
     url: process.env.DIRECT_URL,
+  },
+
+  migrations: {
+    // Node 26 исполняет TypeScript сам, отдельный запускатор (tsx, ts-node)
+    // не нужен — лишняя зависимость ради одной команды не окупается.
+    seed: "node prisma/seed.ts",
   },
 });

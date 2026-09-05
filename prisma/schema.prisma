@@ -1,10 +1,96 @@
 // Схема базы данных.
 //
-// Пока здесь только провайдер — модели Artwork и Image появятся на этапе 3.
-//
 // Строк подключения тут намеренно нет: в Prisma 7 свойства url и directUrl
-// в схеме больше не поддерживаются, адреса задаются в prisma.config.ts.
+// в схеме больше не поддерживаются. Адрес для миграций задан
+// в prisma.config.ts, адрес для приложения — в lib/db.ts через адаптер.
+
+generator client {
+  // В Prisma 7 клиент генерируется в папку проекта, а не в node_modules:
+  // так его видно в репозитории-независимой сборке (Vercel) и не нужен
+  // postinstall-хак. Папка добавлена в .gitignore — она пересобирается.
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+  importFileExtension = "ts"
+}
 
 datasource db {
   provider = "postgresql"
+}
+
+/// Статус работы. Влияет и на витрину, и на фильтр в галерее.
+///
+/// Порядок значений здесь не случаен: PostgreSQL сортирует enum в порядке
+/// объявления, а галерея сортирует по статусу. Сначала то, что можно
+/// купить, затем забронированное, в конце проданное. Переставишь строки —
+/// переставится и порядок карточек.
+enum ArtworkStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+model Artwork {
+  id String @id @default(cuid())
+
+  title       String
+  description String?
+
+  /// Категория и техника — свободный текст, а не enum: перечень появится
+  /// только после разговора с художницей, а менять enum задним числом
+  /// дороже, чем строку.
+  category  String?
+  technique String?
+
+  /// Размеры одной строкой («60 × 80 см»), как договорились в ARCHITECTURE.
+  /// Разбивать на ширину и высоту незачем: сортировки по габаритам нет.
+  dimensions String?
+
+  year Int?
+
+  /// Цена в целых рублях. Не Decimal: у картин нет копеек, а Decimal
+  /// из Prisma не сериализуется при передаче в клиентские компоненты.
+  price Int?
+
+  status ArtworkStatus @default(AVAILABLE)
+
+  /// Работы для главной страницы отбирает художница, а не «последние
+  /// добавленные»: на первом экране должны стоять сильнейшие вещи.
+  featured Boolean @default(false)
+
+  images Image[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Индексы под фильтры галереи (этап 4).
+  @@index([status])
+  @@index([category])
+  @@index([technique])
+  @@index([price])
+  @@index([featured])
+}
+
+model Image {
+  id String @id @default(cuid())
+
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  /// Полный адрес файла. Сейчас это путь внутри public/, с этапа 5 —
+  /// ссылка на публичный домен бакета R2.
+  url String
+
+  /// Текст для скринридера. Пустая строка недопустима: изображение работы
+  /// не декоративное.
+  alt String
+
+  /// Главное изображение работы — оно идёт в превью и в соцсети.
+  isPrimary Boolean @default(false)
+
+  /// Порядок в галерее работы.
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([artworkId])
 }

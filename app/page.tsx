@@ -9,8 +9,8 @@ import { demoArtworks } from "@/lib/demo-artworks";
 /**
  * Главная. Собрана по макету design/mockups/Home.dc.html.
  *
- * Данные пока из lib/demo-artworks.ts — на этапе 3 их заменит выборка из
- * базы (getFeatured), разметка при этом не меняется.
+ * Данные пока из lib/demo-artworks.ts — на этапе 4 их заменит выборка из
+ * базы (getFeatured из lib/artworks.ts), разметка при этом не меняется.
  */
 export default function HomePage() {
   return (
