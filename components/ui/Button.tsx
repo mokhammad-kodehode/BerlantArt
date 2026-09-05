@@ -77,3 +77,35 @@ export function Button({
     </button>
   );
 }
+
+/**
+ * Кнопка-ссылка наружу: почта, WhatsApp.
+ *
+ * Отдельно от `ButtonLink`, потому что `next/link` тут не к месту: он про
+ * переходы внутри сайта — предзагрузку и клиентскую навигацию. Ссылка
+ * `mailto:` или `wa.me` уводит из браузера вовсе, и обычный `<a>` честнее
+ * описывает происходящее.
+ */
+export function ExternalButtonLink({
+  variant = "secondary",
+  size = "md",
+  block,
+  className,
+  children,
+  ...rest
+}: CommonProps & Omit<ComponentProps<"a">, "className" | "children">) {
+  return (
+    <a
+      className={cn(
+        "btn",
+        variantClass[variant],
+        size === "lg" && "btn-lg",
+        block && "btn-block",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </a>
+  );
+}

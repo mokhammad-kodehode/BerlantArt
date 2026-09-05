@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
@@ -44,6 +46,47 @@ export function artworkCaption(work: Pick<ArtworkWithImages, "technique" | "dime
   return [work.technique, work.dimensions].filter(Boolean).join(" · ");
 }
 
+/**
+ * Подпись статуса словом. У доступной работы метки нет вовсе: подписывать
+ * нормальное состояние незачем, метка нужна там, где картину уже не купить.
+ *
+ * Словом, а не только цветом, — требование доступности: серая карточка сама
+ * по себе ничего не сообщает человеку, который не различает оттенки.
+ */
+const statusLabels: Record<ArtworkStatus, string | null> = {
+  AVAILABLE: null,
+  RESERVED: "Забронирована",
+  SOLD: "Продана",
+};
+
+/** Метка статуса для витрины или `null`, если работу можно купить. */
+export function artworkStatusLabel(status: ArtworkStatus): string | null {
+  return statusLabels[status];
+}
+
+/**
+ * Цена в рублях без копеек: «45 000 ₽». Разряды отбивает Intl, а не мы —
+ * он же ставит неразрывный пробел, чтобы число не переносилось по строке.
+ */
+const priceFormat = new Intl.NumberFormat("ru-RU", {
+  style: "currency",
+  currency: "RUB",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+/**
+ * Цена для показа или `null`, если она не заполнена.
+ *
+ * Проверка именно на `null`, а не на истинность: `if (price)` спрятал бы
+ * цену `0`. Правило «пустое поле не показываем» не должно втихую
+ * превратиться в «дешёвое поле не показываем».
+ */
+export function formatPrice(price: number | null): string | null {
+  if (price === null) return null;
+  return priceFormat.format(price);
+}
+
 /** Адрес главного изображения работы или `undefined`, если фотографий нет. */
 export function primaryImageUrl(work: ArtworkWithImages): string | undefined {
   // Выборка кладёт главное изображение первым, поэтому искать не нужно.
@@ -86,11 +129,39 @@ export async function getArtworks(filters: ArtworkFilters = {}): Promise<Artwork
   });
 }
 
-/** Одна работа для страницы `/gallery/[id]`. `null`, если такой нет. */
-export async function getArtworkById(id: string): Promise<ArtworkWithImages | null> {
+/**
+ * Одна работа для страницы `/gallery/[id]`. `null`, если такой нет.
+ *
+ * Обёрнута в `cache()`: за одну и ту же работу страница ходит дважды —
+ * из `generateMetadata` за названием вкладки и из самой разметки. Без
+ * обёртки сборка пяти страниц делала бы десять запросов вместо пяти,
+ * и разрыв рос бы вместе с числом картин.
+ */
+export const getArtworkById = cache(async (id: string): Promise<ArtworkWithImages | null> => {
   return db.artwork.findUnique({
     where: { id },
     include: withImages,
+  });
+});
+
+/**
+ * Другие работы — для блока внизу карточки.
+ *
+ * Отбор нарочно простой: все работы, кроме открытой. Вариант «похожие
+ * по категории» отвергнут, пока картин мало: категорий три, работ пять,
+ * и у «Дома с бирюзовыми ставнями» блок вышел бы пустым. Вернуться к нему
+ * стоит работах на пятнадцати.
+ *
+ * Лишнюю работу отсекает база через `where`, а не страница через `.filter()`:
+ * иначе при тридцати картинах страница качала бы всю базу ради четырёх
+ * карточек.
+ */
+export async function getOtherArtworks(excludeId: string, limit = 4): Promise<ArtworkWithImages[]> {
+  return db.artwork.findMany({
+    where: { id: { not: excludeId } },
+    include: withImages,
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: limit,
   });
 }
 

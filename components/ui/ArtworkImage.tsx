@@ -13,6 +13,12 @@ import { cn } from "@/lib/cn";
  *
  * Родитель должен быть `position: relative` и иметь заданный размер:
  * изображение растягивается по нему через `fill`.
+ *
+ * `fit` управляет тем, что делать с несовпадением пропорций. По умолчанию
+ * `cover` — кадр заполняется, края срезаются: в сетке галереи это правильно,
+ * плитки должны стоять ровным рядом. На странице самой работы нужен
+ * `contain`: обрезать картину на её собственной странице нельзя, покупатель
+ * должен видеть холст целиком.
  */
 
 /** Пары фоновых оттенков заглушки, собраны из токенов палитры. */
@@ -42,12 +48,14 @@ export function ArtworkImage({
   className,
   sizes,
   priority,
+  fit = "cover",
 }: {
   src?: string;
   alt: string;
   className?: string;
   sizes?: string;
   priority?: boolean;
+  fit?: "cover" | "contain";
 }) {
   if (src) {
     return (
@@ -57,7 +65,7 @@ export function ArtworkImage({
         fill
         sizes={sizes ?? "100vw"}
         priority={priority}
-        className={cn("object-cover", className)}
+        className={cn(fit === "contain" ? "object-contain" : "object-cover", className)}
       />
     );
   }

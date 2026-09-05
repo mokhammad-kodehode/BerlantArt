@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
-import { ArtworkTile } from "@/components/gallery/ArtworkTile";
 import { Header } from "@/components/layout/Header";
+import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { Container } from "@/components/ui/Container";
 import { getArtworks } from "@/lib/artworks";
+import { cn } from "@/lib/cn";
 
 /**
  * Та же логика, что на главной: без этой строки страница стала бы
@@ -15,6 +16,24 @@ import { getArtworks } from "@/lib/artworks";
  * их не подготовить.
  */
 export const revalidate = 300;
+
+/**
+ * Размер плитки в сетке «стены».
+ *
+ * Формула из макета: каждая пятая работа занимает две строки, каждая
+ * седьмая начиная с четвёртой — два столбца. Стена получается неровной,
+ * как настоящая развеска, и при этом порядок не зависит от случайности:
+ * одна и та же работа всегда встаёт на одно и то же место.
+ *
+ * Широкая плитка только с трёх столбцов: на телефоне их два, и растянутая
+ * на всю ширину работа выбивалась бы из ряда.
+ *
+ * Живёт здесь, а не в самой плитке: это правило раскладки конкретно этой
+ * стены, а плитка используется ещё и в ряду «других работ» на карточке.
+ */
+function spanClasses(index: number): string {
+  return cn(index % 5 === 0 && "row-span-2", index % 7 === 3 && "md:col-span-2");
+}
 
 export const metadata: Metadata = {
   title: "Работы",
@@ -67,7 +86,7 @@ export default async function GalleryPage() {
               */
               <ul className="wall m-0 grid list-none auto-rows-[130px] grid-cols-2 gap-5 p-0 pt-10 md:grid-cols-3 lg:grid-cols-4">
                 {works.map((work, index) => (
-                  <ArtworkTile key={work.id} work={work} index={index} />
+                  <ArtworkTile key={work.id} work={work} className={spanClasses(index)} />
                 ))}
               </ul>
             )}

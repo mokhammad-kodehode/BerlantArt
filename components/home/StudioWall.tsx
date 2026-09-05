@@ -3,7 +3,12 @@ import Link from "next/link";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { artworkCaption, primaryImageUrl, type ArtworkWithImages } from "@/lib/artworks";
+import {
+  artworkCaption,
+  artworkStatusLabel,
+  primaryImageUrl,
+  type ArtworkWithImages,
+} from "@/lib/artworks";
 
 /**
  * Тёмная полоса «Из мастерской»: работы едут горизонтальной лентой, как на
@@ -43,32 +48,32 @@ export function StudioWall({ works }: { works: ArtworkWithImages[] }) {
           </div>
         ) : (
           <ul className="hide-scrollbar m-0 flex snap-x snap-proximity list-none gap-7 overflow-x-auto p-2 pb-10">
-            {works.map((work) => (
-              <li key={work.id} className="w-[210px] shrink-0 snap-start">
-                <div className="relative rounded-2xl bg-neutral-800 p-2.5 shadow-[0_0_46px_rgb(214_127_72/0.28),0_18px_40px_rgb(0_0_0/0.45)]">
-                  <div className="washed relative aspect-3/4 overflow-hidden rounded-lg">
-                    <ArtworkImage src={primaryImageUrl(work)} alt={work.title} sizes="210px" />
-                  </div>
+            {works.map((work) => {
+              const label = artworkStatusLabel(work.status);
 
-                  {/* Статус словом, а не только цветом: серая карточка ничего
-                      не говорит человеку, который не различает оттенки. */}
-                  {work.status === "SOLD" && (
-                    <Tag tone="neutral" className="absolute top-4 right-4">
-                      Продана
-                    </Tag>
-                  )}
-                  {work.status === "RESERVED" && (
-                    <Tag tone="accent" className="absolute top-4 right-4">
-                      Забронирована
-                    </Tag>
-                  )}
-                </div>
-                <p className="mt-3.5 mb-0.5 text-[13px] tracking-[0.04em] text-neutral-100 uppercase">
-                  {work.title}
-                </p>
-                <p className="m-0 text-[11.5px] text-neutral-100/55">{artworkCaption(work)}</p>
-              </li>
-            ))}
+              return (
+                <li key={work.id} className="w-[210px] shrink-0 snap-start">
+                  <div className="relative rounded-2xl bg-neutral-800 p-2.5 shadow-[0_0_46px_rgb(214_127_72/0.28),0_18px_40px_rgb(0_0_0/0.45)]">
+                    <div className="washed relative aspect-3/4 overflow-hidden rounded-lg">
+                      <ArtworkImage src={primaryImageUrl(work)} alt={work.title} sizes="210px" />
+                    </div>
+
+                    {label && (
+                      <Tag
+                        tone={work.status === "SOLD" ? "neutral" : "accent"}
+                        className="absolute top-4 right-4"
+                      >
+                        {label}
+                      </Tag>
+                    )}
+                  </div>
+                  <p className="mt-3.5 mb-0.5 text-[13px] tracking-[0.04em] text-neutral-100 uppercase">
+                    {work.title}
+                  </p>
+                  <p className="m-0 text-[11.5px] text-neutral-100/55">{artworkCaption(work)}</p>
+                </li>
+              );
+            })}
           </ul>
         )}
 

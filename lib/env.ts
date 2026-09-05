@@ -10,6 +10,9 @@ import { z } from "zod";
  *   этап 5 — R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
  *            R2_BUCKET_NAME, NEXT_PUBLIC_R2_PUBLIC_URL
  *   этап 6 — AUTH_SECRET, AUTH_ADMIN_EMAIL, AUTH_ADMIN_PASSWORD_HASH
+ *
+ * NEXT_PUBLIC_WHATSAPP_PHONE заведена в Э4-5 необязательной: карточка работы
+ * рисует кнопку WhatsApp только когда номер заполнен.
  */
 
 const postgresUrl = z
@@ -36,6 +39,21 @@ const serverSchema = z.object({
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+
+  /**
+   * Телефон WhatsApp для кнопок «написать». Необязательная: пока художница
+   * не прислала номер, кнопка просто не рисуется — это лучше, чем кнопка
+   * с выдуманным телефоном или сборка, падающая из-за незаполненного поля.
+   *
+   * Формат проверяется здесь, потому что ошибка в нём не видна глазами:
+   * ссылка wa.me с плюсом или пробелами открывается пустой перепиской.
+   */
+  NEXT_PUBLIC_WHATSAPP_PHONE: z
+    .string()
+    .regex(/^[0-9]{10,15}$/, {
+      message: "только цифры, в международном формате без плюса и пробелов: 79991234567",
+    })
+    .optional(),
 });
 
 /**
@@ -44,6 +62,7 @@ const clientSchema = z.object({
  */
 const clientValues = {
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_WHATSAPP_PHONE: process.env.NEXT_PUBLIC_WHATSAPP_PHONE,
 };
 
 function parse<T extends z.ZodType>(schema: T, values: unknown, label: string): z.infer<T> {
