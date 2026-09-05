@@ -1,21 +1,30 @@
 import type { Metadata } from "next";
+import { z } from "zod";
 
+import { GalleryFilters } from "@/components/gallery/GalleryFilters";
 import { Header } from "@/components/layout/Header";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { Container } from "@/components/ui/Container";
-import { getArtworks } from "@/lib/artworks";
+import { getArtworks, getCategories } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 
 /**
- * Та же логика, что на главной: без этой строки страница стала бы
- * динамической и ходила в базу на каждое открытие, а уснувшая база роняла
- * бы галерею. Значение обязано быть числом-литералом.
+ * Разбор параметров адреса — единственное место, где чужому вводу можно
+ * верить только после проверки ([architecture.md](../../../.ai/rules/architecture.md)).
  *
- * В Э4-4 появятся фильтры через параметры адреса, и маршрут станет
- * динамическим — это ожидаемо и правильно: выборок много, заранее
- * их не подготовить.
+ * `status` проверяется строго: это перечисление в Prisma, и значение вне
+ * трёх вариантов уронило бы запрос ошибкой типа, а не просто вернуло пусто.
+ * `.catch(undefined)` откатывает мусор к «без фильтра» молча — так адрес
+ * с опечаткой не превращается в 500-ю.
+ *
+ * `category` — обычная строка в схеме ([data.md](../../../.ai/rules/data.md)):
+ * несуществующее значение просто даёт пустую выборку в базе, отдельной
+ * проверки не требует.
  */
-export const revalidate = 300;
+const filtersSchema = z.object({
+  status: z.enum(["AVAILABLE", "RESERVED", "SOLD"]).optional().catch(undefined),
+  category: z.string().min(1).optional().catch(undefined),
+});
 
 /**
  * Размер плитки в сетке «стены».
@@ -47,9 +56,26 @@ export const metadata: Metadata = {
  * Из макета сознательно не перенесён переключатель «Стена / Список»:
  * это второе представление тех же данных — вдвое больше разметки и
  * клиентское состояние ради пяти работ. Обоснование — в ARCHITECTURE.md.
+ *
+ * Страница читает `searchParams`, поэтому готовиться заранее ей больше
+ * нельзя — маршрут стал динамическим. Это ожидаемо и записано в тикете:
+ * выборок с фильтрами много, заранее их не подготовить. Уснувшая база
+ * покажет `error.tsx` — для этого он и заведён в Э4-1.
  */
-export default async function GalleryPage() {
-  const works = await getArtworks();
+export default async function GalleryPage({ searchParams }: PageProps<"/gallery">) {
+  const rawParams = await searchParams;
+  // Next отдаёт string[] для повторённого параметра (?status=A&status=B) —
+  // берём первое значение, а не роняем страницу и не гадаем, какое верно.
+  const first = (value: string | string[] | undefined): string | undefined =>
+    Array.isArray(value) ? value[0] : value;
+
+  const filters = filtersSchema.parse({
+    status: first(rawParams.status),
+    category: first(rawParams.category),
+  });
+
+  // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
+  const [works, categories] = await Promise.all([getArtworks(filters), getCategories()]);
 
   return (
     <>
@@ -70,12 +96,30 @@ export default async function GalleryPage() {
 
         <div className="bleed bg-neutral-900 pt-2 pb-16">
           <Container>
+            <GalleryFilters current={filters} categories={categories} />
+
             {works.length === 0 ? (
               <div className="panel-dashed my-10 p-10">
-                <h2 className="mt-0 mb-2 text-[20px] text-neutral-100">Работ пока нет</h2>
-                <p className="m-0 max-w-[48ch] text-[14.5px] text-neutral-100/70">
-                  Картины появятся здесь, как только художница добавит их.
-                </p>
+                {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
+                    иначе фильтр по «Проданные» на пустой выборке выглядел бы
+                    так, будто сайт вообще без картин. */}
+                {filters.status || filters.category ? (
+                  <>
+                    <h2 className="mt-0 mb-2 text-[20px] text-neutral-100">
+                      По этому фильтру ничего нет
+                    </h2>
+                    <p className="m-0 max-w-[48ch] text-[14.5px] text-neutral-100/70">
+                      Попробуйте другой статус или категорию.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="mt-0 mb-2 text-[20px] text-neutral-100">Работ пока нет</h2>
+                    <p className="m-0 max-w-[48ch] text-[14.5px] text-neutral-100/70">
+                      Картины появятся здесь, как только художница добавит их.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               /*

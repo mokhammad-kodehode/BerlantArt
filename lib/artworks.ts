@@ -4,6 +4,11 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
 
+// Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
+// (проверяется линтером, architecture.md) — им нужен только тип значения,
+// а не сам сгенерированный модуль.
+export type { ArtworkStatus };
+
 /**
  * Выборки работ из базы.
  *
@@ -177,4 +182,23 @@ export async function getFeatured(limit = 6): Promise<ArtworkWithImages[]> {
     orderBy: { createdAt: "desc" },
     take: limit,
   });
+}
+
+/**
+ * Список категорий для фильтра галереи — запросом `distinct`, а не строкой
+ * в коде. Категория — свободный текст ([data.md](../.ai/rules/data.md)),
+ * и художница заведёт новую через админку; фильтр обязан подхватить её сам,
+ * а не ждать правки кода.
+ */
+export async function getCategories(): Promise<string[]> {
+  const rows = await db.artwork.findMany({
+    where: { category: { not: null } },
+    select: { category: true },
+    distinct: ["category"],
+    orderBy: { category: "asc" },
+  });
+
+  // `category` тут не может быть null — отфильтровано в `where`, но Prisma
+  // не сужает тип по условию, поэтому проверка explicit.
+  return rows.map((row) => row.category).filter((category) => category !== null);
 }
