@@ -18,6 +18,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 @.ai/rules/language.md
 @.ai/rules/code-style.md
 @.ai/rules/architecture.md
+@.ai/rules/review.md
 @.ai/rules/design-system.md
 @.ai/rules/components.md
 @.ai/rules/content.md
