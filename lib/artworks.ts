@@ -11,9 +11,10 @@ import { publicUrl } from "@/lib/r2";
 export type { ArtworkStatus };
 
 /**
- * Выборки работ из базы.
+ * Работа с таблицей работ: выборки внизу файла, запись — в конце.
  *
- * Страницы не пишут запросы к Prisma сами — они зовут функции отсюда.
+ * Страницы и Server Action'ы не пишут запросы к Prisma сами — они зовут
+ * функции отсюда.
  * Причина: когда запросы разбросаны по страницам, любое изменение модели
  * приходится искать по всему проекту, а одинаковые выборки незаметно
  * расходятся между собой.
@@ -219,4 +220,53 @@ export async function getCategories(): Promise<string[]> {
   // `category` тут не может быть null — отфильтровано в `where`, но Prisma
   // не сужает тип по условию, поэтому проверка explicit.
   return rows.map((row) => row.category).filter((category) => category !== null);
+}
+
+/**
+ * Поля работы, которые задаёт человек в админке.
+ *
+ * Без `id`, `createdAt` и изображений: их задаёт не форма. Необязательные
+ * поля — именно `null`, а не `undefined`: разница существенна для Prisma,
+ * `undefined` означает «не трогать это поле», а `null` — «очистить».
+ * Форма всегда присылает все поля, поэтому пустое должно стирать прежнее
+ * значение, а не оставлять его.
+ */
+export type ArtworkInput = {
+  title: string;
+  description: string | null;
+  category: string | null;
+  technique: string | null;
+  dimensions: string | null;
+  year: number | null;
+  price: number | null;
+  status: ArtworkStatus;
+  featured: boolean;
+};
+
+/** Создаёт работу и возвращает её идентификатор — он нужен, чтобы сразу
+ * перейти на страницу редактирования и добавить фотографии. */
+export async function createArtwork(input: ArtworkInput): Promise<string> {
+  const created = await db.artwork.create({
+    data: input,
+    select: { id: true },
+  });
+
+  return created.id;
+}
+
+/**
+ * Обновляет работу. `false`, если работы с таким идентификатором нет.
+ *
+ * Через `updateMany`, а не `update`: тот бросает исключение с кодом
+ * `P2025`, и на вызывающей стороне пришлось бы разбирать код ошибки
+ * Prisma, чтобы отличить «нет такой работы» от настоящей поломки базы.
+ * Число изменённых строк отвечает на тот же вопрос без исключений.
+ */
+export async function updateArtwork(id: string, input: ArtworkInput): Promise<boolean> {
+  const { count } = await db.artwork.updateMany({
+    where: { id },
+    data: input,
+  });
+
+  return count === 1;
 }

@@ -159,3 +159,18 @@ export async function requireAdmin(): Promise<void> {
 export function verifySessionToken(token: string | undefined): boolean {
   return verifySession(token, sessionKey(), Date.now());
 }
+
+/**
+ * Проверка для Server Action'ов: падает, а не уводит на страницу входа.
+ *
+ * Отдельно от `requireAdmin()` намеренно. Экшен — это публичный POST
+ * к странице: документация Next прямо предупреждает, что дойти до него
+ * можно мимо интерфейса, и отрисованная на закрытой странице форма
+ * защитой не является. Редирект в ответ на такой POST выглядел бы как
+ * успех с пустым результатом; громкая ошибка честнее.
+ */
+export async function assertAdmin(): Promise<void> {
+  if (!(await hasSession())) {
+    throw new Error("Нет доступа: действие требует входа в админку.");
+  }
+}

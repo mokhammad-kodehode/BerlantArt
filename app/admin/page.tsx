@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 
-import { Button } from "@/components/ui/Button";
-import { Container } from "@/components/ui/Container";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { logout } from "@/lib/actions/auth";
 import { requireAdmin } from "@/lib/auth";
 
 /**
- * Заглушка дашборда. Настоящий — счётчики по статусам и последние работы —
- * в Э6-5: он зависит от таблицы работ, которой ещё нет. Пока страница нужна
- * затем, чтобы было куда пускать после входа и откуда выходить.
+ * Первый экран админки.
+ *
+ * Пока это не дашборд, а перекрёсток: счётчики по статусам и список
+ * последних работ — Э6-5, они зависят от таблицы работ, которой ещё нет.
+ * Здесь ровно то, без чего нельзя пользоваться готовыми страницами:
+ * ссылка на создание работы и выход.
  */
 export const metadata: Metadata = {
   title: "Панель управления",
@@ -16,24 +19,37 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  // Второй рубеж: proxy.ts уже отсеял чужих, но на него одного полагаться
+  // Второй рубеж: proxy.ts уже отсеял чужих, но полагаться на него одного
   // нельзя — так прямо сказано в документации Next.
   await requireAdmin();
 
   return (
-    <main className="py-16">
-      <Container>
-        <h1 className="font-display mb-4 text-3xl">Панель управления</h1>
-        <p className="text-ink/55 mb-8 text-sm">
-          Вход работает. Список работ и форма загрузки — следующие тикеты.
-        </p>
-
+    <AdminShell
+      title="Панель управления"
+      actions={
         <form action={logout}>
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="ghost">
             Выйти
           </Button>
         </form>
-      </Container>
-    </main>
+      }
+    >
+      <div className="flex flex-wrap gap-3">
+        <ButtonLink href="/admin/artworks/new" variant="primary">
+          Добавить работу
+        </ButtonLink>
+        <ButtonLink href="/gallery">Открыть галерею</ButtonLink>
+      </div>
+
+      {/* Названо явно, чтобы при проверке было видно: это следующий шаг,
+          а не забытое место. */}
+      <div className="panel-dashed mt-10 p-6 text-sm">
+        <p className="mb-1 font-medium">Список работ — следующий шаг</p>
+        <p className="text-ink/55">
+          Таблица со всеми работами, поиском и быстрой сменой статуса появится здесь. Пока
+          существующую работу можно открыть на редактирование из галереи.
+        </p>
+      </div>
+    </AdminShell>
   );
 }

@@ -53,7 +53,7 @@ export function LoginForm() {
       {state.error && (
         // role="alert" — чтобы скринридер прочитал ошибку, а не оставил
         // человека гадать, почему форма не отправилась (.ai/rules/quality.md).
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="text-danger text-sm">
           {state.error}
         </p>
       )}
