@@ -6,8 +6,6 @@ import { z } from "zod";
  * Смысл: упасть при сборке с понятной ошибкой, а не в рантайме на проде
  * с `undefined` в строке подключения.
  *
- * Схема растёт по этапам плана (ROADMAP.md). Ещё добавятся:
- *   этап 6 — AUTH_SECRET, AUTH_ADMIN_EMAIL, AUTH_ADMIN_PASSWORD_HASH
  *
  * NEXT_PUBLIC_WHATSAPP_PHONE заведена в Э4-5 необязательной: карточка работы
  * рисует кнопку WhatsApp только когда номер заполнен.
@@ -118,4 +116,42 @@ let r2Values: z.infer<typeof r2Schema> | null = null;
 export function r2Env(): z.infer<typeof r2Schema> {
   r2Values ??= parse(r2Schema, process.env, "хранилище R2");
   return r2Values;
+}
+
+/**
+ * Учётные данные администратора и секрет для подписи сессий.
+ *
+ * Проверяются лениво, тем же приёмом и по той же причине, что ключи R2:
+ * публичный сайт входом в админку не пользуется, и требовать эти переменные
+ * при сборке значит не давать выложить галерею из-за админской функции.
+ *
+ * Пароля здесь нет — только его хеш. Сам пароль не хранится нигде
+ * (.ai/rules/security.md).
+ */
+const authSchema = z.object({
+  /** Секрет для подписи куки сессии. Генерируется командой
+   * `node scripts/hash-password.mjs --secret`. */
+  AUTH_SECRET: z.string().min(32, {
+    message: "нужен длинный случайный секрет: node scripts/hash-password.mjs --secret",
+  }),
+
+  AUTH_ADMIN_EMAIL: z.email(),
+
+  /**
+   * Формат из lib/password.ts: `scrypt:<соль 32 hex>:<ключ 128 hex>`.
+   *
+   * Проверяется здесь, потому что опечатка в хеше иначе всплыла бы как
+   * «пароль не подходит», и искать её стали бы в пароле, а не в переменной.
+   */
+  AUTH_ADMIN_PASSWORD_HASH: z.string().regex(/^scrypt:[0-9a-f]{32}:[0-9a-f]{128}$/, {
+    message: "не похоже на хеш: сгенерируй его командой node scripts/hash-password.mjs",
+  }),
+});
+
+let authValues: z.infer<typeof authSchema> | null = null;
+
+/** Проверенные учётные данные администратора. Разбираются один раз. */
+export function authEnv(): z.infer<typeof authSchema> {
+  authValues ??= parse(authSchema, process.env, "админка");
+  return authValues;
 }
