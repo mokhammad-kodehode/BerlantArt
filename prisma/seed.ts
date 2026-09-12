@@ -48,8 +48,8 @@ const db = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
  * или года, которые выдумывать нельзя (.ai/rules/content.md).
  *
  * Перечень выбран по пяти имеющимся работам и рассчитан на рост:
- * «Горный пейзаж» — горы и башни, «Сельский мотив» — дома и сады,
- * «Архитектурный мотив» — постройки как главный герой.
+ * «Горный пейзаж» — горы и башни, «Полевой пейзаж» — поля, дороги, берёзы,
+ * «Сельский мотив» — дворы и постройки, «Цветы» — букеты и травы.
  *
  * Фотографии лежат в public/. С этапа 5 их место займут ссылки на R2.
  */
@@ -61,27 +61,27 @@ const artworks = [
     status: "AVAILABLE",
   },
   {
-    title: "Башни на закате",
-    file: "bashni-na-zakate.jpg",
-    category: "Горный пейзаж",
+    title: "Осенняя дорога",
+    file: "osennyaya-doroga.jpg",
+    category: "Полевой пейзаж",
     status: "AVAILABLE",
   },
   {
-    title: "Дом с бирюзовыми ставнями",
-    file: "dom-s-biryuzovymi-stavnyami.jpg",
+    title: "Берёза в поле",
+    file: "bereza-v-pole.jpg",
+    category: "Полевой пейзаж",
+    status: "AVAILABLE",
+  },
+  {
+    title: "Ромашки",
+    file: "romashki.jpg",
+    category: "Цветы",
+    status: "AVAILABLE",
+  },
+  {
+    title: "Сельский двор",
+    file: "selskiy-dvor.jpg",
     category: "Сельский мотив",
-    status: "AVAILABLE",
-  },
-  {
-    title: "Мост на закате",
-    file: "most-na-zakate.jpg",
-    category: "Архитектурный мотив",
-    status: "SOLD",
-  },
-  {
-    title: "Ночной свет",
-    file: "nochnoy-svet.jpg",
-    category: "Архитектурный мотив",
     status: "AVAILABLE",
   },
 ] as const;
