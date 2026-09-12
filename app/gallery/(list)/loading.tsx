@@ -1,17 +1,16 @@
 import { Header } from "@/components/layout/Header";
-import { Container } from "@/components/ui/Container";
+import { collageLayout } from "@/lib/collage";
 
 /**
  * Скелет галереи на время ожидания данных.
  *
- * Перенесён сюда из Э4-1: общий скелет на весь сайт применился бы ко всем
- * маршрутам сразу и ни на одну страницу не был бы похож. Здесь он повторяет
- * ровно ту сетку, которая появится, — поэтому страница не «прыгает»,
- * когда данные приходят.
+ * Повторяет ровно ту стену, которая появится, — поэтому страница не
+ * «прыгает», когда данные приходят. Раскладка берётся той же функцией
+ * (lib/collage.ts), что и у настоящего коллажа: иначе скелет и стена
+ * разошлись бы при первой же правке формулы.
  *
- * Плиток восемь: столько помещается на первом экране десктопа. Показывать
- * ровно столько, сколько работ в базе, скелет не может — он рисуется до
- * того, как данные пришли.
+ * Плиток четыре — один полный блок раскладки. Сколько работ в базе, скелет
+ * знать не может: он рисуется до того, как пришёл ответ.
  *
  * Лежит в папке `(list)` — это «группа маршрутов»: скобки в имени не попадают
  * в адрес, страница по-прежнему открывается как /gallery. Группа нужна, чтобы
@@ -22,35 +21,31 @@ import { Container } from "@/components/ui/Container";
  * (документация Next, loading.js → Status Codes).
  */
 export default function GalleryLoading() {
+  const tiles = collageLayout(4);
+
   return (
-    <>
+    <div className="bg-wall flex min-h-svh flex-col">
       <Header />
 
-      <main>
-        <Container>
-          <section className="max-w-[640px] pt-14 pb-8">
-            <div className="bg-ink/10 mb-4 h-3.5 w-24 rounded-full" />
-            <div className="bg-ink/15 mb-4 h-11 w-56 rounded-lg" />
-            <div className="bg-ink/10 h-4 w-full max-w-[420px] rounded-full" />
-          </section>
-        </Container>
-
-        <div className="bleed bg-neutral-900 pt-2 pb-16">
-          <Container>
-            <ul
-              aria-hidden
-              className="m-0 grid list-none auto-rows-[130px] grid-cols-2 gap-5 p-0 pt-10 md:grid-cols-3 lg:grid-cols-4"
-            >
-              {Array.from({ length: 8 }, (_, i) => (
-                <li
-                  key={i}
-                  className={`animate-pulse rounded-[14px] bg-neutral-800 ${i % 5 === 0 ? "row-span-2" : ""}`}
-                />
-              ))}
-            </ul>
-          </Container>
+      <main className="flex flex-1 flex-col">
+        <div className="px-[clamp(20px,5vw,64px)] pt-7 pb-5">
+          <div className="bg-ink/15 mb-3 h-3 w-20 rounded-full" />
+          <div className="bg-ink/20 mb-3 h-9 w-48 rounded-lg" />
+          <div className="bg-ink/10 h-3.5 w-full max-w-[420px] rounded-full" />
         </div>
+
+        <ul
+          aria-hidden
+          className="m-0 grid flex-1 list-none auto-rows-[minmax(150px,1fr)] grid-cols-2 gap-2.5 p-0 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)] md:auto-rows-[minmax(120px,1fr)] md:grid-cols-4"
+        >
+          {tiles.map((tile, index) => (
+            <li
+              key={index}
+              className={`bg-ink/10 animate-pulse rounded-[14px] ${tile.className}`}
+            />
+          ))}
+        </ul>
       </main>
-    </>
+    </div>
   );
 }

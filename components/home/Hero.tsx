@@ -115,13 +115,13 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
           )}
         />
 
-        {/* Слайды с работами. Фильтр washed приглушает репродукции, чтобы
-            они не спорили по насыщенности с охрой интерфейса. */}
+        {/* Слайды с работами — в настоящем цвете: фильтра washed больше нет
+            (см. globals.css, блок «залы»). */}
         {slides.map((slide, i) => (
           <div
             key={slide.id}
             className={cn(
-              "washed absolute inset-0 transition-opacity duration-1000",
+              "absolute inset-0 transition-opacity duration-1000",
               phase === "slides" && i === slideIndex ? "opacity-100" : "opacity-0",
             )}
           >
@@ -160,7 +160,9 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
         </p>
 
         <div className="flex flex-wrap justify-center gap-3.5">
-          <ButtonLink href="/gallery" variant="primary" size="lg">
+          {/* onPhoto, а не primary: кнопка лежит на затемнённом видео,
+              и в светлом зале графитовая заливка на нём терялась. */}
+          <ButtonLink href="/gallery" variant="onPhoto" size="lg">
             Смотреть галерею
           </ButtonLink>
           <ButtonLink href="/about" variant="onDark" size="lg">

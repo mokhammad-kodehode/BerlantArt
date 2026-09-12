@@ -15,13 +15,30 @@
    ═════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* — базовые роли — */
-  --color-bg: #f5ead8;
-  --color-surface: #ebddc5;
-  --color-ink: #201e1d;
-  --color-accent: #c67139;
-  --color-accent-2: #7a8a5e;
-  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+  /* — базовые роли. Значения не заданы здесь, а приходят из выбранной
+       темы (блоки «залы» ниже): утилита bg-bg превращается в
+       var(--color-bg) → var(--theme-bg), и смена темы перекрашивает
+       страницу без перезагрузки. — */
+  --color-bg: var(--theme-bg);
+  --color-surface: var(--theme-surface);
+  /* Стена: фон коллажа, полос во всю ширину и полноэкранного показа.
+     Отделена от bg, чтобы работы читались как развешенные на стене,
+     а не лежащие на фоне страницы. */
+  --color-wall: var(--theme-wall);
+  --color-ink: var(--theme-ink);
+  --color-accent: var(--theme-accent);
+  --color-accent-2: var(--theme-accent-2);
+  --color-divider: var(--theme-divider);
+  /* Главная кнопка: не цветная, а контрастная фону — в галерее самым
+     ярким пятном должна быть живопись, а не призыв к действию. */
+  --color-btn: var(--theme-btn);
+  --color-btn-ink: var(--theme-btn-ink);
+
+  /* Ошибка ввода. Кирпичный, а не чистый красный: сигнальный #d00
+     выглядит как чужая наклейка. Значение приходит из темы: на почти
+     чёрном фоне тёмный кирпич давал контраст 3.1:1 — ниже требуемых
+     4.5:1 (.ai/rules/quality.md). */
+  --color-danger: var(--theme-danger);
 
   /* — тональные ряды: один шаг любого ряда совпадает по светлоте с тем же
        шагом остальных (ряды построены в OKLCH на общей шкале) — */
@@ -70,6 +87,95 @@
   --shadow-sm: 0 1px 2px color-mix(in srgb, #2e2b25 14%, transparent);
   --shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
   --shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
+}
+
+/* ── залы: три темы ───────────────────────────────────────────────────────
+
+   Сайт — про живопись, поэтому интерфейс не должен быть насыщеннее картин.
+   Прежняя палитра макета (охра #f5ead8, оранжевый #c67139) была ярче работ
+   художницы: её колорит приглушённый, туман и осень. Отсюда и появился
+   фильтр `washed` — он гасил живопись, чтобы она не спорила с интерфейсом.
+   Лечили симптом; теперь цвет в интерфейсе убран, а фильтр удалён.
+
+   Три зала, переключаются кнопкой в шапке (components/ui/ThemeSwitch.tsx),
+   выбор хранится в localStorage. По умолчанию — тёмный: работы на нём
+   светятся сильнее всего.
+
+   Обоснование и числа контраста — в ARCHITECTURE.md, раздел «Дизайн».
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Тёмный зал — по умолчанию. Стены уходят в тень, светится живопись. */
+:root {
+  color-scheme: dark;
+
+  --theme-bg: #131211;
+  --theme-surface: #1d1b1a;
+  --theme-wall: #0d0c0c;
+  --theme-ink: #f2f1ef;
+  --theme-accent: #c98a5e;
+  --theme-accent-2: #8a9878;
+  --theme-divider: #2b2927;
+  --theme-btn: #f2f1ef;
+  --theme-btn-ink: #131211;
+  --theme-danger: #e2806d;
+
+  /* Тень плитки и картины. В тёмном зале она почти чёрная и глубокая,
+     в светлых — мягкая серая, как от верхнего света в музее. */
+  --theme-shadow-tile: 0 8px 24px rgb(0 0 0 / 0.45);
+  --theme-shadow-tile-hover: 0 24px 60px rgb(0 0 0 / 0.6);
+  --theme-shadow-art: drop-shadow(0 24px 60px rgb(0 0 0 / 0.55));
+  /* Верхний свет: в тёмном зале его нет, в светлых — лёгкая засветка сверху. */
+  --theme-toplight: none;
+}
+
+/* Почти белый зал: тёплая музейная стена, а не чистая бумага. */
+:root[data-theme="paper"] {
+  color-scheme: light;
+
+  --theme-bg: #f6f5f3;
+  --theme-surface: #ecebe7;
+  --theme-wall: #f0efec;
+  --theme-ink: #1b1a19;
+  --theme-accent: #8a5a3c;
+  --theme-accent-2: #5b6b48;
+  --theme-divider: #dedbd6;
+  --theme-btn: #1b1a19;
+  --theme-btn-ink: #f6f5f3;
+  --theme-danger: #a32f22;
+
+  --theme-shadow-tile: 0 6px 18px rgb(27 26 25 / 0.16);
+  --theme-shadow-tile-hover: 0 18px 44px rgb(27 26 25 / 0.26);
+  --theme-shadow-art: drop-shadow(0 18px 40px rgb(27 26 25 / 0.24));
+  --theme-toplight: radial-gradient(
+    ellipse 130% 65% at 50% -15%,
+    rgb(255 255 255 / 0.95),
+    transparent 70%
+  );
+}
+
+/* Прям белый зал: чистая белая стена, всё внимание на холст. */
+:root[data-theme="white"] {
+  color-scheme: light;
+
+  --theme-bg: #ffffff;
+  --theme-surface: #f3f3f2;
+  --theme-wall: #ffffff;
+  --theme-ink: #161616;
+  --theme-accent: #8a5a3c;
+  --theme-accent-2: #5b6b48;
+  --theme-divider: #e6e5e3;
+  --theme-btn: #161616;
+  --theme-btn-ink: #ffffff;
+  --theme-danger: #a32f22;
+
+  --theme-shadow-tile: 0 6px 20px rgb(22 22 22 / 0.14);
+  --theme-shadow-tile-hover: 0 20px 48px rgb(22 22 22 / 0.22);
+  --theme-shadow-art: drop-shadow(0 20px 44px rgb(22 22 22 / 0.22));
+  --theme-toplight: radial-gradient(
+    ellipse 130% 65% at 50% -15%,
+    rgb(255 255 255 / 1),
+    transparent 72%
+  );
 }
 
 :root {
@@ -155,15 +261,31 @@
     cursor: not-allowed;
   }
 
+  /* Главная кнопка — контрастная фону, а не цветная: оранжевая заливка
+     была самым ярким пятном страницы и перебивала живопись. */
   .btn-primary {
-    background: var(--color-accent);
-    color: var(--color-bg);
+    background: var(--color-btn);
+    color: var(--color-btn-ink);
   }
   .btn-primary:hover {
-    background: var(--color-accent-600);
+    background: color-mix(in srgb, var(--color-btn) 85%, var(--color-bg));
   }
   .btn-primary:active {
-    background: var(--color-accent-700);
+    background: color-mix(in srgb, var(--color-btn) 75%, var(--color-bg));
+  }
+
+  /* Приглушённая кнопка для рядов-переключателей: читается и на тёмной
+     стене, и на белой, потому что берёт цвет от текста темы. `btn-on-dark`
+     на это не годится — светлая плёнка на белом фоне невидима. */
+  .btn-soft {
+    background: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    color: var(--color-ink);
+  }
+  .btn-soft:hover {
+    background: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
+  .btn-soft:active {
+    background: color-mix(in srgb, var(--color-ink) 22%, transparent);
   }
 
   .btn-secondary {
@@ -185,6 +307,21 @@
   }
   .btn-ghost:active {
     background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  /* Главная кнопка поверх фотографии или видео. Цвета фиксированные,
+     из тональных рядов, а не из ролей темы: под ней всегда затемнённый
+     кадр, независимо от выбранного зала, и графитовая заливка светлой
+     темы на нём пропадала. */
+  .btn-on-photo {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+  }
+  .btn-on-photo:hover {
+    background: var(--color-neutral-200);
+  }
+  .btn-on-photo:active {
+    background: var(--color-neutral-300);
   }
 
   /* Кнопка поверх тёмного фото: своего класса в макете нет (в hero задано
@@ -307,6 +444,29 @@
     resize: vertical;
   }
 
+  /* Селект — то же поле, плюс место под стрелку, которую рисует браузер. */
+  select.input {
+    padding-right: 10px;
+  }
+
+  /* Поле с ошибкой. Красная рамка — подсказка, а не сообщение: сам текст
+     ошибки идёт рядом в .field-error, потому что цвет рамки не читается
+     скринридером и не различается при дальтонизме. */
+  .input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  .field-error {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--color-danger);
+  }
+  /* Пояснение под полем: чем заполнять и что будет, если оставить пустым. */
+  .field-hint {
+    margin-top: 5px;
+    font-size: 12px;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
   /* Сегментный переключатель — режимы показа галереи на этапе 4. */
   .seg {
     display: inline-flex;
@@ -342,11 +502,9 @@
 
   /* — приёмы оформления — */
 
-  /* Фирменный фильтр макета: приглушает фото, чтобы репродукции не спорили
-     по насыщенности с охрой интерфейса. */
-  .washed {
-    filter: saturate(0.6) contrast(0.85) brightness(1.1) opacity(0.94);
-  }
+  /* Фильтра `washed` здесь больше нет. Он гасил репродукции, чтобы они
+     не спорили по насыщенности с охрой интерфейса, — а теперь в интерфейсе
+     цвета нет, спорить не с чем, и живопись показывается как есть. */
 
   /* Стена работ в галерее.
      Наведение выделяет плитку и приглушает соседей — приём из макета.
@@ -356,7 +514,7 @@
     position: relative;
     overflow: hidden;
     border-radius: 14px;
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    box-shadow: var(--theme-shadow-tile);
     transition:
       transform 0.35s ease,
       opacity 0.35s ease,
@@ -366,13 +524,12 @@
 
   .wall:hover .wall-tile:not(:hover) {
     opacity: 0.45;
-    filter: saturate(0.7);
   }
 
   .wall-tile:hover {
     z-index: 2;
     transform: scale(1.03);
-    box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
+    box-shadow: var(--theme-shadow-tile-hover);
   }
 
   /* Подпись видна всегда: на телефоне наведения нет, и спрятанное там
@@ -415,10 +572,148 @@
     transform: translateX(-50%);
   }
 
-  .hide-scrollbar {
+  /* — показ одной работы во весь экран (components/gallery/ArtworkStage.tsx) — */
+
+  /* Фон полноэкранного показа — та же фотография, что и сама картина.
+     Размытие прячет малое разрешение снимка, увеличение убирает светлую
+     кромку, которую blur иначе вытягивает по краям кадра, а затемнение
+     даёт подписи в углу контраст выше 4.5:1 на любой картине. */
+  .stage-backdrop {
+    filter: blur(48px) saturate(1.15) brightness(0.42);
+    transform: scale(1.2);
+  }
+  :root[data-theme="paper"] .stage-backdrop,
+  :root[data-theme="white"] .stage-backdrop {
+    display: none;
+  }
+
+  /* Тень под холстом — из темы: в тёмном зале глубокая, в светлом мягкая. */
+  .stage-art {
+    filter: var(--theme-shadow-art);
+  }
+
+  /* Название работы поверх картины. В тёмном зале ему нужна тень: фоном
+     лежит размытая копия холста, и у светлой работы он светлеет. В светлых
+     залах тени нет — там тёмный текст на светлой стене. */
+  .stage-title {
+    text-shadow: 0 2px 24px rgb(20 18 17 / 0.65);
+  }
+  :root[data-theme="paper"] .stage-title,
+  :root[data-theme="white"] .stage-title {
+    text-shadow: none;
+  }
+
+  /* Лента фильтров на телефоне. Полоса прокрутки спрятана — на сенсорном
+     экране она только мешает, — а правый край растворяется, чтобы было
+     видно: лента продолжается за краем. Маска только ниже 768px: с этой
+     ширины чипы снова переносятся по строкам и прятать нечего. */
+  .filter-rail {
     scrollbar-width: none;
   }
-  .hide-scrollbar::-webkit-scrollbar {
+  .filter-rail::-webkit-scrollbar {
     display: none;
+  }
+
+  @media (max-width: 767px) {
+    .filter-rail {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - 32px),
+        transparent 100%
+      );
+      mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+    }
+  }
+
+  /* Стрелки листания работ. Круг с плёнкой цвета панели читается и на
+     размытой картине в тёмном зале, и на белой стене в светлом. 44px —
+     чтобы по стрелке было удобно попасть пальцем.
+
+     На телефоне круг стоит в обычном потоке, в ряду под картиной: поверх
+     холста он ложился на его нижние углы и выглядел наклейкой. С 1024px
+     (breakpoint lg у Tailwind, им же заданы left/right у ссылок) уходит
+     по краям окна — там для него есть свободное поле. */
+  .stage-nav {
+    z-index: 3;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--color-ink);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-pill);
+    backdrop-filter: blur(6px);
+    transition:
+      background-color 0.18s ease,
+      transform 0.18s ease;
+  }
+  .stage-nav:hover {
+    background: var(--color-surface);
+    transform: scale(1.06);
+  }
+
+  @media (min-width: 1024px) {
+    .stage-nav {
+      position: absolute;
+      top: 50%;
+      margin-top: -22px;
+      pointer-events: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage-nav {
+      transition: none;
+    }
+    .stage-nav:hover {
+      transform: none;
+    }
+  }
+
+  /* — переключатель зала (components/ui/ThemeSwitch.tsx) —
+
+     Какой кружок выбран, решает CSS по атрибуту на <html>, а не состояние
+     React: атрибут выставлен до отрисовки, и копия в состоянии разошлась бы
+     с серверной разметкой. */
+  .hall {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+    border-radius: var(--radius-pill);
+    transition: border-color 0.18s ease;
+  }
+  .hall:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+
+  :root:not([data-theme]) .hall-dark,
+  :root[data-theme="paper"] .hall-paper,
+  :root[data-theme="white"] .hall-white {
+    border-color: transparent;
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Затемнение под подписью: густое в левом нижнем углу, сходит на нет
+     к правому верхнему — сама картина остаётся открытой. */
+  .stage-scrim {
+    background:
+      linear-gradient(to top, rgb(20 18 17 / 0.88), rgb(20 18 17 / 0.2) 42%, transparent 68%),
+      radial-gradient(ellipse 70% 75% at 0% 100%, rgb(20 18 17 / 0.82), transparent 72%);
+  }
+
+  /* В светлых залах затемнение не нужно — вместо него верхний свет. */
+  :root[data-theme="paper"] .stage-scrim,
+  :root[data-theme="white"] .stage-scrim {
+    background: var(--theme-toplight);
   }
 }

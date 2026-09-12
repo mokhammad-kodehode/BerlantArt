@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Header } from "@/components/layout/Header";
+import { ArtworkStage } from "@/components/gallery/ArtworkStage";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ExternalButtonLink } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import {
   artworkStatusLabel,
   formatPrice,
   getArtworkById,
+  getArtworkNeighbours,
   getArtworks,
   getOtherArtworks,
   imageUrl,
@@ -59,18 +60,29 @@ export async function generateMetadata({ params }: PageProps<"/gallery/[id]">): 
 }
 
 /**
- * Страница одной работы. По ней человек решает, покупать ли картину, —
- * поэтому пустые поля здесь не показываются вовсе: «Размер: не указан»
- * на карточке товара читается как небрежность, а не как честность.
+ * Страница одной работы: картина во весь экран, подпись — в левом нижнем
+ * углу поверх затемнения, как в превью у стриминговых сервисов.
  *
- * Макета у страницы нет, она собрана из приёмов галереи: светлая шапка
- * раздела, крупная репродукция, тёмная полоса с другими работами внизу.
+ * Прежняя вёрстка (картина в квадратной рамке слева, таблица свойств справа)
+ * заменена по просьбе заказчика: разглядеть в ней живопись было нельзя —
+ * репродукция занимала чуть больше трети экрана. Теперь холст занимает всю
+ * высоту окна, а текст лежит на размытом фоне сбоку и картину не закрывает.
+ * Устройство показа — в components/gallery/ArtworkStage.tsx.
+ *
+ * Таблицы свойств больше нет: из четырёх полей у работ заполнены одно-два,
+ * и таблица в две строки выглядела пустой. Те же данные собраны в строку
+ * через разделитель — по-прежнему без выдуманных значений
+ * ([content.md](../../../.ai/rules/content.md)).
  */
 export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">) {
   const { id } = await params;
 
   // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
-  const [work, others] = await Promise.all([getArtworkById(id), getOtherArtworks(id)]);
+  const [work, others, neighbours] = await Promise.all([
+    getArtworkById(id),
+    getOtherArtworks(id),
+    getArtworkNeighbours(id),
+  ]);
 
   if (!work) notFound();
 
@@ -78,12 +90,12 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
   const price = formatPrice(work.price);
   const extraImages = work.images.slice(1);
 
-  // Незаполненное поле не превращается в прочерк, а исчезает целиком.
-  const attributes: Array<{ label: string; value: string }> = [];
-  if (work.technique) attributes.push({ label: "Техника", value: work.technique });
-  if (work.dimensions) attributes.push({ label: "Размеры", value: work.dimensions });
-  if (work.year) attributes.push({ label: "Год", value: String(work.year) });
-  if (work.category) attributes.push({ label: "Сюжет", value: work.category });
+  // Незаполненное поле исчезает целиком, а не превращается в прочерк:
+  // страница работы — карточка товара, врать в ней о габаритах нельзя.
+  // Категории здесь нет намеренно — она уже стоит надстрочником над
+  // названием, и в строке получалось «Холст, масло · Архитектурный мотив»
+  // при надстрочнике «АРХИТЕКТУРНЫЙ МОТИВ».
+  const meta = [work.year, work.technique, work.dimensions].filter(Boolean).join(" · ");
 
   // В сообщение подставляется ссылка на саму работу: художница сразу видит,
   // о какой картине речь, и ей не нужно переспрашивать.
@@ -91,143 +103,133 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
   const message = `Здравствуйте! Интересует работа «${work.title}». ${pageUrl}`;
   const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
   const mailSubject = `Работа «${work.title}»`;
+  const hasMore = extraImages.length > 0 || others.length > 0;
 
   return (
     <>
-      <Header />
+      <ArtworkStage
+        src={primaryImageUrl(work)}
+        alt={work.title}
+        priority
+        prev={neighbours.prev}
+        next={neighbours.next}
+      >
+        <Link
+          href="/gallery"
+          className="text-ink/70 hover:text-ink mb-4 inline-block text-[13px] no-underline hover:underline"
+        >
+          ← Все работы
+        </Link>
 
-      <main>
-        <Container>
-          <div className="pt-10 pb-5">
-            <Link href="/gallery" className="text-ink/60 text-[13px] no-underline hover:underline">
-              ← Все работы
-            </Link>
-          </div>
+        <span className="text-accent mb-2.5 block text-[12px] font-semibold tracking-[0.12em] uppercase">
+          {work.category ?? "Работа"}
+        </span>
 
-          <article className="grid gap-10 pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-            <div>
-              {/*
-                Квадратная рамка с полями вместо кадрирования: холсты бывают
-                и вертикальные (335×597), и горизонтальные (490×408), а
-                срезать край картины на её собственной странице нельзя.
-                Фильтр .washed здесь тоже не нужен — в галерее он гасит
-                репродукции, чтобы они не спорили с охрой интерфейса, но
-                покупатель должен видеть настоящий цвет живописи.
-              */}
-              <div className="bg-surface rounded-panel elev-md relative aspect-square overflow-hidden">
-                <ArtworkImage
-                  src={primaryImageUrl(work)}
-                  alt={work.title}
-                  fit="contain"
-                  priority
-                  sizes="(max-width: 1023px) 100vw, 600px"
-                />
-              </div>
+        {/* Тень под заголовком, а не плашка: в тёмном зале подпись лежит
+            на размытой копии картины, и у светлой работы фон светлеет —
+            без тени тонкие засечки Literata сливались с ним. В светлых
+            залах тень снимается (класс stage-title в globals.css). */}
+        <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,5vw,64px)]">{work.title}</h1>
 
-              {extraImages.length > 0 && (
-                <ul className="m-0 mt-4 grid list-none grid-cols-3 gap-3 p-0">
-                  {extraImages.map((image) => (
-                    <li
-                      key={image.id}
-                      className="bg-surface rounded-tile relative aspect-square overflow-hidden"
-                    >
-                      <ArtworkImage
-                        src={imageUrl(image.url)}
-                        alt={image.alt}
-                        fit="contain"
-                        sizes="(max-width: 1023px) 30vw, 190px"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+          {label && <Tag tone={work.status === "SOLD" ? "neutral" : "accent"}>{label}</Tag>}
+          {meta && <p className="text-ink/75 m-0 text-[14px]">{meta}</p>}
+        </div>
 
-            <div className="lg:pt-2">
-              <span className="text-accent-700 mb-3 block text-[13px] font-semibold tracking-[0.08em] uppercase">
-                Работа
-              </span>
+        {work.description && (
+          <p className="text-ink/85 mt-0 mb-4 max-w-[46ch] text-[15.5px] leading-relaxed">
+            {work.description}
+          </p>
+        )}
 
-              <h1 className="mt-0 mb-3 text-[clamp(28px,3.6vw,40px)]">{work.title}</h1>
+        {price && <p className="font-heading text-ink mt-0 mb-4 text-[24px]">{price}</p>}
 
-              {label && (
-                <Tag tone={work.status === "SOLD" ? "neutral" : "accent"} className="mb-5">
-                  {label}
-                </Tag>
-              )}
+        <div className="flex flex-wrap gap-3">
+          {/*
+            Кнопка WhatsApp появляется только когда номер заполнен
+            в переменных окружения. Кнопка с выдуманным телефоном хуже,
+            чем её отсутствие: человек нажмёт и попадёт в пустоту.
+          */}
+          {phone && (
+            <ExternalButtonLink
+              variant="primary"
+              size="lg"
+              href={`https://wa.me/${phone}?text=${encodeURIComponent(message)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Написать в WhatsApp
+            </ExternalButtonLink>
+          )}
 
-              {work.description && (
-                <p className="text-ink/80 mt-0 mb-6 max-w-[52ch] text-[15.5px] leading-relaxed">
-                  {work.description}
-                </p>
-              )}
+          {/* Приглушённая вместо `secondary`: она берёт цвет от текста темы
+              и потому читается в любом зале. */}
+          <ExternalButtonLink
+            variant={phone ? "soft" : "primary"}
+            size="lg"
+            href={`mailto:${site.email}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(message)}`}
+          >
+            Написать на почту
+          </ExternalButtonLink>
+        </div>
 
-              {attributes.length > 0 && (
-                <dl className="border-divider m-0 mb-6 border-t">
-                  {attributes.map((attribute) => (
-                    <div
-                      key={attribute.label}
-                      className="border-divider flex justify-between gap-6 border-b py-2.5"
-                    >
-                      <dt className="text-ink/55 m-0 text-[13.5px]">{attribute.label}</dt>
-                      <dd className="m-0 text-right text-[13.5px]">{attribute.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
+        <p className="text-ink/60 mt-4 mb-0 max-w-[44ch] text-[13px]">
+          Каждая работа существует в единственном экземпляре. О цене, доставке и сроках — напрямую с
+          художницей.
+        </p>
 
-              {price && <p className="font-heading mt-0 mb-6 text-[26px]">{price}</p>}
+        {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
+            есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
+            с клавиатуры и читается скринридером. */}
+        {hasMore && (
+          <a
+            href="#more"
+            className="text-accent mt-5 inline-block text-[13px] font-semibold no-underline hover:underline"
+          >
+            Смотреть дальше ↓
+          </a>
+        )}
+      </ArtworkStage>
 
-              <div className="flex flex-wrap gap-3">
-                {/*
-                  Кнопка WhatsApp появляется только когда номер заполнен
-                  в переменных окружения. Кнопка с выдуманным телефоном хуже,
-                  чем её отсутствие: человек нажмёт и попадёт в пустоту.
-                */}
-                {phone && (
-                  <ExternalButtonLink
-                    variant="primary"
-                    size="lg"
-                    href={`https://wa.me/${phone}?text=${encodeURIComponent(message)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+      <main id="more">
+        {extraImages.length > 0 && (
+          <Container>
+            <section className="pt-12 pb-4">
+              <h2 className="mt-0 mb-5 text-[22px]">Другие ракурсы</h2>
+              <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-3">
+                {extraImages.map((image) => (
+                  <li
+                    key={image.id}
+                    className="bg-surface rounded-tile relative aspect-square overflow-hidden"
                   >
-                    Написать в WhatsApp
-                  </ExternalButtonLink>
-                )}
-
-                <ExternalButtonLink
-                  variant={phone ? "secondary" : "primary"}
-                  size="lg"
-                  href={`mailto:${site.email}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(message)}`}
-                >
-                  Написать на почту
-                </ExternalButtonLink>
-              </div>
-
-              <p className="text-ink/55 mt-4 mb-0 max-w-[46ch] text-[13px]">
-                Каждая работа существует в единственном экземпляре. О цене, доставке и сроках —
-                напрямую с художницей.
-              </p>
-            </div>
-          </article>
-        </Container>
+                    <ArtworkImage
+                      src={imageUrl(image.url)}
+                      alt={image.alt}
+                      fit="contain"
+                      sizes="(max-width: 767px) 50vw, 380px"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </Container>
+        )}
 
         {others.length > 0 && (
-          <div className="bleed bg-neutral-900 pt-14 pb-16">
+          <div className="bleed bg-wall pt-14 pb-16">
             <Container>
               <div className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-                <h2 className="m-0 text-[26px] text-neutral-100">Другие работы</h2>
+                <h2 className="text-ink m-0 text-[26px]">Другие работы</h2>
                 <Link
                   href="/gallery"
-                  className="text-accent-300 font-semibold no-underline hover:underline"
+                  className="text-accent font-semibold no-underline hover:underline"
                 >
                   Вся галерея →
                 </Link>
               </div>
 
-              {/* Та же стена, что в галерее, но без неровных пролётов: здесь
-                  это дополнение к карточке, а не главная витрина. */}
+              {/* Ровный ряд, без неровных пролётов коллажа: здесь это
+                  дополнение к карточке, а не главная витрина. */}
               <ul className="wall m-0 grid list-none auto-rows-[190px] grid-cols-2 gap-5 p-0 md:grid-cols-4">
                 {others.map((other) => (
                   <ArtworkTile key={other.id} work={other} />

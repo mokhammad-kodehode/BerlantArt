@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
+import { ThemeSwitch } from "@/components/ui/ThemeSwitch";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
@@ -261,16 +262,18 @@ export default function StyleguidePage() {
                 </div>
               </div>
               <div>
-                <p className="mt-0 mb-2 text-[13px] font-semibold">
-                  washed — фильтр для репродукций
+                <p className="mt-0 mb-2 text-[13px] font-semibold">Залы</p>
+                <p className="text-ink/70 mt-0 mb-3 text-[13px]">
+                  Три темы: тёмный зал, почти белый и белый. Переключатель стоит в шапке сайта,
+                  выбор запоминается в браузере. Фильтра <code>washed</code> больше нет — живопись
+                  показывается в настоящем цвете, потому что цвета в интерфейсе теперь нет.
                 </p>
-                <div className="flex gap-3">
+                <ThemeSwitch />
+                <div className="mt-4 flex gap-3">
                   <div className="rounded-tile relative aspect-3/4 w-1/2 overflow-hidden">
-                    <ArtworkImage alt="Без фильтра" sizes="200px" />
+                    <ArtworkImage alt="Репродукция" sizes="200px" />
                   </div>
-                  <div className="washed rounded-tile relative aspect-3/4 w-1/2 overflow-hidden">
-                    <ArtworkImage alt="washed" sizes="200px" />
-                  </div>
+                  <div className="bg-surface rounded-tile relative aspect-3/4 w-1/2 overflow-hidden" />
                 </div>
               </div>
             </div>

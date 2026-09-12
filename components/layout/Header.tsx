@@ -5,33 +5,36 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { ButtonLink } from "@/components/ui/Button";
+import { ThemeSwitch } from "@/components/ui/ThemeSwitch";
 import { cn } from "@/lib/cn";
 import { navCta, navItems, site } from "@/lib/site";
 
 /**
  * Шапка сайта в двух вариантах, как в макете:
  *
- * - `overlay` — на главной: прозрачная, лежит поверх hero-изображения,
- *   светлый текст, не липкая (уезжает вместе с hero);
- * - `solid` — на внутренних страницах: тёмная плашка, липнет к верху окна.
+ * - `overlay` — на главной: прозрачная, лежит поверх видео, текст всегда
+ *   светлый (под ним затемнённый кадр, а не фон темы), не липкая;
+ * - `stage` — на странице работы: тоже прозрачная, но текст берётся из темы:
+ *   в белом зале картина показывается на белой стене, и светлые надписи
+ *   на ней исчезли бы;
+ * - `solid` — на остальных страницах: плашка цвета стены, липнет к верху.
  *
  * Ниже 768px пункты убираются под кнопку-бургер. В макете навигация просто
  * переносилась по словам и занимала на телефоне три строки (148px) — почти
  * четверть первого экрана; выпадающее меню решает это без потери пунктов.
  */
-export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" }) {
+export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" | "stage" }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const isOverlay = variant === "overlay";
 
   const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
     <header
       className={cn(
-        isOverlay
-          ? "relative z-10 bg-transparent text-neutral-100"
-          : "sticky top-0 z-20 bg-neutral-900 text-neutral-100",
+        variant === "solid" && "bg-wall text-ink sticky top-0 z-20",
+        variant === "overlay" && "relative z-10 bg-transparent text-neutral-100",
+        variant === "stage" && "text-ink relative z-10 bg-transparent",
       )}
     >
       <nav className="flex items-center gap-x-[17.6px] gap-y-3 px-[clamp(20px,5vw,64px)] py-5">
@@ -47,14 +50,17 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" })
               href={item.href}
               aria-current={isCurrent(item.href) ? "page" : undefined}
               className={cn(
-                "hover:text-accent-300 text-sm no-underline transition-colors",
-                isCurrent(item.href) && "text-accent-300",
+                "hover:text-accent text-sm no-underline transition-colors",
+                isCurrent(item.href) && "text-accent",
               )}
             >
               {item.label}
             </Link>
           ))}
-          <ButtonLink href={navCta.href} variant="primary">
+          <ThemeSwitch className="mx-1" />
+          {/* Поверх видео на главной кнопка всегда светлая: заливка из темы
+              в светлом зале сливалась бы с затемнённым кадром. */}
+          <ButtonLink href={navCta.href} variant={variant === "overlay" ? "onPhoto" : "primary"}>
             {navCta.label}
           </ButtonLink>
         </div>
@@ -91,7 +97,7 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" })
       {open && (
         <div
           id="mobile-nav"
-          className="flex flex-col gap-1 bg-neutral-900 px-[clamp(20px,5vw,64px)] pt-2 pb-6 md:hidden"
+          className="bg-wall flex flex-col gap-1 px-[clamp(20px,5vw,64px)] pt-2 pb-6 md:hidden"
         >
           {/* Закрываем меню прямо по клику, а не эффектом на смену пути:
               эффект, дёргающий setState, — лишний ре-рендер и жалоба
@@ -103,8 +109,8 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" })
               onClick={() => setOpen(false)}
               aria-current={isCurrent(item.href) ? "page" : undefined}
               className={cn(
-                "hover:text-accent-300 py-2 text-base no-underline transition-colors",
-                isCurrent(item.href) && "text-accent-300",
+                "hover:text-accent py-2 text-base no-underline transition-colors",
+                isCurrent(item.href) && "text-accent",
               )}
             >
               {item.label}
@@ -118,6 +124,13 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" })
           >
             {navCta.label}
           </ButtonLink>
+
+          <div className="border-divider mt-5 border-t pt-4">
+            <span className="text-ink/55 mb-2 block text-[11px] tracking-[0.08em] uppercase">
+              Освещение
+            </span>
+            <ThemeSwitch />
+          </div>
         </div>
       )}
     </header>

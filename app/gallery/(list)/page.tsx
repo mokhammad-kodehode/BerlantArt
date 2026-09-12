@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { z } from "zod";
 
+import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
 import { Header } from "@/components/layout/Header";
-import { ArtworkTile } from "@/components/ui/ArtworkTile";
-import { Container } from "@/components/ui/Container";
 import { getArtworks, getCategories } from "@/lib/artworks";
-import { cn } from "@/lib/cn";
 
 /**
  * Разбор параметров адреса — единственное место, где чужому вводу можно
@@ -26,24 +24,6 @@ const filtersSchema = z.object({
   category: z.string().min(1).optional().catch(undefined),
 });
 
-/**
- * Размер плитки в сетке «стены».
- *
- * Формула из макета: каждая пятая работа занимает две строки, каждая
- * седьмая начиная с четвёртой — два столбца. Стена получается неровной,
- * как настоящая развеска, и при этом порядок не зависит от случайности:
- * одна и та же работа всегда встаёт на одно и то же место.
- *
- * Широкая плитка только с трёх столбцов: на телефоне их два, и растянутая
- * на всю ширину работа выбивалась бы из ряда.
- *
- * Живёт здесь, а не в самой плитке: это правило раскладки конкретно этой
- * стены, а плитка используется ещё и в ряду «других работ» на карточке.
- */
-function spanClasses(index: number): string {
-  return cn(index % 5 === 0 && "row-span-2", index % 7 === 3 && "md:col-span-2");
-}
-
 export const metadata: Metadata = {
   title: "Работы",
   description:
@@ -51,16 +31,23 @@ export const metadata: Metadata = {
 };
 
 /**
- * Галерея. Свёрстана по design/mockups/Gallery.dc.html.
+ * Галерея — стена-коллаж во весь экран.
  *
- * Из макета сознательно не перенесён переключатель «Стена / Список»:
- * это второе представление тех же данных — вдвое больше разметки и
- * клиентское состояние ради пяти работ. Обоснование — в ARCHITECTURE.md.
+ * Светлой вступительной секции из макета здесь больше нет: она занимала
+ * четверть первого экрана, а стена из пяти работ не дотягивала до его низа —
+ * под коллажем оставалось пустое место в полэкрана. Теперь заголовок и
+ * фильтры — узкая полоса сверху, а коллаж растягивается на всю оставшуюся
+ * высоту окна: строки заданы как `1fr`, поэтому пяти работ хватает, чтобы
+ * закрыть экран целиком, а тридцать просто уедут за его край. Отступление
+ * от макета записано в ARCHITECTURE.md.
  *
- * Страница читает `searchParams`, поэтому готовиться заранее ей больше
- * нельзя — маршрут стал динамическим. Это ожидаемо и записано в тикете:
- * выборок с фильтрами много, заранее их не подготовить. Уснувшая база
- * покажет `error.tsx` — для этого он и заведён в Э4-1.
+ * Размахи плиток считает lib/collage.ts, а не эта страница: там же лежит
+ * и тест, который следит, чтобы в стене не появилось дыр при любом числе
+ * работ.
+ *
+ * Страница читает `searchParams`, поэтому готовиться заранее ей нельзя —
+ * маршрут динамический. Это ожидаемо: выборок с фильтрами много, заранее
+ * их не подготовить. Уснувшая база покажет `error.tsx`.
  */
 export default async function GalleryPage({ searchParams }: PageProps<"/gallery">) {
   const rawParams = await searchParams;
@@ -78,65 +65,63 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
   const [works, categories] = await Promise.all([getArtworks(filters), getCategories()]);
 
   return (
-    <>
+    <div className="bg-wall flex min-h-svh flex-col">
       <Header />
 
-      <main>
-        <Container>
-          <section className="max-w-[640px] pt-14 pb-8">
-            <span className="text-accent-700 mb-4 block text-[13px] font-semibold tracking-[0.08em] uppercase">
+      <main className="flex flex-1 flex-col">
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+          <div>
+            <span className="text-accent mb-2 block text-[12px] font-semibold tracking-[0.1em] uppercase">
               Галерея
             </span>
-            <h1 className="mt-0 mb-4 text-[clamp(32px,4.5vw,48px)]">Работы</h1>
-            <p className="text-ink/80 m-0 text-[16px] leading-relaxed">
-              Живопись маслом и акрилом. Каждая картина — оригинал, выполненный вручную.
+            <h1 className="text-ink mt-0 mb-1.5 text-[clamp(26px,3.2vw,38px)]">Работы</h1>
+            {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
+                отодвигал стену почти на половину экрана, а тапнуть по работе
+                и так очевидно. На десктопе места хватает. */}
+            <p className="text-ink/70 m-0 hidden max-w-[46ch] text-[14.5px] leading-relaxed md:block">
+              Живопись маслом и акрилом. Нажмите на работу — она откроется во весь экран.
             </p>
-          </section>
-        </Container>
+          </div>
 
-        <div className="bleed bg-neutral-900 pt-2 pb-16">
-          <Container>
-            <GalleryFilters current={filters} categories={categories} />
-
-            {works.length === 0 ? (
-              <div className="panel-dashed my-10 p-10">
-                {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
-                    иначе фильтр по «Проданные» на пустой выборке выглядел бы
-                    так, будто сайт вообще без картин. */}
-                {filters.status || filters.category ? (
-                  <>
-                    <h2 className="mt-0 mb-2 text-[20px] text-neutral-100">
-                      По этому фильтру ничего нет
-                    </h2>
-                    <p className="m-0 max-w-[48ch] text-[14.5px] text-neutral-100/70">
-                      Попробуйте другой статус или категорию.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="mt-0 mb-2 text-[20px] text-neutral-100">Работ пока нет</h2>
-                    <p className="m-0 max-w-[48ch] text-[14.5px] text-neutral-100/70">
-                      Картины появятся здесь, как только художница добавит их.
-                    </p>
-                  </>
-                )}
-              </div>
-            ) : (
-              /*
-                Сетка из макета: строки по 130px, плитки занимают одну или
-                две — стена выходит неровной, как настоящая развеска.
-                Столбцов на телефоне два, а не четыре: при четырёх работа
-                на 375px ужималась бы до 80px и разглядеть её было бы нельзя.
-              */
-              <ul className="wall m-0 grid list-none auto-rows-[130px] grid-cols-2 gap-5 p-0 pt-10 md:grid-cols-3 lg:grid-cols-4">
-                {works.map((work, index) => (
-                  <ArtworkTile key={work.id} work={work} className={spanClasses(index)} />
-                ))}
-              </ul>
-            )}
-          </Container>
+          <GalleryFilters current={filters} categories={categories} />
         </div>
+
+        {works.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,64px)] pb-8">
+            <div className="panel-dashed w-full max-w-[560px] p-10">
+              {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
+                  иначе фильтр по «Проданные» на пустой выборке выглядел бы
+                  так, будто сайт вообще без картин. */}
+              {filters.status || filters.category ? (
+                <>
+                  <h2 className="text-ink mt-0 mb-2 text-[20px]">По этому фильтру ничего нет</h2>
+                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14.5px]">
+                    Попробуйте другой статус или категорию.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-ink mt-0 mb-2 text-[20px]">Работ пока нет</h2>
+                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14.5px]">
+                    Картины появятся здесь, как только художница добавит их.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          /*
+            `flex-1` на сетке и строки `1fr` в ней — это и есть «стена на всю
+            страницу»: свободная высота окна уходит строкам, а не остаётся
+            пустой полосой под коллажем. Минимум у строки всё же задан, иначе
+            при двадцати работах плитки сплющились бы в полоски.
+          */
+          <ArtworkCollage
+            works={works}
+            className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+          />
+        )}
       </main>
-    </>
+    </div>
   );
 }

@@ -1,5 +1,7 @@
+import Link from "next/link";
+
+import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
-import { StudioWall } from "@/components/home/StudioWall";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
@@ -44,7 +46,33 @@ export default async function HomePage() {
         }))}
       />
 
-      <StudioWall works={featured} />
+      {/*
+        Стена работ — тот же коллаж, что в галерее, тем же компонентом.
+        Прежняя лента «Из мастерской» (горизонтальная прокрутка, работы
+        в рамках-паспарту) убрана по просьбе заказчика: рамки и подписи
+        капслоком спорили с живописью, а картины в ленте были мелкими.
+      */}
+      <section className="bg-wall px-[clamp(20px,5vw,64px)] pt-14 pb-14">
+        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-ink m-0 text-[clamp(24px,3vw,32px)]">Работы</h2>
+          <Link href="/gallery" className="text-accent font-semibold no-underline hover:underline">
+            Вся галерея →
+          </Link>
+        </div>
+
+        {featured.length === 0 ? (
+          <div className="panel-dashed p-9">
+            <p className="text-ink/70 m-0 max-w-[46ch] text-[14.5px]">
+              Работы для главной пока не выбраны. Все картины — в галерее.
+            </p>
+          </div>
+        ) : (
+          /* Высота задаётся здесь: строки сетки — 1fr, и без неё коллаж
+             сожмётся до минимальной высоты строки. 72vh — чтобы стена
+             читалась как отдельный экран, но не прятала следующую секцию. */
+          <ArtworkCollage works={featured} className="min-h-[72vh]" />
+        )}
+      </section>
 
       <main>
         <Container>

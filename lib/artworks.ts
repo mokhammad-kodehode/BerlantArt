@@ -117,6 +117,17 @@ export function primaryImageUrl(work: ArtworkWithImages): string | undefined {
   return stored === undefined ? undefined : imageUrl(stored);
 }
 
+/**
+ * Порядок работ в галерее: сначала доступные, потом новые. Вынесен
+ * в константу, потому что его должны разделять три выборки — список,
+ * «другие работы» и соседи для листания. Разойдись они, стрелка «дальше»
+ * вела бы не на ту работу, которая стоит следующей в стене.
+ */
+const galleryOrder = [
+  { status: "asc" },
+  { createdAt: "desc" },
+] satisfies Prisma.ArtworkOrderByWithRelationInput[];
+
 export type ArtworkFilters = {
   category?: string;
   technique?: string;
@@ -147,9 +158,7 @@ export async function getArtworks(filters: ArtworkFilters = {}): Promise<Artwork
       price,
     },
     include: withImages,
-    // Сначала доступные, потом новые: проданные работы не должны занимать
-    // первый экран галереи.
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: galleryOrder,
   });
 }
 
@@ -184,9 +193,45 @@ export async function getOtherArtworks(excludeId: string, limit = 4): Promise<Ar
   return db.artwork.findMany({
     where: { id: { not: excludeId } },
     include: withImages,
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: galleryOrder,
     take: limit,
   });
+}
+
+/** Ссылка на соседнюю работу: больше странице для стрелки ничего не нужно. */
+export type ArtworkLink = { id: string; title: string };
+
+/**
+ * Соседние работы в порядке галереи — для листания стрелками на странице
+ * работы.
+ *
+ * Берётся список одних только id и названий, без изображений и описаний,
+ * и в нём ищется позиция. Двумя запросами «предыдущая и следующая» это
+ * не решается: сортировка составная (статус, потом дата), и курсор по
+ * одному полю даёт неверных соседей — а ошибку такого рода на глаз
+ * не видно, стрелка просто ведёт не туда.
+ *
+ * Листание замкнуто в кольцо: с последней работы вперёд — на первую.
+ * Так у стрелок нет выключенного состояния, а тупик в конце на галерее
+ * из пяти работ раздражал бы сильнее, чем возврат к началу.
+ */
+export async function getArtworkNeighbours(
+  id: string,
+): Promise<{ prev: ArtworkLink | null; next: ArtworkLink | null }> {
+  const works = await db.artwork.findMany({
+    select: { id: true, title: true },
+    orderBy: galleryOrder,
+  });
+
+  const index = works.findIndex((work) => work.id === id);
+
+  // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
+  if (index === -1 || works.length < 2) return { prev: null, next: null };
+
+  return {
+    prev: works[(index - 1 + works.length) % works.length],
+    next: works[(index + 1) % works.length],
+  };
 }
 
 /**

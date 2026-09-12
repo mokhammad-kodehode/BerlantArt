@@ -3,12 +3,14 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "onDark";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "soft" | "onPhoto" | "onDark";
 
 const variantClass: Record<ButtonVariant, string> = {
   primary: "btn-primary",
   secondary: "btn-secondary",
   ghost: "btn-ghost",
+  soft: "btn-soft",
+  onPhoto: "btn-on-photo",
   onDark: "btn-on-dark",
 };
 

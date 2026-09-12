@@ -14,12 +14,21 @@ import { cn } from "@/lib/cn";
  * Плитка работы: репродукция, название и метка статуса, вся целиком —
  * ссылка на страницу работы.
  *
- * Используется и на «стене» галереи, и в блоке «другие работы» на карточке.
- * Про раскладку плитка ничего не знает: сколько строк и столбцов она займёт,
- * решает тот, кто задаёт сетку, и передаёт это через `className`. Формула
- * неровной развески осталась в галерее — в ряду «других работ» она не нужна.
+ * Используется и в коллаже галереи, и в блоке «другие работы» на карточке.
+ * Про раскладку плитка ничего не знает: сколько строк и столбцов она займёт
+ * и какой ширины отрисуется, решает тот, кто задаёт сетку, и передаёт это
+ * через `className` и `sizes`. Формула коллажа живёт в lib/collage.ts.
  */
-export function ArtworkTile({ work, className }: { work: ArtworkWithImages; className?: string }) {
+export function ArtworkTile({
+  work,
+  className,
+  sizes = "(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 285px",
+}: {
+  work: ArtworkWithImages;
+  className?: string;
+  /** Реальная ширина отрисовки плитки — без неё браузер качает самый крупный вариант. */
+  sizes?: string;
+}) {
   const label = artworkStatusLabel(work.status);
   const caption = artworkCaption(work);
 
@@ -37,15 +46,7 @@ export function ArtworkTile({ work, className }: { work: ArtworkWithImages; clas
         href={`/gallery/${work.id}`}
         className="absolute inset-0 block focus-visible:outline-offset-[-3px]"
       >
-        {/* Ширина плитки: половина экрана на телефоне, четверть колонки
-            в 1200px на десктопе — отсюда и значения sizes. */}
-        <span className="washed absolute inset-0">
-          <ArtworkImage
-            src={primaryImageUrl(work)}
-            alt={work.title}
-            sizes="(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 285px"
-          />
-        </span>
+        <ArtworkImage src={primaryImageUrl(work)} alt={work.title} sizes={sizes} />
 
         {label && (
           <Tag
