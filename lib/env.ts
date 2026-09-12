@@ -6,9 +6,7 @@ import { z } from "zod";
  * Смысл: упасть при сборке с понятной ошибкой, а не в рантайме на проде
  * с `undefined` в строке подключения.
  *
- * Схема растёт по этапам плана (ROADMAP.md). Добавляются:
- *   этап 5 — R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
- *            R2_BUCKET_NAME, NEXT_PUBLIC_R2_PUBLIC_URL
+ * Схема растёт по этапам плана (ROADMAP.md). Ещё добавятся:
  *   этап 6 — AUTH_SECRET, AUTH_ADMIN_EMAIL, AUTH_ADMIN_PASSWORD_HASH
  *
  * NEXT_PUBLIC_WHATSAPP_PHONE заведена в Э4-5 необязательной: карточка работы
@@ -41,6 +39,16 @@ const clientSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
 
   /**
+   * Публичный домен бакета R2, с него отдаются фотографии работ.
+   *
+   * Необязательная, и это осознанно: пока хранилище не подключено, в базе
+   * нет ни одной картинки с ключом, а старые пять лежат в public/ и адрес
+   * бакета им не нужен. Сделать переменную обязательной значило бы уронить
+   * сборку публичного сайта из-за админской функции, которой у него ещё нет.
+   */
+  NEXT_PUBLIC_R2_PUBLIC_URL: z.url().optional(),
+
+  /**
    * Телефон WhatsApp для кнопок «написать». Необязательная: пока художница
    * не прислала номер, кнопка просто не рисуется — это лучше, чем кнопка
    * с выдуманным телефоном или сборка, падающая из-за незаполненного поля.
@@ -62,6 +70,7 @@ const clientSchema = z.object({
  */
 const clientValues = {
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
   NEXT_PUBLIC_WHATSAPP_PHONE: process.env.NEXT_PUBLIC_WHATSAPP_PHONE,
 };
 
@@ -84,3 +93,29 @@ function parse<T extends z.ZodType>(schema: T, values: unknown, label: string): 
 
 export const serverEnv = parse(serverSchema, process.env, "сервер");
 export const clientEnv = parse(clientSchema, clientValues, "клиент");
+
+/**
+ * Ключи к хранилищу R2.
+ *
+ * Проверяются отдельной схемой и лениво — при первом обращении к хранилищу,
+ * а не при старте приложения. Причина: публичный сайт хранилищем не
+ * пользуется (картинки ему отдаёт оптимизатор), и требовать эти переменные
+ * при сборке значит не давать задеплоить весь сайт из-за админской функции.
+ *
+ * Ошибка при этом не теряется: первая же попытка подписать загрузку без
+ * заполненных ключей падает с тем же понятным текстом, что и остальные.
+ */
+const r2Schema = z.object({
+  R2_ACCOUNT_ID: z.string().min(1),
+  R2_ACCESS_KEY_ID: z.string().min(1),
+  R2_SECRET_ACCESS_KEY: z.string().min(1),
+  R2_BUCKET_NAME: z.string().min(1),
+});
+
+let r2Values: z.infer<typeof r2Schema> | null = null;
+
+/** Проверенные ключи хранилища. Разбираются один раз и запоминаются. */
+export function r2Env(): z.infer<typeof r2Schema> {
+  r2Values ??= parse(r2Schema, process.env, "хранилище R2");
+  return r2Values;
+}

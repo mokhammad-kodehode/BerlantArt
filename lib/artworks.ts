@@ -3,6 +3,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
+import { publicUrl } from "@/lib/r2";
 
 // Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
 // (проверяется линтером, architecture.md) — им нужен только тип значения,
@@ -92,10 +93,27 @@ export function formatPrice(price: number | null): string | null {
   return priceFormat.format(price);
 }
 
+/**
+ * Адрес изображения для разметки.
+ *
+ * В базе лежит либо путь внутри `public/` (пять старых работ), либо ключ
+ * объекта в хранилище — различаем по ведущему слэшу. Полный адрес не
+ * хранится намеренно: тогда смена хранилища стоит одной переменной
+ * окружения, а не переписывания всех строк в базе.
+ *
+ * `undefined`, если домен бакета не задан: страница в этом случае рисует
+ * заглушку вместо того, чтобы упасть целиком.
+ */
+export function imageUrl(stored: string): string | undefined {
+  if (stored.startsWith("/")) return stored;
+  return publicUrl(stored);
+}
+
 /** Адрес главного изображения работы или `undefined`, если фотографий нет. */
 export function primaryImageUrl(work: ArtworkWithImages): string | undefined {
   // Выборка кладёт главное изображение первым, поэтому искать не нужно.
-  return work.images[0]?.url;
+  const stored = work.images[0]?.url;
+  return stored === undefined ? undefined : imageUrl(stored);
 }
 
 export type ArtworkFilters = {

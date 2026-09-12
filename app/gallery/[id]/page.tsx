@@ -15,6 +15,7 @@ import {
   getArtworkById,
   getArtworks,
   getOtherArtworks,
+  imageUrl,
   primaryImageUrl,
 } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
@@ -131,7 +132,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
                       className="bg-surface rounded-tile relative aspect-square overflow-hidden"
                     >
                       <ArtworkImage
-                        src={image.url}
+                        src={imageUrl(image.url)}
                         alt={image.alt}
                         fit="contain"
                         sizes="(max-width: 1023px) 30vw, 190px"
