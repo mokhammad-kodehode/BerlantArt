@@ -165,13 +165,16 @@
   --theme-shadow-tile-hover: 0 18px 44px rgb(27 26 25 / 0.26);
   --theme-shadow-art: drop-shadow(0 2px 2px rgb(27 26 25 / 0.22))
     drop-shadow(0 22px 44px rgb(27 26 25 / 0.26));
+  /* Стык стены и пола опущен на 20% по просьбе заказчика: был на 20.6%
+     от низа окна, стал на 16.5%. Полоса пола заодно стала ниже — все
+     точки градиента сжаты в те же 0.8 раза. */
   --theme-hall-floor: linear-gradient(
     to top,
     rgb(27 26 25 / 0.17) 0,
-    rgb(27 26 25 / 0.07) 13%,
-    rgb(27 26 25 / 0.12) 20.6%,
-    rgb(27 26 25 / 0.03) 21.4%,
-    transparent 27%
+    rgb(27 26 25 / 0.07) 10.4%,
+    rgb(27 26 25 / 0.12) 16.5%,
+    rgb(27 26 25 / 0.03) 17.1%,
+    transparent 21.6%
   );
   --theme-hall-vignette: radial-gradient(
     ellipse 92% 76% at 50% 40%,
