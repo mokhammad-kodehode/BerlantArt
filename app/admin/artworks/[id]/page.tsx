@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ArtworkForm, type ArtworkFormInitial } from "@/components/admin/ArtworkForm";
 import { ArtworkImages, type AdminImage } from "@/components/admin/ArtworkImages";
+import { DeleteArtwork } from "@/components/admin/DeleteArtwork";
 import { getArtworkById, imageUrl } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 
@@ -78,6 +79,21 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
         <ArtworkForm initial={initial} />
 
         <ArtworkImages artworkId={artwork.id} artworkTitle={artwork.title} images={images} />
+
+        {/* Удаление стоит в самом низу и отделено чертой: рядом с
+            «Сохранить» его однажды нажали бы по инерции. В строке списка
+            работ его нет вовсе — там соседняя кнопка меняет статус,
+            и промах в необратимом действии стоит слишком дорого. */}
+        <div className="border-divider mt-14 border-t pt-6">
+          <p className="text-ink/55 mb-3 text-sm">
+            Убрать работу с сайта насовсем, вместе с фотографиями.
+          </p>
+          <DeleteArtwork
+            artworkId={artwork.id}
+            title={artwork.title}
+            photoCount={artwork.images.length}
+          />
+        </div>
       </div>
     </AdminShell>
   );

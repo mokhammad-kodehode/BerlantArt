@@ -3,7 +3,15 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "soft" | "onPhoto" | "onDark";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "soft"
+  | "onPhoto"
+  | "onDark"
+  /** Необратимое действие: удаление. Обведена цветом ошибки, не залита. */
+  | "danger";
 
 const variantClass: Record<ButtonVariant, string> = {
   primary: "btn-primary",
@@ -12,6 +20,7 @@ const variantClass: Record<ButtonVariant, string> = {
   soft: "btn-soft",
   onPhoto: "btn-on-photo",
   onDark: "btn-on-dark",
+  danger: "btn-danger",
 };
 
 type CommonProps = {

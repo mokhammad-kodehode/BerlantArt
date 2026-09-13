@@ -524,3 +524,28 @@ export async function setArtworkStatus(id: string, status: ArtworkStatus): Promi
   const { count } = await db.artwork.updateMany({ where: { id }, data: { status } });
   return count === 1;
 }
+
+/**
+ * Удаляет работу и возвращает ключи её файлов, чтобы вызывающий убрал их
+ * из хранилища. `null`, если работы нет.
+ *
+ * Ключи собираются **до** удаления и в одной транзакции с ним: изображения
+ * уходят каскадом (`onDelete: Cascade` в схеме), и после `delete` спросить,
+ * какие файлы принадлежали работе, уже не у кого.
+ *
+ * Сами файлы отсюда не удаляются: слой знает про базу и не знает про
+ * хранилище. Убрать объекты — дело экшена.
+ */
+export async function deleteArtwork(id: string): Promise<string[] | null> {
+  return db.$transaction(async (tx) => {
+    const artwork = await tx.artwork.findUnique({
+      where: { id },
+      select: { images: { select: { url: true } } },
+    });
+    if (artwork === null) return null;
+
+    await tx.artwork.delete({ where: { id } });
+
+    return artwork.images.map((image) => image.url);
+  });
+}

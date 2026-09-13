@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Дизайн-система «Берлан Джабраилова»
+   Дизайн-система «Берлант Джабраилова»
 
    Источник — макет из Claude Design (design/tokens/organic.css, эталонные
    страницы в design/mockups/). Значения цветов перенесены один в один.
@@ -296,6 +296,37 @@
   }
   .btn-secondary:active {
     background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+
+  /* Опасное действие: удаление без возврата. Не залита цветом, а обведена
+     им — заливка сделала бы кнопку самым заметным пятном на странице,
+     а удаление не то действие, к которому стоит подталкивать. Цвет тот же,
+     что у текста ошибок: другого значения у него в системе нет. */
+  .btn-danger {
+    color: var(--color-danger);
+    border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
+  }
+  .btn-danger:hover {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    border-color: var(--color-danger);
+  }
+  .btn-danger:active {
+    background: color-mix(in srgb, var(--color-danger) 20%, transparent);
+  }
+
+  /* Диалог подтверждения. Встроенный в браузер <dialog>: ловушка фокуса,
+     закрытие по Esc и доступность в нём уже есть, своего писать не надо. */
+  .dialog {
+    max-width: min(440px, calc(100vw - 32px));
+    padding: 0;
+    color: var(--color-ink);
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-lg);
+  }
+  .dialog::backdrop {
+    background: color-mix(in srgb, #000 55%, transparent);
   }
 
   .btn-ghost {
