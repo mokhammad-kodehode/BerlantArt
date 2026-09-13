@@ -22,4 +22,7 @@ export function revalidatePublicPages(): void {
  * фотографий на ней останется прежним. */
 export function revalidateAdminArtwork(artworkId: string): void {
   revalidatePath(`/admin/artworks/${artworkId}`);
+  // Список работ показывает статус и превью — после правки он устареет
+  // вместе со страницей работы, поэтому обновляется тем же вызовом.
+  revalidatePath("/admin/artworks");
 }

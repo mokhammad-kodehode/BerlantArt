@@ -481,3 +481,46 @@ export async function artworkIdOfImage(imageId: string): Promise<string | null> 
 
   return image?.artworkId ?? null;
 }
+
+/** Фильтры рабочего списка в админке. */
+export type AdminArtworkFilters = {
+  /** Подстрока названия. Регистр не важен. */
+  search?: string;
+  status?: ArtworkStatus;
+};
+
+/**
+ * Все работы для списка в админке.
+ *
+ * Отдельно от `getArtworks`, а не флагом к ней, по двум причинам. Порядок:
+ * витрина ставит вперёд доступные, а в рабочем списке это мешает —
+ * художница ищет то, что добавила последней. И поиск по названию, который
+ * витрине не нужен вовсе.
+ *
+ * `mode: "insensitive"` обязателен: без него «башни» не найдёт «Башни
+ * в тумане». Для кириллицы это заметнее, чем для латиницы, — заглавная
+ * буква в начале названия есть почти всегда.
+ *
+ * Индекса по названию нет: при поиске база перебирает таблицу целиком.
+ * На десятках работ это доли миллисекунды; задуматься стоит сотен на пять.
+ */
+export async function getArtworksForAdmin(
+  filters: AdminArtworkFilters = {},
+): Promise<ArtworkWithImages[]> {
+  const search = filters.search?.trim();
+
+  return db.artwork.findMany({
+    where: {
+      status: filters.status,
+      title: search ? { contains: search, mode: "insensitive" } : undefined,
+    },
+    include: withImages,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/** Сменить статус одной работы. `false`, если её нет. */
+export async function setArtworkStatus(id: string, status: ArtworkStatus): Promise<boolean> {
+  const { count } = await db.artwork.updateMany({ where: { id }, data: { status } });
+  return count === 1;
+}
