@@ -91,6 +91,17 @@ export function ArtworkStage({
       <div aria-hidden className="stage-room pointer-events-none absolute inset-0" />
 
       {/*
+        Стена, на которой висит холст. Отдельная плоскость поверх снимка
+        зала, с резкой левой гранью и тенью в глубину — только десктоп
+        и только зал «почти белый» (globals.css, .stage-wall).
+
+        Пола под ней нет намеренно: картина висит на стене, а не стоит
+        на полу. Прежняя версия набирала комнату градиентами, включая
+        полосу пола внизу, — заказчик забраковал.
+      */}
+      <div aria-hidden className="stage-wall pointer-events-none" />
+
+      {/*
         Зал: пол в нижней четверти и потемнение по углам (globals.css,
         .stage-hall). Лежит поверх подложки и скрима, но под содержимым —
         картина и подписи остаются выше.
@@ -182,7 +193,16 @@ export function ArtworkStage({
         </div>
       </nav>
 
-      <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[48%] lg:pb-14">
+      {/*
+        Ширина подписи на десктопе — 27%, а не 48%. Грань стены проходит
+        на 30%, и при прежней ширине заголовок доезжал до 31%: текст
+        наползал на стену, которой он принадлежать не должен. Замерено
+        в браузере.
+
+        Длинное название от этого переносится на две строки — так даже
+        лучше держится колонка.
+      */}
+      <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[27%] lg:pb-14">
         {children}
       </div>
     </section>

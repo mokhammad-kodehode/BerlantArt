@@ -221,7 +221,11 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
         )}
 
         {others.length > 0 && (
-          <div className="bleed bg-wall pt-14 pb-16">
+          /* Секция во всю ширину, а не класс .bleed: тот задан шириной 100vw,
+             а она включает полосу прокрутки — на этой странице документ
+             вылезал за окно на 8px (1433px при окне 1425px). Так же сделаны
+             полосы на главной и /about. */
+          <div className="bg-wall w-full pt-14 pb-16">
             <Container>
               <div className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
                 <h2 className="text-ink m-0 text-[26px]">Другие работы</h2>
