@@ -88,5 +88,5 @@ npm run lint && npm run typecheck && npm run build
 - В макете есть разделы, которых нет в плане: «Выставки», «Магазин»,
   «Блог», «Пресса». Ссылки на них дадут 404. Состав навигации —
   в `lib/site.ts`.
-- Контакты в макете (`hello@berlan-art.example`) — заглушки.
+- Контакты в макете (`hello@berlant-art.example`) — заглушки.
   Подтверждённый контакт один: Instagram @art_berlant.

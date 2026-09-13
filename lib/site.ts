@@ -7,7 +7,7 @@
  */
 
 export const site = {
-  artist: "Берлан Джабраилова",
+  artist: "Берлант Джабраилова",
   role: "Художница · Чеченская Республика",
   /** Девиз. Выведен в hero под именем и повторён в подвале. */
   slogan: "У искусства нет цели!",
@@ -18,7 +18,7 @@ export const site = {
    * Контакты-заглушки. Реальные подставим из env на этапе 4
    * (NEXT_PUBLIC_CONTACT_EMAIL, NEXT_PUBLIC_WHATSAPP_PHONE) — см. .env.example.
    */
-  email: "hello@berlan-art.example",
+  email: "hello@berlant-art.example",
 
   /** Аккаунт художницы в Instagram — единственный подтверждённый контакт. */
   instagram: {

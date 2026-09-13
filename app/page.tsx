@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
@@ -76,15 +77,52 @@ export default async function HomePage() {
 
       <main>
         <Container>
-          {/* Тизер истории художницы — полная версия на /about */}
+          {/*
+            Тизер истории художницы — полная версия на /about.
+
+            Текст. Прежний («тёплый колорит», «признание дома») был рыбой
+            из макета: этих слов художница не говорила. Заменён на то, что
+            она подтвердила сама — см. docs/o-hudozhnitse-chernovik.md.
+            Окончательная формулировка ждёт её правки.
+
+            Раскладка. Фотография слева, текст справа — приём
+            с ellajonesdesign.com.au, по просьбе заказчика. Прежде здесь был
+            один текст в панели, и сразу после первого экрана с живописью он
+            читался как объявление. Ниже 900px колонки схлопываются: портрет
+            в половину ширины телефона не читается.
+
+            Снимок тот же, что открывает /about, и это намеренно: блок ведёт
+            ровно на ту страницу, и человек узнаёт её, когда туда попадает.
+            Понадобится разный — нужен третий кадр.
+
+            Фон панели — залозависимый surface, а не тональный accent-2-100:
+            тональные ряды заданы фиксированно и не переключаются по залам,
+            и в тёмном зале светлый текст на бледно-зелёном давал контраст
+            1.05 — заголовок был не виден вовсе.
+          */}
           <section className="pt-14 pb-12">
-            <div className="rounded-panel bg-accent-2-100 px-[clamp(24px,5vw,72px)] py-14">
-              <div className="max-w-[640px]">
-                <h2 className="mt-0 mb-4 text-[28px]">От первого этюда — до узнаваемой манеры</h2>
+            <div className="rounded-panel border-divider bg-surface grid grid-cols-1 items-center gap-10 border p-[clamp(24px,4vw,56px)] min-[900px]:grid-cols-[0.8fr_1.2fr]">
+              <figure className="rounded-card relative m-0 aspect-3/4 overflow-hidden">
+                <Image
+                  src="/about/berlant-za-rabotoy.webp"
+                  alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней"
+                  fill
+                  sizes="(min-width: 900px) 360px, 100vw"
+                  className="object-cover"
+                />
+              </figure>
+
+              <div className="max-w-[560px]">
+                <Tag tone="accent2">О художнице</Tag>
+                <h2 className="mt-4 mb-4 text-[28px]">Первый холст — в 54 года</h2>
+                <p className="text-ink/80 mt-0 mb-4 text-[15.5px] leading-relaxed">
+                  В 2020 году, в день своего рождения, Берлант купила небольшой холст и масляные
+                  краски и написала первую картину. Ни художественной школы, ни единого урока
+                  рисования за плечами не было.
+                </p>
                 <p className="text-ink/80 mt-0 mb-6 text-[15.5px] leading-relaxed">
-                  За несколько лет Берлан прошла путь от первых этюдов до признания дома, в
-                  Чеченской Республике. Её тёплый колорит и внимание к свету делают работы
-                  узнаваемыми с первого взгляда.
+                  Сегодня она пишет каждый день — маслом, кистью и мастихином. Её сюжеты: чеченские
+                  башни, старинная архитектура, вещи, за которыми стоит история.
                 </p>
                 <ButtonLink href="/about" variant="secondary">
                   Читать историю →
@@ -100,7 +138,7 @@ export default async function HomePage() {
                 <Tag tone="outline">Выставки</Tag>
                 <h3 className="mt-4 mb-2">Ближайшие события скоро появятся здесь</h3>
                 <p className="text-ink/70 m-0 max-w-[48ch]">
-                  Следите за расписанием выставок и показов работ Берлан.
+                  Следите за расписанием выставок и показов работ Берлант.
                 </p>
               </div>
               <ButtonLink href="/contact" variant="ghost">

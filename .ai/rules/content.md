@@ -44,7 +44,7 @@ export function artworkCaption(work: DemoArtwork): string {
 - годы создания — неизвестны;
 - цены — решение «показывать публично или по запросу» не принято;
 - настоящий email и телефон — в `lib/site.ts` стоит заглушка
-  `hello@berlan-art.example`;
+  `hello@berlant-art.example`;
 - текст «о художнице» для `/about` — нет.
 
 Подтверждённый контакт один: Instagram **@art_berlant**.

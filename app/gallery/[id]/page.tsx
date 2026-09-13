@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: PageProps<"/gallery/[id]">): 
     // Описания нет пока ни у одной работы, поэтому запасной вариант собран
     // из того, что известно наверняка. Выдумывать сюжет и историю нельзя.
     description:
-      work.description ?? [artworkCaption(work), "Живопись Берлан Джабраиловой."].join(" · "),
+      work.description ?? [artworkCaption(work), "Живопись Берлант Джабраиловой."].join(" · "),
   };
 }
 
