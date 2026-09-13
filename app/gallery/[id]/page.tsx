@@ -114,9 +114,12 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
         prev={neighbours.prev}
         next={neighbours.next}
       >
+        {/* На телефоне эта ссылка спрятана: там она стоит в одном ряду
+            со стрелками (ArtworkStage), иначе выходили две строки
+            навигации подряд. */}
         <Link
           href="/gallery"
-          className="text-ink/70 hover:text-ink mb-4 inline-block text-[13px] no-underline hover:underline"
+          className="text-ink/70 hover:text-ink mb-4 hidden text-[13px] no-underline hover:underline lg:inline-block"
         >
           ← Все работы
         </Link>
@@ -173,7 +176,9 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
           </ExternalButtonLink>
         </div>
 
-        <p className="text-ink/60 mt-4 mb-0 max-w-[44ch] text-[13px]">
+        {/* /70, а не /60: при 60% в зале «почти белый» контраст выходил
+            4.32 при норме 4.5 — замерено в браузере. */}
+        <p className="text-ink/70 mt-4 mb-0 max-w-[44ch] text-[13px]">
           Каждая работа существует в единственном экземпляре. О цене, доставке и сроках — напрямую с
           художницей.
         </p>

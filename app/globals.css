@@ -126,7 +126,22 @@
      в светлых — мягкая серая, как от верхнего света в музее. */
   --theme-shadow-tile: 0 8px 24px rgb(0 0 0 / 0.45);
   --theme-shadow-tile-hover: 0 24px 60px rgb(0 0 0 / 0.6);
-  --theme-shadow-art: drop-shadow(0 24px 60px rgb(0 0 0 / 0.55));
+  --theme-shadow-art: drop-shadow(0 2px 3px rgb(0 0 0 / 0.5))
+    drop-shadow(0 26px 60px rgb(0 0 0 / 0.55));
+  /* Пол и угол зала. В тёмном зале пол почти чёрный, стык со стеной едва
+     намечен: комната читается, но не спорит с картиной. */
+  --theme-hall-floor: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.55) 0,
+    rgb(0 0 0 / 0.22) 12%,
+    rgb(255 255 255 / 0.03) 21%,
+    transparent 24%
+  );
+  --theme-hall-vignette: radial-gradient(
+    ellipse 88% 72% at 50% 44%,
+    transparent 42%,
+    rgb(0 0 0 / 0.45) 100%
+  );
   /* Верхний свет: в тёмном зале его нет, в светлых — лёгкая засветка сверху. */
   --theme-toplight: none;
 }
@@ -148,7 +163,21 @@
 
   --theme-shadow-tile: 0 6px 18px rgb(27 26 25 / 0.16);
   --theme-shadow-tile-hover: 0 18px 44px rgb(27 26 25 / 0.26);
-  --theme-shadow-art: drop-shadow(0 18px 40px rgb(27 26 25 / 0.24));
+  --theme-shadow-art: drop-shadow(0 2px 2px rgb(27 26 25 / 0.22))
+    drop-shadow(0 22px 44px rgb(27 26 25 / 0.26));
+  --theme-hall-floor: linear-gradient(
+    to top,
+    rgb(27 26 25 / 0.17) 0,
+    rgb(27 26 25 / 0.07) 13%,
+    rgb(27 26 25 / 0.12) 20.6%,
+    rgb(27 26 25 / 0.03) 21.4%,
+    transparent 27%
+  );
+  --theme-hall-vignette: radial-gradient(
+    ellipse 92% 76% at 50% 40%,
+    transparent 40%,
+    rgb(27 26 25 / 0.16) 100%
+  );
   --theme-toplight: radial-gradient(
     ellipse 130% 65% at 50% -15%,
     rgb(255 255 255 / 0.95),
@@ -173,7 +202,21 @@
 
   --theme-shadow-tile: 0 6px 20px rgb(22 22 22 / 0.14);
   --theme-shadow-tile-hover: 0 20px 48px rgb(22 22 22 / 0.22);
-  --theme-shadow-art: drop-shadow(0 20px 44px rgb(22 22 22 / 0.22));
+  --theme-shadow-art: drop-shadow(0 2px 2px rgb(22 22 22 / 0.2))
+    drop-shadow(0 24px 48px rgb(22 22 22 / 0.24));
+  --theme-hall-floor: linear-gradient(
+    to top,
+    rgb(22 22 22 / 0.14) 0,
+    rgb(22 22 22 / 0.055) 13%,
+    rgb(22 22 22 / 0.1) 20.6%,
+    rgb(22 22 22 / 0.02) 21.4%,
+    transparent 27%
+  );
+  --theme-hall-vignette: radial-gradient(
+    ellipse 92% 76% at 50% 40%,
+    transparent 40%,
+    rgb(22 22 22 / 0.13) 100%
+  );
   --theme-toplight: radial-gradient(
     ellipse 130% 65% at 50% -15%,
     rgb(255 255 255 / 1),
@@ -642,6 +685,12 @@
     filter: blur(48px) saturate(1.15) brightness(0.42);
     transform: scale(1.2);
   }
+  /* В светлых залах размытой копии картины нет.
+     Пробовали: подложка давала красивое свечение, но перекрашивала стену
+     под каждую работу — у тёплого пейзажа она желтела, у грозового неба
+     серела. Стена в зале так себя не ведёт, и заказчик это заметил сразу.
+     Тон здесь постоянный, а глубину дают неизменные градиенты:
+     верхний свет (--theme-toplight), пол и углы (.stage-hall). */
   :root[data-theme="paper"] .stage-backdrop,
   :root[data-theme="white"] .stage-backdrop {
     display: none;
@@ -775,5 +824,39 @@
   :root[data-theme="paper"] .stage-scrim,
   :root[data-theme="white"] .stage-scrim {
     background: var(--theme-toplight);
+  }
+
+  /* Зал: пол под стеной и потемнение по углам. Вместе с верхним светом
+     (--theme-toplight) и двойной тенью холста это даёт ощущение комнаты,
+     а не заливки. Прежде в светлых залах фон был ровным, и картина
+     висела в пустоте.
+
+     Пол занимает нижнюю четверть: стык со стеной намечен тонкой полосой
+     на 20.6-21.4%, а не жёсткой линией — резкая граница на глаз читается
+     как ошибка вёрстки, а не как угол комнаты. */
+  .stage-hall {
+    background: var(--theme-hall-vignette), var(--theme-hall-floor);
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Поле под холстом в зале «почти белый» — намеренно ВНЕ @layer.
+
+   Правило спорит с утилитой p-12 на том же элементе. В каскадных слоях
+   побеждает не большая специфичность, а более поздний слой, и utilities
+   у Tailwind идёт после components — то есть из @layer components это
+   правило не сработало бы вовсе (проверено: padding-bottom оставался 48px).
+   Стили вне слоёв перекрывают любые слои, поэтому правило вынесено сюда.
+
+   Зачем: на десктопе над картиной оставалось 124px стены, а под ней 33px —
+   холст выглядел обрезанным нижним краем окна, а не висящим. Теперь поля
+   сопоставимы, и под холстом читается стена с полом.
+
+   Только этот зал и только с 1024px: на телефоне эффект и так работает,
+   а тёмный зал заказчик просил не трогать.
+   ═════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  :root[data-theme="paper"] .stage-art-area {
+    padding-bottom: clamp(64px, 14vh, 160px);
   }
 }
