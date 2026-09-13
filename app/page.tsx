@@ -104,7 +104,7 @@ export default async function HomePage() {
             <div className="rounded-panel border-divider bg-surface grid grid-cols-1 items-center gap-10 border p-[clamp(24px,4vw,56px)] min-[900px]:grid-cols-[0.8fr_1.2fr]">
               <figure className="rounded-card relative m-0 aspect-3/4 overflow-hidden">
                 <Image
-                  src="/about/berlant-za-rabotoy.webp"
+                  src="/about/berlant-u-molberta.webp"
                   alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней"
                   fill
                   sizes="(min-width: 900px) 360px, 100vw"

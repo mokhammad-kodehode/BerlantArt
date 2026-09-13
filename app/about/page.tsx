@@ -94,7 +94,7 @@ export default async function AboutPage() {
             */}
             <figure className="rounded-panel relative m-0 aspect-3/4 overflow-hidden">
               <Image
-                src="/about/berlant-za-rabotoy.webp"
+                src="/about/berlant-u-molberta.webp"
                 alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней; за спиной книги и законченные горные пейзажи"
                 fill
                 sizes="(min-width: 900px) 440px, 100vw"
