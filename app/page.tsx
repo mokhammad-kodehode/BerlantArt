@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
 import { ButtonLink } from "@/components/ui/Button";
-import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
 import { getFeatured, primaryImageUrl } from "@/lib/artworks";
 
@@ -75,9 +74,16 @@ export default async function HomePage() {
         )}
       </section>
 
-      <main>
-        <Container>
-          {/*
+      {/*
+        Ширина как у стены работ выше — те же поля clamp(20px,5vw,64px)
+        и никакого ограничения в 1200px. Прежде main сидел в Container,
+        и после стены почти во всю ширину блоки ниже читались как
+        ступенька: картины до края, а текст в узкой колонке.
+        Строки при этом не разъезжаются: их держит max-width у самих
+        абзацев, а не у всей колонки.
+      */}
+      <main className="px-[clamp(20px,5vw,64px)]">
+        {/*
             Тизер истории художницы — полная версия на /about.
 
             Текст. Прежний («тёплый колорит», «признание дома») был рыбой
@@ -100,53 +106,53 @@ export default async function HomePage() {
             и в тёмном зале светлый текст на бледно-зелёном давал контраст
             1.05 — заголовок был не виден вовсе.
           */}
-          <section className="pt-14 pb-12">
-            <div className="rounded-panel border-divider bg-surface grid grid-cols-1 items-center gap-10 border p-[clamp(24px,4vw,56px)] min-[900px]:grid-cols-[0.8fr_1.2fr]">
-              <figure className="rounded-card relative m-0 aspect-3/4 overflow-hidden">
-                <Image
-                  src="/about/berlant-u-molberta.webp"
-                  alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней"
-                  fill
-                  sizes="(min-width: 900px) 360px, 100vw"
-                  className="object-cover"
-                />
-              </figure>
+        <section className="pt-14 pb-12">
+          <div className="rounded-panel border-divider bg-surface grid grid-cols-1 items-center gap-10 border p-[clamp(24px,4vw,56px)] min-[900px]:grid-cols-[0.8fr_1.2fr]">
+            <figure className="rounded-card relative m-0 aspect-3/4 overflow-hidden">
+              <Image
+                src="/about/berlant-u-molberta.webp"
+                alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней"
+                fill
+                sizes="(min-width: 900px) 360px, 100vw"
+                className="object-cover"
+              />
+            </figure>
 
-              <div className="max-w-[560px]">
-                <Tag tone="accent2">О художнице</Tag>
-                <h2 className="mt-4 mb-4 text-[28px]">Первый холст — в 54 года</h2>
-                <p className="text-ink/80 mt-0 mb-4 text-[15.5px] leading-relaxed">
-                  В 2020 году, в день своего рождения, Берлант купила небольшой холст и масляные
-                  краски и написала первую картину. Ни художественной школы, ни единого урока
-                  рисования за плечами не было.
-                </p>
-                <p className="text-ink/80 mt-0 mb-6 text-[15.5px] leading-relaxed">
-                  Сегодня она пишет каждый день — маслом, кистью и мастихином. Её сюжеты: чеченские
-                  башни, старинная архитектура, вещи, за которыми стоит история.
-                </p>
-                <ButtonLink href="/about" variant="secondary">
-                  Читать историю →
-                </ButtonLink>
-              </div>
-            </div>
-          </section>
-
-          {/* Выставки: пустое состояние, пока событий нет */}
-          <section className="pb-18">
-            <div className="panel-dashed flex flex-wrap items-center justify-between gap-5 p-10">
-              <div>
-                <Tag tone="outline">Выставки</Tag>
-                <h3 className="mt-4 mb-2">Ближайшие события скоро появятся здесь</h3>
-                <p className="text-ink/70 m-0 max-w-[48ch]">
-                  Следите за расписанием выставок и показов работ Берлант.
-                </p>
-              </div>
-              <ButtonLink href="/contact" variant="ghost">
-                Написать художнице →
+            <div className="max-w-[64ch]">
+              <h2 className="mt-0 mb-5 text-[clamp(30px,3.6vw,46px)] leading-[1.1]">
+                Первый холст — в 54 года
+              </h2>
+              <p className="text-ink/80 mt-0 mb-4 text-[15.5px] leading-relaxed">
+                В 2020 году, в день своего рождения, Берлант купила небольшой холст и масляные
+                краски и написала первую картину. Ни художественной школы, ни единого урока
+                рисования за плечами не было.
+              </p>
+              <p className="text-ink/80 mt-0 mb-6 text-[15.5px] leading-relaxed">
+                Сегодня она пишет каждый день — маслом, кистью и мастихином. Её сюжеты: чеченские
+                башни, старинная архитектура, вещи, за которыми стоит история.
+              </p>
+              <ButtonLink href="/about" variant="secondary">
+                Читать историю →
               </ButtonLink>
             </div>
-          </section>
-        </Container>
+          </div>
+        </section>
+
+        {/* Выставки: пустое состояние, пока событий нет */}
+        <section className="pb-18">
+          <div className="panel-dashed flex flex-wrap items-center justify-between gap-5 p-10">
+            <div>
+              <Tag tone="outline">Выставки</Tag>
+              <h3 className="mt-4 mb-2">Ближайшие события скоро появятся здесь</h3>
+              <p className="text-ink/70 m-0 max-w-[48ch]">
+                Следите за расписанием выставок и показов работ Берлант.
+              </p>
+            </div>
+            <ButtonLink href="/contact" variant="ghost">
+              Написать художнице →
+            </ButtonLink>
+          </div>
+        </section>
       </main>
     </>
   );

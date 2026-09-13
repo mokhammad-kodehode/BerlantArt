@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Literata, Manrope } from "next/font/google";
+import { Onest, Oranienbaum } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { site } from "@/lib/site";
@@ -7,19 +7,28 @@ import { site } from "@/lib/site";
 import "./globals.css";
 
 /**
- * Заголовочная антиква. В макете стоял Caprasimo, договаривались на Fraunces —
- * но ни тот, ни другой не имеют кириллицы (только latin/latin-ext/vietnamese),
- * а сайт целиком на русском. Literata — ближайшая по характеру: та же тёплая
- * книжная пластика, переменное начертание, полный кириллический набор.
+ * Заголовочная антиква — Oranienbaum, русский «дидон» Олега Поспелова:
+ * высокий контраст штрихов, узкие буквы, драматичный в крупном размере.
+ *
+ * Взят вместо Literata по просьбе заказчика, который принёс референсом
+ * ellajonesdesign.com.au с Meno Banner Condensed. Тот платный и кириллицы
+ * не имеет, как и Bodoni Moda — ближайший бесплатный родственник. У
+ * Oranienbaum кириллица родная, а латиница вторична: для сайта на русском
+ * это ровно то, что нужно.
+ *
+ * Начертание одно, 400, и веса указываем явно — шрифт не переменный.
+ * Курсива у него тоже нет, поэтому девиз в hero набран разрядкой,
+ * а не наклоном: браузерная подделка курсива ломает высокий контраст.
  */
-const literata = Literata({
+const oranienbaum = Oranienbaum({
   variable: "--font-heading-family",
   subsets: ["cyrillic", "latin"],
+  weight: "400",
   display: "swap",
 });
 
-/** Гротеск для текста — роль Work Sans, тоже с кириллицей. */
-const manrope = Manrope({
+/** Гротеск для текста — Onest, тоже кириллический по происхождению. */
+const onest = Onest({
   variable: "--font-body-family",
   subsets: ["cyrillic", "latin"],
   display: "swap",
@@ -51,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ru"
       suppressHydrationWarning
-      className={`${literata.variable} ${manrope.variable} h-full antialiased`}
+      className={`${oranienbaum.variable} ${onest.variable} h-full antialiased`}
     >
       {/*
         Хедер намеренно НЕ здесь: на главной он прозрачный и лежит поверх
