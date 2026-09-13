@@ -887,3 +887,17 @@
     background: var(--theme-hall-vignette), var(--theme-hall-room), var(--theme-hall-floor);
   }
 }
+
+/* Снимок соседнего зала слева. Маска гасит его к углу стены на 38%:
+   правее начинается стена, на которой висит холст, и фотографии там
+   быть не должно. Только десктоп и только зал «почти белый». */
+@media (min-width: 1024px) {
+  :root[data-theme="paper"] .stage-room {
+    background-image: url("/ui/zal-fon.webp");
+    background-size: cover;
+    background-position: left center;
+    opacity: 0.9;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 20%, transparent 38%);
+    mask-image: linear-gradient(to right, #000 0, #000 20%, transparent 38%);
+  }
+}
