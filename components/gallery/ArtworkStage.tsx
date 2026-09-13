@@ -111,7 +111,7 @@ export function ArtworkStage({
         край окна и читалась обрезанной. В остальных залах холст стоит как
         стоял — тёмный зал заказчик просил не трогать.
       */}
-      <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pl-[36%]">
+      <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%]">
         <div className="relative flex-1">
           <ArtworkImage
             src={src}
@@ -161,7 +161,7 @@ export function ArtworkStage({
               href={`/gallery/${prev.id}`}
               rel="prev"
               aria-label={`Предыдущая работа: «${prev.title}»`}
-              className="stage-nav lg:left-5"
+              className="stage-nav lg:left-[calc(36%-58px)]"
             >
               ←
             </Link>
@@ -172,7 +172,7 @@ export function ArtworkStage({
               href={`/gallery/${next.id}`}
               rel="next"
               aria-label={`Следующая работа: «${next.title}»`}
-              className="stage-nav lg:right-5"
+              className="stage-nav lg:right-[17px]"
             >
               →
             </Link>
