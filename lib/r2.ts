@@ -1,6 +1,7 @@
 import { AwsClient } from "aws4fetch";
 
 import { clientEnv, r2Env } from "@/lib/env";
+import { allowedTypes, checkUpload, isAllowedType, type AllowedType } from "@/lib/upload-limits";
 
 /**
  * Хранилище фотографий работ (Cloudflare R2).
@@ -15,28 +16,28 @@ import { clientEnv, r2Env } from "@/lib/env";
  * пробивает. Сервер только подписывает адрес — ключи в браузер не попадают.
  */
 
-/** Что разрешено загружать: тип файла → расширение в ключе объекта. */
-const allowedTypes = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-} as const;
-
-type AllowedType = keyof typeof allowedTypes;
-
-/**
- * Потолок размера. 10 МБ — с запасом над требованием к фотографиям работ
- * (2000–2500px по длинной стороне, см. .ai/rules/images.md): такой снимок
- * в хорошем JPEG весит 2–4 МБ.
- */
-const maxFileBytes = 10 * 1024 * 1024;
-
 /**
  * Сколько живёт подписанная ссылка. Срок проверяется в момент начала
  * запроса, а не его завершения, поэтому пяти минут хватает и на медленный
  * канал: начатая вовремя заливка не оборвётся на середине.
  */
 const uploadUrlTtlSeconds = 300;
+
+/** Подписанный клиент к бакету. Собирается на каждый вызов: в нём нет
+ * состояния, а хранить его в модуле значило бы держать ключи в памяти
+ * дольше, чем нужно. */
+function client(env: ReturnType<typeof r2Env>): AwsClient {
+  return new AwsClient({
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    service: "s3",
+    region: "auto",
+  });
+}
+
+function objectUrl(env: ReturnType<typeof r2Env>, key: string): string {
+  return `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET_NAME}/${key}`;
+}
 
 /** Кириллица в ключе объекта превращает ссылку в процентную кашу. */
 const translit: Record<string, string> = {
@@ -74,10 +75,6 @@ const translit: Record<string, string> = {
   ю: "yu",
   я: "ya",
 };
-
-function isAllowedType(contentType: string): contentType is AllowedType {
-  return contentType in allowedTypes;
-}
 
 /**
  * Ключ объекта: `artworks/<uuid>-<имя-латиницей>.<расширение>`.
@@ -132,32 +129,24 @@ export async function createUploadUrl({
   contentType: string;
   size: number;
 }): Promise<UploadTarget> {
-  if (!isAllowedType(contentType)) {
-    throw new Error(`Тип файла «${contentType}» не поддерживается. Нужен JPEG, PNG или WebP.`);
-  }
+  // Та же проверка, что в браузере, и теми же словами: человеку незачем
+  // знать, которая из двух сработала. Клиентской проверке при этом
+  // не верим — она отсекает лишний поход к сети, а не защищает.
+  const refusal = checkUpload({ type: contentType, size });
+  if (refusal !== null) throw new Error(refusal);
 
-  if (size > maxFileBytes) {
-    throw new Error(
-      `Файл весит ${(size / 1024 / 1024).toFixed(1)} МБ — больше ${maxFileBytes / 1024 / 1024} МБ загружать нельзя.`,
-    );
-  }
+  // Сюда не дойти: checkUpload уже отверг бы неразрешённый тип. Проверка
+  // стоит ради сужения типа — без неё TypeScript не знает, что расширение
+  // для contentType существует.
+  if (!isAllowedType(contentType)) throw new Error("Недопустимый тип файла.");
 
   const env = r2Env();
   const key = objectKey(fileName, contentType);
 
-  const url = new URL(
-    `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET_NAME}/${key}`,
-  );
+  const url = new URL(objectUrl(env, key));
   url.searchParams.set("X-Amz-Expires", String(uploadUrlTtlSeconds));
 
-  const client = new AwsClient({
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-    service: "s3",
-    region: "auto",
-  });
-
-  const signed = await client.sign(
+  const signed = await client(env).sign(
     new Request(url, { method: "PUT", headers: { "content-type": contentType } }),
     // allHeaders обязателен. Без него aws4fetch подписывает только host,
     // Content-Type в подпись не попадает — проверено живьём: ссылка,
@@ -180,4 +169,56 @@ export function publicUrl(key: string): string | undefined {
   if (!base) return undefined;
 
   return `${base.replace(/\/+$/, "")}/${key}`;
+}
+
+/** Что хранилище знает об объекте. */
+export type StoredObject = {
+  /** Фактический вес в байтах — тот, что реально долетел. */
+  size: number;
+  /** Фактический тип, записанный при заливке. */
+  contentType: string;
+};
+
+/**
+ * Спрашивает у хранилища, что на самом деле лежит по ключу.
+ * `null`, если объекта нет.
+ *
+ * Это и есть способ не верить браузеру. После заливки клиент сообщает
+ * серверу ключ — но ключ приходит из браузера и сам по себе не доказывает
+ * ничего: можно прислать ключ, по которому ничего не заливалось, или
+ * указать на чужой объект. Размер закрепить подписью нельзя (см. выше),
+ * поэтому единственная надёжная проверка — спросить само хранилище.
+ */
+export async function headObject(key: string): Promise<StoredObject | null> {
+  const env = r2Env();
+  const response = await client(env).fetch(objectUrl(env, key), { method: "HEAD" });
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) {
+    throw new Error(`Хранилище ответило ${response.status} на запрос об объекте «${key}».`);
+  }
+
+  return {
+    size: Number(response.headers.get("content-length") ?? 0),
+    contentType: response.headers.get("content-type") ?? "",
+  };
+}
+
+/**
+ * Удаляет объект. Молчит, если его уже нет: удаление того, чего нет, —
+ * не ошибка, а именно то состояние, которого мы добивались.
+ *
+ * Нужно в двух местах: убрать файл, не прошедший проверку после заливки,
+ * и вычистить бакет при удалении работы (Э6-4). За хранение платят,
+ * поэтому мусор в нём копиться не должен.
+ */
+export async function deleteObject(key: string): Promise<void> {
+  const env = r2Env();
+  const response = await client(env).fetch(objectUrl(env, key), { method: "DELETE" });
+
+  // 204 — удалили, 404 — удалять было нечего. Оба исхода нас устраивают.
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`Не удалось удалить объект «${key}»: хранилище ответило ${response.status}.`);
+  }
 }

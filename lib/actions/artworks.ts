@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -11,6 +10,7 @@ import {
 } from "@/lib/artwork-form";
 import { createArtwork, updateArtwork } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
+import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
 
 /**
  * Изменение работ из админки.
@@ -34,22 +34,6 @@ export type ArtworkFormState = {
   /** Ошибка, не относящаяся к конкретному полю. */
   error?: string;
 };
-
-/**
- * Сбрасывает кеш публичных страниц, которые показывают работы.
- *
- * Без этого правка видна только через пять минут — столько живёт
- * `revalidate` на главной и на карточке. Художница в этот промежуток
- * решит, что сохранение не сработало, и нажмёт ещё раз.
- *
- * У карточки путь с динамическим сегментом, поэтому второй аргумент
- * обязателен: без `"page"` вызов не находит, что именно обновлять.
- */
-function revalidatePublicPages(): void {
-  revalidatePath("/");
-  revalidatePath("/gallery");
-  revalidatePath("/gallery/[id]", "page");
-}
 
 /**
  * Создаёт или обновляет работу.
@@ -97,7 +81,7 @@ export async function saveArtwork(
     };
   }
 
-  revalidatePath(`/admin/artworks/${id}`);
+  revalidateAdminArtwork(id);
   revalidatePublicPages();
 
   return { values: raw, saved: true };

@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ArtworkForm, type ArtworkFormInitial } from "@/components/admin/ArtworkForm";
-import { getArtworkById } from "@/lib/artworks";
+import { ArtworkImages, type AdminImage } from "@/components/admin/ArtworkImages";
+import { getArtworkById, imageUrl } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -49,6 +50,16 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
     },
   };
 
+  // Адреса собираются здесь, а не в клиентском компоненте: imageUrl
+  // лежит в слое доступа к базе, и его импорт утащил бы в браузер всё,
+  // что этот слой за собой тянет.
+  const images: AdminImage[] = artwork.images.map((image) => ({
+    id: image.id,
+    alt: image.alt,
+    isPrimary: image.isPrimary,
+    src: imageUrl(image.url),
+  }));
+
   return (
     <AdminShell
       title={artwork.title}
@@ -66,16 +77,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       <div className="max-w-[760px]">
         <ArtworkForm initial={initial} />
 
-        {/* Загрузка фотографий — Э6-2б. Место под неё названо явно, чтобы
-            при проверке было видно: это не забыли, это следующий шаг. */}
-        <div className="panel-dashed mt-10 p-6 text-sm">
-          <p className="mb-1 font-medium">Фотографии — следующий шаг</p>
-          <p className="text-ink/55">
-            Сейчас у работы {artwork.images.length === 0 ? "нет фотографий" : null}
-            {artwork.images.length > 0 ? `фотографий: ${artwork.images.length}` : null}. Загрузка и
-            порядок появятся здесь же.
-          </p>
-        </div>
+        <ArtworkImages artworkId={artwork.id} artworkTitle={artwork.title} images={images} />
       </div>
     </AdminShell>
   );

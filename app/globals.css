@@ -467,6 +467,31 @@
     color: color-mix(in srgb, var(--color-ink) 55%, transparent);
   }
 
+  /* Ход загрузки файла. Элемент progress, а не крашеный div: скринридер
+     зачитывает его сам, без aria-подпорок. Браузеры рисуют его по-разному,
+     поэтому родная отрисовка снимается и полоса собирается заново. */
+  .progress {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 6px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+  .progress::-webkit-progress-bar {
+    background: var(--color-surface);
+  }
+  .progress::-webkit-progress-value {
+    background: var(--color-accent);
+    transition: inline-size 0.2s ease;
+  }
+  .progress::-moz-progress-bar {
+    background: var(--color-accent);
+  }
+
   /* Сегментный переключатель — режимы показа галереи на этапе 4. */
   .seg {
     display: inline-flex;

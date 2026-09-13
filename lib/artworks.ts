@@ -315,3 +315,169 @@ export async function updateArtwork(id: string, input: ArtworkInput): Promise<bo
 
   return count === 1;
 }
+
+/* ─── изображения работы ───────────────────────────────────────────────
+ *
+ * У всех функций ниже общее правило: **главное изображение — всегда
+ * первое**. Схема хранит отдельный флаг `isPrimary`, и соблазн велик
+ * считать порядок и «главность» независимыми — но тогда художница
+ * расставит фотографии 1-2-3, отметит главной третью, и посетитель
+ * увидит 3-1-2. Объяснить это невозможно, поэтому «сделать главной»
+ * означает «поставить первой», и обе величины меняются вместе.
+ *
+ * Все изменения идут транзакцией. Без неё два быстрых нажатия оставляют
+ * работу с двумя главными изображениями или с дырой в порядке.
+ */
+
+/**
+ * Переписывает поле `order` подряд: 0, 1, 2…
+ *
+ * Нужно потому, что `order` в базе не уникален и у старых записей везде
+ * стоит 0. Сортировать по полю с повторами — значит получать разный
+ * порядок от запроса к запросу; перенумерация после каждой правки
+ * делает поле честным.
+ */
+async function renumber(tx: Prisma.TransactionClient, ids: string[]): Promise<void> {
+  await Promise.all(
+    ids.map((id, index) =>
+      tx.image.update({ where: { id }, data: { order: index, isPrimary: index === 0 } }),
+    ),
+  );
+}
+
+/** Идентификаторы изображений работы в текущем порядке показа. */
+async function orderedIds(tx: Prisma.TransactionClient, artworkId: string): Promise<string[]> {
+  const rows = await tx.image.findMany({
+    where: { artworkId },
+    select: { id: true },
+    // createdAt вторым ключом: при одинаковом order порядок должен быть
+    // хоть каким-то постоянным, иначе перенумерация будет каждый раз
+    // раскладывать фотографии по-новому.
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+  });
+
+  return rows.map((row) => row.id);
+}
+
+/**
+ * Заводит запись об изображении. `false`, если работы не существует.
+ *
+ * Первое изображение становится главным само: работа без главного
+ * изображения показывается в галерее пустой плиткой, а помнить про
+ * этот флажок при каждой первой загрузке — не работа человека.
+ */
+export async function addImage({
+  artworkId,
+  key,
+  alt,
+}: {
+  artworkId: string;
+  key: string;
+  alt: string;
+}): Promise<boolean> {
+  return db.$transaction(async (tx) => {
+    const artwork = await tx.artwork.findUnique({ where: { id: artworkId }, select: { id: true } });
+    if (artwork === null) return false;
+
+    const count = await tx.image.count({ where: { artworkId } });
+
+    await tx.image.create({
+      data: { artworkId, url: key, alt, order: count, isPrimary: count === 0 },
+    });
+
+    return true;
+  });
+}
+
+/**
+ * Удаляет запись и возвращает ключ объекта, чтобы вызывающий убрал файл
+ * из хранилища. `null`, если такой записи нет.
+ *
+ * Сам файл отсюда не удаляется: этот слой знает про базу и не знает про
+ * хранилище (.ai/rules/architecture.md). Удалить объект — дело экшена.
+ */
+export async function deleteImage(imageId: string): Promise<string | null> {
+  return db.$transaction(async (tx) => {
+    const image = await tx.image.findUnique({
+      where: { id: imageId },
+      select: { url: true, artworkId: true },
+    });
+    if (image === null) return null;
+
+    await tx.image.delete({ where: { id: imageId } });
+
+    // Удалили главное — главным становится следующее. Иначе у работы
+    // не останется ни одного главного, и в галерее она опустеет.
+    await renumber(tx, await orderedIds(tx, image.artworkId));
+
+    return image.url;
+  });
+}
+
+/** Куда двигать изображение в списке. */
+export type ImageDirection = "up" | "down";
+
+/**
+ * Меняет изображение местами с соседним. `false`, если двигать некуда
+ * или изображения нет.
+ */
+export async function moveImage(imageId: string, direction: ImageDirection): Promise<boolean> {
+  return db.$transaction(async (tx) => {
+    const image = await tx.image.findUnique({
+      where: { id: imageId },
+      select: { artworkId: true },
+    });
+    if (image === null) return false;
+
+    const ids = await orderedIds(tx, image.artworkId);
+    const from = ids.indexOf(imageId);
+    const to = direction === "up" ? from - 1 : from + 1;
+
+    if (from < 0 || to < 0 || to >= ids.length) return false;
+
+    [ids[from], ids[to]] = [ids[to], ids[from]];
+    await renumber(tx, ids);
+
+    return true;
+  });
+}
+
+/**
+ * Делает изображение главным — то есть ставит его первым.
+ * `false`, если изображения нет или оно от другой работы.
+ */
+export async function setPrimaryImage(artworkId: string, imageId: string): Promise<boolean> {
+  return db.$transaction(async (tx) => {
+    const image = await tx.image.findUnique({
+      where: { id: imageId },
+      select: { artworkId: true },
+    });
+
+    // Проверка принадлежности обязательна: идентификатор приходит
+    // из браузера, и без неё чужое изображение стало бы главным
+    // у этой работы.
+    if (image === null || image.artworkId !== artworkId) return false;
+
+    const ids = await orderedIds(tx, artworkId);
+    await renumber(tx, [imageId, ...ids.filter((id) => id !== imageId)]);
+
+    return true;
+  });
+}
+
+/** Меняет текст для скринридера. `false`, если изображения нет. */
+export async function updateImageAlt(imageId: string, alt: string): Promise<boolean> {
+  const { count } = await db.image.updateMany({ where: { id: imageId }, data: { alt } });
+  return count === 1;
+}
+
+/** Работа, которой принадлежит изображение, — чтобы экшен знал, какую
+ * страницу обновлять. `null`, если изображения нет. */
+export async function artworkIdOfImage(imageId: string): Promise<string | null> {
+  const image = await db.image.findUnique({
+    where: { id: imageId },
+    select: { artworkId: true },
+  });
+
+  return image?.artworkId ?? null;
+}
