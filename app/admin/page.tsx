@@ -106,7 +106,7 @@ export default async function AdminPage() {
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">{work.title}</span>
+                    <span className="block truncate text-base font-medium">{work.title}</span>
                     <span className="text-ink/55 text-sm">
                       {[work.category, artworkStatusNames[work.status]].filter(Boolean).join(" · ")}
                     </span>
