@@ -13,7 +13,15 @@ import {
   requestUpload,
   saveImageAlt,
 } from "@/lib/actions/images";
-import { acceptAttribute, checkUpload, formatBytes, maxFileBytes } from "@/lib/upload-limits";
+import { prepareImage } from "@/lib/prepare-image";
+import {
+  acceptAttribute,
+  checkSource,
+  checkUpload,
+  formatBytes,
+  maxFileBytes,
+  maxLongSide,
+} from "@/lib/upload-limits";
 
 /**
  * Фотографии работы: загрузка, порядок, главная, удаление.
@@ -23,8 +31,11 @@ import { acceptAttribute, checkUpload, formatBytes, maxFileBytes } from "@/lib/u
  * значило бы притащить в браузер слой доступа к базе.
  *
  * Файл летит в хранилище **напрямую из браузера**, минуя наш сервер:
- * у запроса к серверу лимит 1 МБ, а фотография картины весит 2–4 МБ.
+ * у запроса к серверу лимит 1 МБ, а исходник с телефона весит 3–12 МБ.
  * Сервер только подписывает адрес и потом проверяет, что долетело.
+ *
+ * Перед заливкой снимок пережимается здесь же, в браузере (Э5-2):
+ * до 2500px, в WebP, не тяжелее 1 МБ — см. `lib/prepare-image.ts`.
  */
 
 /** Одно изображение в том виде, в каком его отдаёт страница. */
@@ -36,8 +47,8 @@ export type AdminImage = {
   src: string | undefined;
 };
 
-/** Файл в процессе заливки. */
-type Upload = { id: number; name: string; percent: number };
+/** Файл в процессе: сначала сжимается, потом заливается. */
+type Upload = { id: number; name: string; percent: number; isCompressing: boolean };
 
 /**
  * Кладёт файл по подписанному адресу, сообщая о ходе.
@@ -101,19 +112,34 @@ export function ArtworkImages({
    * копия рано или поздно разошлась бы с базой. */
   const refresh = () => startTransition(() => router.refresh());
 
-  async function upload(file: File) {
-    // Быстрый отказ до обращения к сети. Настоящая проверка всё равно
-    // на сервере — этой верить нельзя, она про удобство.
-    const refusal = checkUpload(file);
+  async function upload(source: File) {
+    // Быстрый отказ до сжатия. Настоящая проверка всё равно на сервере —
+    // этой верить нельзя, она про удобство.
+    const refusal = checkSource(source);
     if (refusal !== null) {
       setError(refusal);
       return;
     }
 
     const id = nextUploadId.current++;
-    setUploads((current) => [...current, { id, name: file.name, percent: 0 }]);
+    setUploads((current) => [
+      ...current,
+      { id, name: source.name, percent: 0, isCompressing: true },
+    ]);
 
     try {
+      const file = await prepareImage(source);
+
+      // Сжатие обязано уложиться в лимит само, так что сработать эта
+      // проверка не должна. Стоит ради честного текста: без неё отказ
+      // пришёл бы от сервера уже после напрасной заливки.
+      const oversize = checkUpload(file);
+      if (oversize !== null) throw new Error(oversize);
+
+      setUploads((current) =>
+        current.map((u) => (u.id === id ? { ...u, isCompressing: false } : u)),
+      );
+
       const signed = await requestUpload({
         fileName: file.name,
         contentType: file.type,
@@ -166,7 +192,8 @@ export function ArtworkImages({
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <h2 className="font-display text-2xl">Фотографии</h2>
         <p className="text-ink/55 text-sm">
-          JPEG, PNG или WebP, до {formatBytes(maxFileBytes)}. Первая становится главной.
+          JPEG, PNG или WebP. Фото уменьшается до {maxLongSide}px и сохраняется в WebP до{" "}
+          {formatBytes(maxFileBytes)}. Первая становится главной.
         </p>
       </div>
 
@@ -201,11 +228,19 @@ export function ArtworkImages({
             <li key={upload.id} className="text-sm">
               <div className="mb-1 flex justify-between gap-4">
                 <span className="truncate">{upload.name}</span>
-                <span className="text-ink/55 tabular-nums">{upload.percent}%</span>
+                <span className="text-ink/55 tabular-nums">
+                  {upload.isCompressing ? "Сжимаем…" : `${upload.percent}%`}
+                </span>
               </div>
               {/* Полоса прогресса — элемент progress, а не крашеный div:
-                  скринридер зачитывает его сам, без подпорок. */}
-              <progress className="progress" value={upload.percent} max={100}>
+                  скринридер зачитывает его сам, без подпорок. Пока идёт
+                  сжатие, доля неизвестна — полоса без value бегает
+                  «неопределённой», а не стоит на нуле, как зависшая. */}
+              <progress
+                className="progress"
+                value={upload.isCompressing ? undefined : upload.percent}
+                max={100}
+              >
                 {upload.percent}%
               </progress>
             </li>

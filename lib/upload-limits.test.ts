@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { checkUpload, formatBytes, isOwnObjectKey, maxFileBytes } from "@/lib/upload-limits";
+import {
+  checkSource,
+  checkUpload,
+  formatBytes,
+  isOwnObjectKey,
+  maxFileBytes,
+  maxSourceBytes,
+} from "@/lib/upload-limits";
 import { objectKey } from "@/lib/r2";
 
 /**
@@ -9,12 +16,29 @@ import { objectKey } from "@/lib/r2";
  * за хранилище потом покажет, что туда клали что попало.
  */
 
-describe("проверка файла", () => {
-  it("пропускает то, что нужно, и отвергает остальное", () => {
-    expect(checkUpload({ type: "image/jpeg", size: 3_000_000 })).toBeNull();
-    expect(checkUpload({ type: "image/png", size: 10 })).toBeNull();
-    expect(checkUpload({ type: "image/webp", size: maxFileBytes })).toBeNull();
+describe("проверка выбранного файла, до сжатия", () => {
+  it("принимает снимок с телефона любого из трёх форматов", () => {
+    expect(checkSource({ type: "image/jpeg", size: 12_000_000 })).toBeNull();
+    expect(checkSource({ type: "image/png", size: 10 })).toBeNull();
+    expect(checkSource({ type: "image/webp", size: maxSourceBytes })).toBeNull();
+  });
 
+  it("отвергает не-картинку и гиганта, который подвесил бы вкладку", () => {
+    expect(checkSource({ type: "application/pdf", size: 10 })).toContain("не поддерживается");
+    expect(checkSource({ type: "image/jpeg", size: maxSourceBytes + 1 })).toContain("не открыть");
+  });
+});
+
+describe("проверка файла для хранилища", () => {
+  it("пропускает то, что нужно, и отвергает остальное", () => {
+    expect(checkUpload({ type: "image/webp", size: 700_000 })).toBeNull();
+    expect(checkUpload({ type: "image/jpeg", size: maxFileBytes })).toBeNull();
+
+    // Исходник в 3 МБ сюда попасть не должен: его обязан ужать браузер.
+    // Прислать его мимо сжатия можно — сервер обязан отказать.
+    expect(checkUpload({ type: "image/jpeg", size: 3_000_000 })).toContain("больше");
+    // PNG — законный исходник, но не то, что хранится.
+    expect(checkUpload({ type: "image/png", size: 10 })).toContain("не поддерживается");
     expect(checkUpload({ type: "application/pdf", size: 10 })).toContain("не поддерживается");
     expect(checkUpload({ type: "image/svg+xml", size: 10 })).toContain("не поддерживается");
     expect(checkUpload({ type: "", size: 10 })).toContain("не поддерживается");
@@ -22,13 +46,14 @@ describe("проверка файла", () => {
 
   it("отвергает файл на байт больше лимита", () => {
     // Ровно на границе — самый частый случай ошибки «на единицу».
-    expect(checkUpload({ type: "image/jpeg", size: maxFileBytes + 1 })).toContain("больше");
+    expect(checkUpload({ type: "image/webp", size: maxFileBytes + 1 })).toContain("больше");
   });
 
   it("показывает вес с десятыми", () => {
     // Целые мегабайты соврали бы: файл в 10.4 МБ выглядел бы ровно
     // десятимегабайтным, то есть допустимым.
     expect(formatBytes(10.4 * 1024 * 1024)).toBe("10.4 МБ");
+    expect(formatBytes(1024 * 1024)).toBe("1 МБ");
   });
 });
 

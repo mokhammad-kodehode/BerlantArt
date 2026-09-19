@@ -12,25 +12,48 @@
  * дошла до конца и всё равно не сработала.
  */
 
-/** Тип файла → расширение в ключе объекта. */
+/**
+ * Что кладётся в хранилище: тип файла → расширение в ключе объекта.
+ *
+ * С Э5-2 браузер сам пережимает снимок перед заливкой (`lib/prepare-image.ts`),
+ * поэтому здесь только то, что он умеет выдать: WebP, а там, где браузер
+ * WebP не кодирует (Safari), — JPEG. PNG больше не хранится: фотография
+ * картины в PNG весит в разы больше при той же картинке.
+ */
 export const allowedTypes = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
   "image/webp": "webp",
+  "image/jpeg": "jpg",
 } as const;
 
 export type AllowedType = keyof typeof allowedTypes;
 
+/** Что можно выбрать для загрузки — до пережатия. */
+export const sourceTypes = ["image/jpeg", "image/png", "image/webp"] as const;
+
 /** Для атрибута `accept` у поля выбора файла: он отсеивает лишнее
  * прямо в системном окне, до всякой проверки. */
-export const acceptAttribute = Object.keys(allowedTypes).join(",");
+export const acceptAttribute = sourceTypes.join(",");
 
 /**
- * Потолок размера. 10 МБ — с запасом над требованием к фотографиям работ
- * (2000–2500px по длинной стороне, см. .ai/rules/images.md): такой снимок
- * в хорошем JPEG весит 2–4 МБ.
+ * Длинная сторона хранимого снимка — верхняя граница из .ai/rules/images.md.
+ * На странице работы картина не показывается крупнее ~1200px, 2500 —
+ * запас на экраны с двойной плотностью точек.
  */
-export const maxFileBytes = 10 * 1024 * 1024;
+export const maxLongSide = 2500;
+
+/**
+ * Потолок веса хранимого файла. Замер 19 сентября 2026 на фото картины:
+ * 2500px в WebP с качеством 85% — 620–680 КБ. 1 МБ — запас на плотную
+ * фактуру: всё, что тяжелее, браузер пережимает сильнее, а не отправляет.
+ */
+export const maxFileBytes = 1024 * 1024;
+
+/**
+ * Потолок веса исходника. Не про хранилище — исходник туда не попадает, —
+ * а про телефон: разжать в памяти 60-мегабайтный снимок значит подвесить
+ * вкладку. Снимок с современного телефона весит 3–12 МБ.
+ */
+export const maxSourceBytes = 40 * 1024 * 1024;
 
 export function isAllowedType(contentType: string): contentType is AllowedType {
   return contentType in allowedTypes;
@@ -39,18 +62,40 @@ export function isAllowedType(contentType: string): contentType is AllowedType {
 /** «3.7 МБ» — для сообщений человеку. Целые мегабайты врали бы про
  * файл в 10.4 МБ, показывая его как ровно 10. */
 export function formatBytes(bytes: number): string {
-  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+  // Number() срезает «.0»: «1 МБ» в подсказке, а не «1.0 МБ».
+  return `${Number((bytes / 1024 / 1024).toFixed(1))} МБ`;
 }
 
 /**
- * Проверка файла до обращения к сети. Возвращает текст отказа или `null`.
+ * Проверка выбранного файла до пережатия. Возвращает текст отказа или `null`.
+ */
+export function checkSource(file: { type: string; size: number }): string | null {
+  if (!isListedType(sourceTypes, file.type)) {
+    return `Тип файла «${file.type || "неизвестен"}» не поддерживается. Нужен JPEG, PNG или WebP.`;
+  }
+
+  if (file.size > maxSourceBytes) {
+    return `Файл весит ${formatBytes(file.size)} — больше ${formatBytes(maxSourceBytes)} не открыть.`;
+  }
+
+  return null;
+}
+
+function isListedType(list: readonly string[], type: string): boolean {
+  return list.includes(type);
+}
+
+/**
+ * Проверка того, что уходит в хранилище. Возвращает текст отказа или `null`.
  *
- * Один и тот же текст показывается в браузере и приходит с сервера:
- * человеку незачем знать, какая из двух проверок сработала.
+ * Работает в браузере после пережатия и на сервере — при подписи и после
+ * заливки. Серверной верить обязательно: пережатие в браузере — удобство,
+ * запрос можно отправить и в обход него. Текст один и тот же: человеку
+ * незачем знать, какая из проверок сработала.
  */
 export function checkUpload(file: { type: string; size: number }): string | null {
   if (!isAllowedType(file.type)) {
-    return `Тип файла «${file.type || "неизвестен"}» не поддерживается. Нужен JPEG, PNG или WebP.`;
+    return `Тип файла «${file.type || "неизвестен"}» не поддерживается. Нужен WebP или JPEG.`;
   }
 
   if (file.size > maxFileBytes) {
@@ -69,6 +114,9 @@ export function checkUpload(file: { type: string; size: number }): string | null
  * ключу: браузер может прислать любой, в том числе с попыткой уйти вверх
  * по дереву или указать на чужой объект.
  */
+// `png` остаётся, хотя новые PNG не выдаются: по этой же проверке удаление
+// работы решает, какие файлы убрать из бакета, и PNG, залитые до Э5-2,
+// иначе остались бы в нём навсегда.
 const keyPattern = /^artworks\/[0-9a-f-]{36}(-[a-z0-9-]{1,40})?\.(jpg|png|webp)$/;
 
 export function isOwnObjectKey(key: string): boolean {

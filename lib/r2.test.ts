@@ -17,14 +17,14 @@ describe("objectKey", () => {
   });
 
   it("не выпускает наружу путь вверх по дереву", () => {
-    const key = objectKey("../../secret.png", "image/png");
+    const key = objectKey("../../secret.png", "image/webp");
 
     expect(key).not.toContain("..");
     expect(key.startsWith("artworks/")).toBe(true);
   });
 
   it("обходится без имени, когда после очистки не осталось ни одного символа", () => {
-    expect(objectKey("。。。.png", "image/png")).toMatch(/^artworks\/[0-9a-f-]{36}\.png$/);
+    expect(objectKey("。。。.webp", "image/webp")).toMatch(/^artworks\/[0-9a-f-]{36}\.webp$/);
   });
 });
 
