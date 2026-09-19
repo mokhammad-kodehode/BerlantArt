@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { ArtworkLink } from "@/lib/artworks";
@@ -59,6 +60,17 @@ export function ArtworkStage({
   next?: ArtworkLink | null;
   children: ReactNode;
 }) {
+  const stageArt = (
+    <ArtworkImage
+      src={src}
+      alt={alt}
+      fit="contain"
+      priority={priority}
+      sizes="100vw"
+      className="stage-art"
+    />
+  );
+
   return (
     <section className="bg-wall relative flex min-h-svh flex-col overflow-hidden">
       {/*
@@ -112,15 +124,18 @@ export function ArtworkStage({
         стоял — тёмный зал заказчик просил не трогать.
       */}
       <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%]">
+        {/*
+          Нажатие на картину открывает её на весь экран (ArtworkViewer).
+          Без фотографии открывать нечего — заглушка остаётся как есть.
+        */}
         <div className="relative flex-1">
-          <ArtworkImage
-            src={src}
-            alt={alt}
-            fit="contain"
-            priority={priority}
-            sizes="100vw"
-            className="stage-art"
-          />
+          {src ? (
+            <ArtworkViewer src={src} title={alt} prev={prev} next={next}>
+              {stageArt}
+            </ArtworkViewer>
+          ) : (
+            stageArt
+          )}
         </div>
       </div>
 

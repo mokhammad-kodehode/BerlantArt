@@ -299,6 +299,28 @@
 /* ── компоненты ───────────────────────────────────────────────────────── */
 
 @layer components {
+  /* — видео-секция на главной (PaintingReel) —
+     --reveal (0…1) пишет компонент по прокрутке, --i (0…1) — доля позиции
+     буквы в слове. Каждая буква проявляется за 40% хода, начало сдвинуто
+     по её позиции: слово поднимается слева направо, а не всё разом. */
+  .reel-shade {
+    opacity: calc(var(--reveal, 0) * 0.45);
+  }
+  .reel-letter {
+    --t: clamp(0, calc((var(--reveal, 0) - var(--i) * 0.6) / 0.4), 1);
+    opacity: var(--t);
+    transform: translateY(calc((1 - var(--t)) * 0.35em));
+  }
+  /* При «уменьшить движение» буквы не поднимаются, а только проявляются.
+     Прежде надпись в этом режиме стояла сразу целиком, и заказчик видел
+     её «без анимации»: в Windows режим включается выключенными эффектами
+     анимации. Проявление без сдвига движением не считается. */
+  @media (prefers-reduced-motion: reduce) {
+    .reel-letter {
+      transform: none;
+    }
+  }
+
   /* — кнопки — */
   .btn {
     display: inline-flex;
@@ -394,6 +416,63 @@
     background: color-mix(in srgb, #000 55%, transparent);
   }
 
+  /* Просмотр картины на весь экран (ArtworkViewer). У <dialog> браузер
+     задаёт свои поля, рамку и max-width — всё снято, окно во весь экран. */
+  .viewer {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--color-neutral-900);
+  }
+  .viewer::backdrop {
+    background: var(--color-neutral-900);
+  }
+  /* Стрелки просмотра. На телефоне — справа в нижней полосе рядом
+     с названием: картина там во всю ширину, и стрелки по бокам легли бы
+     на холст (та же причина, что у .stage-nav). На десктопе — по краям
+     экрана, посередине высоты, в поле рядом с картиной. */
+  .viewer-nav {
+    position: absolute;
+    bottom: 18px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--color-neutral-100);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-neutral-100) 25%, transparent);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: background-color 0.18s;
+  }
+  .viewer-nav:hover {
+    background: color-mix(in srgb, var(--color-neutral-100) 16%, transparent);
+  }
+  @media (min-width: 1024px) {
+    .viewer-nav {
+      top: 50%;
+      bottom: auto;
+      margin-top: -22px;
+    }
+  }
+
+  /* Пока открыт просмотр, страница под ним не прокручивается: иначе
+     колесо мыши листало бы невидимую страницу за картиной. */
+  html:has(.viewer[open]) {
+    overflow: hidden;
+  }
+
   .btn-ghost {
     color: var(--color-accent);
     padding-inline: var(--space-1);
@@ -403,21 +482,6 @@
   }
   .btn-ghost:active {
     background: color-mix(in srgb, var(--color-accent) 18%, transparent);
-  }
-
-  /* Главная кнопка поверх фотографии или видео. Цвета фиксированные,
-     из тональных рядов, а не из ролей темы: под ней всегда затемнённый
-     кадр, независимо от выбранного зала, и графитовая заливка светлой
-     темы на нём пропадала. */
-  .btn-on-photo {
-    background: var(--color-neutral-100);
-    color: var(--color-neutral-900);
-  }
-  .btn-on-photo:hover {
-    background: var(--color-neutral-200);
-  }
-  .btn-on-photo:active {
-    background: var(--color-neutral-300);
   }
 
   /* Кнопка поверх тёмного фото: своего класса в макете нет (в hero задано

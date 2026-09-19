@@ -10,20 +10,17 @@ import { cn } from "@/lib/cn";
 import { navCta, navItems, site } from "@/lib/site";
 
 /**
- * Шапка сайта в двух вариантах, как в макете:
+ * Шапка сайта в двух вариантах:
  *
- * - `overlay` — на главной: прозрачная, лежит поверх видео, текст всегда
- *   светлый (под ним затемнённый кадр, а не фон темы), не липкая;
- * - `stage` — на странице работы: тоже прозрачная, но текст берётся из темы:
- *   в белом зале картина показывается на белой стене, и светлые надписи
- *   на ней исчезли бы;
+ * - `stage` — на главной и на странице работы: прозрачная, не липкая,
+ *   текст берётся из темы — в белом зале светлые надписи исчезли бы;
  * - `solid` — на остальных страницах: плашка цвета стены, липнет к верху.
  *
  * Ниже 768px пункты убираются под кнопку-бургер. В макете навигация просто
  * переносилась по словам и занимала на телефоне три строки (148px) — почти
  * четверть первого экрана; выпадающее меню решает это без потери пунктов.
  */
-export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" | "stage" }) {
+export function Header({ variant = "solid" }: { variant?: "solid" | "stage" }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -33,7 +30,6 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" | 
     <header
       className={cn(
         variant === "solid" && "bg-wall text-ink sticky top-0 z-20",
-        variant === "overlay" && "relative z-10 bg-transparent text-neutral-100",
         variant === "stage" && "text-ink relative z-10 bg-transparent",
       )}
     >
@@ -58,9 +54,7 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "overlay" | 
             </Link>
           ))}
           <ThemeSwitch className="mx-1" />
-          {/* Поверх видео на главной кнопка всегда светлая: заливка из темы
-              в светлом зале сливалась бы с затемнённым кадром. */}
-          <ButtonLink href={navCta.href} variant={variant === "overlay" ? "onPhoto" : "primary"}>
+          <ButtonLink href={navCta.href} variant="primary">
             {navCta.label}
           </ButtonLink>
         </div>

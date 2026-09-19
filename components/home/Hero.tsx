@@ -1,186 +1,88 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 import { Header } from "@/components/layout/Header";
-import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ButtonLink } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
 import { site } from "@/lib/site";
 
-/** Сколько держится один слайд с картиной. */
-const SLIDE_MS = 3500;
-
 /**
- * Скорость видео: чуть медленнее обычной, по просьбе заказчика.
- * Было в 1.5 раза медленнее (около 19.5 секунд при ролике в 13),
- * ускорено до 1.25 — около 16.3 секунды. Захочешь ещё быстрее —
- * значение можно поднять вплоть до 1 (обычная скорость).
- * Замедление задаётся свойством playbackRate, файл не перекодируется.
- */
-const PLAYBACK_RATE = 1 / 1.25;
-
-type Phase = "video" | "slides";
-
-/**
- * Слайд — намеренно узкий тип, а не работа целиком.
+ * Первый экран по макету design/mockups/Home.dc.html: слева текст на фоне
+ * зала, справа фотография художницы на всю высоту до правого края окна.
  *
- * Hero клиентский: всё, что ему передали, уезжает в браузер внутри разметки
- * страницы. Полная запись работы потащила бы туда описание, категорию, цену
- * и обе даты, которых первый экран не касается, — и привязала бы компонент
- * к модели базы: новое поле в схеме молча попадало бы в браузер.
- */
-export type HeroSlide = {
-  id: string;
-  title: string;
-  imageUrl?: string;
-};
-
-/**
- * Первый экран: во всю ширину идёт видео, после его окончания — слайды
- * с работами художницы, затем видео начинается заново. Цикл бесконечный.
+ * Видео со слайдами, которое раньше лежало здесь фоном, переехало в
+ * отдельную секцию ниже (PaintingReel) — по просьбе заказчика.
  *
- * Мольберта с холстом здесь больше нет: видео заняло его место как главный
- * визуальный акцент, и две крупные картины на одном экране спорили бы
- * друг с другом.
- *
- * Видео и слайды лежат обоими слоями одновременно, переключается только
- * прозрачность — так переход получается плавным, без чёрного провала между
- * фазами.
+ * Компонент серверный: своего состояния у первого экрана больше нет.
  */
-export function Hero({ slides }: { slides: HeroSlide[] }) {
-  const [phase, setPhase] = useState<Phase>("video");
-  const [slideIndex, setSlideIndex] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Листаем слайды, после последнего возвращаемся к видео.
-  useEffect(() => {
-    if (phase !== "slides") return;
-
-    const timer = setTimeout(() => {
-      if (slideIndex < slides.length - 1) {
-        setSlideIndex(slideIndex + 1);
-      } else {
-        setSlideIndex(0);
-        setPhase("video");
-      }
-    }, SLIDE_MS);
-
-    return () => clearTimeout(timer);
-  }, [phase, slideIndex, slides.length]);
-
-  // Возврат к видео — перематываем на начало и запускаем заново.
-  // play() возвращает промис и отклоняется, если браузер запретил
-  // автовоспроизведение; глушим, иначе в консоли копятся ошибки.
-  useEffect(() => {
-    if (phase !== "video") return;
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Эффект срабатывает и при первой отрисовке (фаза стартует с "video"),
-    // поэтому скорость задаётся здесь же — отдельный эффект не нужен.
-    video.playbackRate = PLAYBACK_RATE;
-    video.currentTime = 0;
-    void video.play().catch(() => {});
-  }, [phase]);
-
+export function Hero() {
   return (
-    <section className="relative flex min-h-screen w-full flex-col overflow-hidden bg-neutral-900">
-      <div className="absolute inset-0">
-        {/*
-          muted и playsInline обязательны: без них браузеры блокируют
-          автозапуск, и на телефоне видео открылось бы на весь экран.
-          У файла есть звуковая дорожка, но фоновому видео звук не нужен.
-        */}
-        <video
-          ref={videoRef}
-          src="/video/painting-reveal.mp4"
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          aria-hidden
-          /*
-            Работ может не быть вовсе — например, пока художница не отметила
-            ни одной для главной. Тогда ролик крутится сам по себе средствами
-            браузера, а событие ended не наступает и фаза слайдов не включается:
-            иначе после каждого ролика экран на 3.5 секунды оставался бы пустым.
-          */
-          loop={slides.length === 0}
-          onEnded={() => setPhase("slides")}
-          className={cn(
-            "absolute inset-0 size-full object-cover transition-opacity duration-1000",
-            phase === "video" ? "opacity-100" : "opacity-0",
-          )}
-        />
+    <section className="bg-bg flex min-h-svh flex-col">
+      {/* stage, а не solid: шапка прозрачная и не липкая — на первом экране
+          она часть композиции, а высоту экрана делят она и две колонки. */}
+      <Header variant="stage" />
 
-        {/* Слайды с работами — в настоящем цвете: фильтра washed больше нет
-            (см. globals.css, блок «залы»). */}
-        {slides.map((slide, i) => (
-          <div
-            key={slide.id}
-            className={cn(
-              "absolute inset-0 transition-opacity duration-1000",
-              phase === "slides" && i === slideIndex ? "opacity-100" : "opacity-0",
-            )}
-          >
-            <ArtworkImage src={slide.imageUrl} alt={slide.title} sizes="100vw" />
+      {/* На телефоне колонки встают друг под друга, и фото забирает всю
+          оставшуюся высоту (строка 1fr): с фиксированной пропорцией 4:3 оно
+          кончалось раньше экрана, и снизу выглядывала следующая секция. */}
+      <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-1">
+        <div className="flex flex-col justify-center gap-7 px-[clamp(20px,5vw,64px)] pt-8 pb-12 min-[900px]:py-16">
+          <div>
+            <span className="text-accent mb-3.5 block text-[13px] font-semibold tracking-[0.1em] uppercase">
+              {site.role}
+            </span>
+            <h1 className="text-ink m-0 text-[clamp(38px,4.6vw,68px)] leading-[1.06]">
+              {site.artist}
+            </h1>
+            {/* Разрядка вместо курсива: у Oranienbaum курсива нет, и браузер
+                подделал бы его наклоном — у высококонтрастной антиквы это
+                сразу видно. */}
+            <p className="font-heading text-accent mt-5 mb-0 text-[clamp(19px,2.2vw,28px)] tracking-[0.06em]">
+              {site.slogan}
+            </p>
           </div>
-        ))}
-      </div>
 
-      {/* Затемнение и тёплое свечение поверх фона — чтобы текст читался
-          и на видео, и на любой картине. Здесь 55%, а не 72% как раньше:
-          под неподвижной картиной можно было темнить сильнее, а видео
-          при такой заливке превращалось в тёмное пятно. */}
-      <div className="pointer-events-none absolute inset-0 bg-[rgb(20_18_17/0.55)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_55%_at_50%_42%,rgb(214_127_72/0.22),transparent_70%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_100%,rgb(0_0_0/0.7),transparent_70%)]" />
-
-      <Header variant="overlay" />
-
-      <div className="relative z-[2] flex flex-1 flex-col items-center justify-center gap-7 px-[clamp(20px,5vw,64px)] pt-6 pb-14 text-center">
-        <div>
-          <span className="text-accent-300 mb-3.5 block text-[13px] font-semibold tracking-[0.1em] uppercase">
-            {site.role}
-          </span>
-          <h1 className="m-0 text-[clamp(38px,6vw,72px)] leading-[1.06] text-neutral-100">
-            {site.artist}
-          </h1>
-          {/* Разрядка вместо курсива: у Oranienbaum курсива нет, и браузер
-              подделал бы его наклоном — у высококонтрастной антиквы это
-              сразу видно. Разрядка даёт ту же «отдельность» реплики. */}
-          <p className="font-heading text-accent-300 mt-5 mb-0 text-[clamp(19px,2.6vw,30px)] tracking-[0.06em]">
-            {site.slogan}
+          {/*
+            Только подтверждённое самой художницей: масло (акрил она
+            не называла), возраст, отсутствие школы и что пишет каждый день.
+            Прежний текст из макета обещал выставки, которых нечем подтвердить.
+          */}
+          <p className="text-ink/80 m-0 max-w-[46ch] text-base leading-relaxed">
+            Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
+            единого урока рисования, — и с тех пор пишет каждый день.
           </p>
+
+          <div className="flex flex-wrap gap-3.5">
+            <ButtonLink href="/gallery" variant="primary" size="lg">
+              Смотреть галерею
+            </ButtonLink>
+            <ButtonLink href="/about" variant="secondary" size="lg">
+              О художнице
+            </ButtonLink>
+          </div>
         </div>
 
         {/*
-          Прежний текст был рыбой из макета и на первом же экране обещал
-          то, чего нечем подтвердить: «работы можно увидеть в галереях
-          далеко за пределами республики» — ни одной выставки с названием,
-          городом и годом у нас нет. Возраст там же стоял 55, художница
-          называет 54.
+          Кадр 3:2, а колонка на ноутбуке почти квадратная, поэтому часть
+          снимка неизбежно срезается. Срезается левая — мольберт, по просьбе
+          заказчика. Не вплотную к правому краю (object-right), а на 72%:
+          при 1280px object-right срезал и руку с мастихином, а на 72% рука
+          остаётся у левого края колонки, лицо — в правой её половине.
+          Замерено по кадру: рука на ~23% ширины, лицо на ~72%.
 
-          Здесь осталось только подтверждённое ею самой: масло (акрил она
-          не называла), возраст, отсутствие школы и что пишет каждый день.
+          ВРЕМЕННО: кадр сгенерирован нейросетью, а не снят. Заменить
+          настоящей фотографией — docs/tekst-o-hudozhnitse.md, раздел 6.
         */}
-        <p className="m-0 max-w-[52ch] text-base leading-relaxed text-neutral-100/90">
-          Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
-          единого урока рисования, — и с тех пор пишет каждый день.
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-3.5">
-          {/* onPhoto, а не primary: кнопка лежит на затемнённом видео,
-              и в светлом зале графитовая заливка на нём терялась. */}
-          <ButtonLink href="/gallery" variant="onPhoto" size="lg">
-            Смотреть галерею
-          </ButtonLink>
-          <ButtonLink href="/about" variant="onDark" size="lg">
-            О художнице
-          </ButtonLink>
-        </div>
+        {/* 260px — нижняя граница для низких экранов (телефон лёжа): ниже
+            снимок превращается в полоску, лучше пусть hero станет выше окна. */}
+        <figure className="relative m-0 min-h-[260px]">
+          <Image
+            src="/about/berlant-v-masterskoy.webp"
+            alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней; рядом палитра и тюбики масляных красок"
+            fill
+            preload
+            sizes="(min-width: 900px) 59vw, 100vw"
+            className="object-cover object-[72%_center]"
+          />
+        </figure>
       </div>
     </section>
   );

@@ -8,7 +8,6 @@ export type ButtonVariant =
   | "secondary"
   | "ghost"
   | "soft"
-  | "onPhoto"
   | "onDark"
   /** Необратимое действие: удаление. Обведена цветом ошибки, не залита. */
   | "danger";
@@ -18,7 +17,6 @@ const variantClass: Record<ButtonVariant, string> = {
   secondary: "btn-secondary",
   ghost: "btn-ghost",
   soft: "btn-soft",
-  onPhoto: "btn-on-photo",
   onDark: "btn-on-dark",
   danger: "btn-danger",
 };
