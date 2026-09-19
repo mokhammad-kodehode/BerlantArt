@@ -59,6 +59,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     */
     <html
       lang="ru"
+      // Почти белый зал — умолчание сайта, поэтому стоит прямо в разметке:
+      // первая отрисовка светлая без всякого скрипта. Тёмный зал в CSS
+      // живёт без атрибута — скрипт ниже снимает его у тех, кто выбрал тёмный.
+      data-theme="paper"
       suppressHydrationWarning
       className={`${oranienbaum.variable} ${onest.variable} h-full antialiased`}
     >
@@ -88,11 +92,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           применён. В боевой сборке предупреждений React нет.
 
           Ключ и значения те же, что в components/ui/ThemeSwitch.tsx.
-          Тёмный зал — умолчание в CSS, для него атрибут не нужен.
+          Разметка приходит с почти белым залом; скрипт снимает атрибут,
+          только если сохранён тёмный. Сохранённый «white» (третий зал,
+          убран 19.09.2026) остаётся почти белым — это тот же светлый зал.
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var h=localStorage.getItem("hall");if(h==="paper"||h==="white")document.documentElement.dataset.theme=h}catch(e){}`,
+            __html: `try{if(localStorage.getItem("hall")==="dark")delete document.documentElement.dataset.theme}catch(e){}`,
           }}
         />
         <div className="flex-1">{children}</div>

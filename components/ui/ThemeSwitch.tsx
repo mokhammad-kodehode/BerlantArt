@@ -3,7 +3,7 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Переключатель зала: тёмный, почти белый, белый.
+ * Переключатель зала: почти белый (по умолчанию) и тёмный.
  *
  * Клиентский по необходимости — он трогает атрибут на `<html>` и
  * localStorage. Больше ничего клиентского темам не нужно: цвета живут
@@ -22,9 +22,8 @@ import { cn } from "@/lib/cn";
  * отдаёт цвет текущего.
  */
 const halls = [
+  { value: "paper", label: "Светлый зал", swatch: "#f6f5f3" },
   { value: "dark", label: "Тёмный зал", swatch: "#131211" },
-  { value: "paper", label: "Почти белый зал", swatch: "#f6f5f3" },
-  { value: "white", label: "Белый зал", swatch: "#ffffff" },
 ] as const;
 
 type Hall = (typeof halls)[number]["value"];
@@ -43,7 +42,8 @@ const STORAGE_KEY = "hall";
 function applyHall(value: Hall): void {
   const root = document.documentElement;
 
-  // Тёмный — умолчание в CSS, поэтому атрибут снимается, а не ставится.
+  // Тёмный зал в CSS живёт без атрибута, поэтому атрибут снимается,
+  // а не ставится (почему так — в app/globals.css, блок «залы»).
   if (value === "dark") delete root.dataset.theme;
   else root.dataset.theme = value;
 

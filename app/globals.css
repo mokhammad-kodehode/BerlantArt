@@ -92,7 +92,7 @@
   --shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
 }
 
-/* ── залы: три темы ───────────────────────────────────────────────────────
+/* ── залы: две темы ───────────────────────────────────────────────────────
 
    Сайт — про живопись, поэтому интерфейс не должен быть насыщеннее картин.
    Прежняя палитра макета (охра #f5ead8, оранжевый #c67139) была ярче работ
@@ -100,14 +100,20 @@
    фильтр `washed` — он гасил живопись, чтобы она не спорила с интерфейсом.
    Лечили симптом; теперь цвет в интерфейсе убран, а фильтр удалён.
 
-   Три зала, переключаются кнопкой в шапке (components/ui/ThemeSwitch.tsx),
-   выбор хранится в localStorage. По умолчанию — тёмный: работы на нём
-   светятся сильнее всего.
+   Два зала, переключаются кнопкой в шапке (components/ui/ThemeSwitch.tsx),
+   выбор хранится в localStorage. По умолчанию — почти белый (решение
+   заказчика 19.09.2026); третий, чисто белый, тогда же убран.
+
+   Тёмный зал при этом остался умолчанием *в CSS* — блок `:root` ниже,
+   без атрибута. Умолчание *сайта* задаёт разметка: сервер отдаёт
+   `<html data-theme="paper">`, а скрипт в app/layout.tsx снимает атрибут
+   у выбравших тёмный. Переворачивать CSS ради смены умолчания значило бы
+   переписать все правила зала на странице работы, подобранные вручную.
 
    Обоснование и числа контраста — в ARCHITECTURE.md, раздел «Дизайн».
    ───────────────────────────────────────────────────────────────────────── */
 
-/* Тёмный зал — по умолчанию. Стены уходят в тень, светится живопись. */
+/* Тёмный зал — без атрибута. Стены уходят в тень, светится живопись. */
 :root {
   color-scheme: dark;
 
@@ -146,7 +152,7 @@
   --theme-toplight: none;
 }
 
-/* Почти белый зал: тёплая музейная стена, а не чистая бумага. */
+/* Почти белый зал — умолчание сайта. Тёплая музейная стена, а не бумага. */
 :root[data-theme="paper"] {
   color-scheme: light;
 
@@ -200,45 +206,6 @@
     ellipse 130% 65% at 50% -15%,
     rgb(255 255 255 / 0.95),
     transparent 70%
-  );
-}
-
-/* Прям белый зал: чистая белая стена, всё внимание на холст. */
-:root[data-theme="white"] {
-  color-scheme: light;
-
-  --theme-bg: #ffffff;
-  --theme-surface: #f3f3f2;
-  --theme-wall: #ffffff;
-  --theme-ink: #161616;
-  --theme-accent: #8a5a3c;
-  --theme-accent-2: #5b6b48;
-  --theme-divider: #e6e5e3;
-  --theme-btn: #161616;
-  --theme-btn-ink: #ffffff;
-  --theme-danger: #a32f22;
-
-  --theme-shadow-tile: 0 6px 20px rgb(22 22 22 / 0.14);
-  --theme-shadow-tile-hover: 0 20px 48px rgb(22 22 22 / 0.22);
-  --theme-shadow-art: drop-shadow(0 2px 2px rgb(22 22 22 / 0.2))
-    drop-shadow(0 24px 48px rgb(22 22 22 / 0.24));
-  --theme-hall-floor: linear-gradient(
-    to top,
-    rgb(22 22 22 / 0.14) 0,
-    rgb(22 22 22 / 0.055) 13%,
-    rgb(22 22 22 / 0.1) 20.6%,
-    rgb(22 22 22 / 0.02) 21.4%,
-    transparent 27%
-  );
-  --theme-hall-vignette: radial-gradient(
-    ellipse 92% 76% at 50% 40%,
-    transparent 40%,
-    rgb(22 22 22 / 0.13) 100%
-  );
-  --theme-toplight: radial-gradient(
-    ellipse 130% 65% at 50% -15%,
-    rgb(255 255 255 / 1),
-    transparent 72%
   );
 }
 
@@ -773,8 +740,7 @@
      серела. Стена в зале так себя не ведёт, и заказчик это заметил сразу.
      Тон здесь постоянный, а глубину дают неизменные градиенты:
      верхний свет (--theme-toplight), пол и углы (.stage-hall). */
-  :root[data-theme="paper"] .stage-backdrop,
-  :root[data-theme="white"] .stage-backdrop {
+  :root[data-theme="paper"] .stage-backdrop {
     display: none;
   }
 
@@ -789,8 +755,7 @@
   .stage-title {
     text-shadow: 0 2px 24px rgb(20 18 17 / 0.65);
   }
-  :root[data-theme="paper"] .stage-title,
-  :root[data-theme="white"] .stage-title {
+  :root[data-theme="paper"] .stage-title {
     text-shadow: none;
   }
 
@@ -887,8 +852,7 @@
   }
 
   :root:not([data-theme]) .hall-dark,
-  :root[data-theme="paper"] .hall-paper,
-  :root[data-theme="white"] .hall-white {
+  :root[data-theme="paper"] .hall-paper {
     border-color: transparent;
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
@@ -903,8 +867,7 @@
   }
 
   /* В светлых залах затемнение не нужно — вместо него верхний свет. */
-  :root[data-theme="paper"] .stage-scrim,
-  :root[data-theme="white"] .stage-scrim {
+  :root[data-theme="paper"] .stage-scrim {
     background: var(--theme-toplight);
   }
 
