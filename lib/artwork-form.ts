@@ -135,19 +135,34 @@ export type ArtworkFormRaw = {
 /** Поля, у которых бывает своя ошибка под полем. */
 export type ArtworkFieldErrors = Partial<Record<keyof ArtworkFormRaw, string>>;
 
-/** Значения новой работы: всё пусто, кроме техники и статуса. */
-export const newArtworkValues: ArtworkFormRaw = {
-  title: "",
-  description: "",
-  category: "",
-  technique: defaultTechnique,
-  dimensions: "",
-  dimensionsCustom: "",
-  year: "",
-  price: "",
-  status: "AVAILABLE",
-  featured: false,
-};
+/**
+ * Значения новой работы. Пусто всё, кроме техники, статуса, года и флага
+ * главной. Решения заказчика от 19 сентября 2026:
+ *
+ * - «Показывать на главной» включён: новая работа сразу попадает на главную
+ *   и на «О художнице», вытесняя самую старую из отмеченных;
+ * - год — текущий. Это отступление от правила «не выдумывать фактов»
+ *   (ARCHITECTURE.md, «Решения списков в форме работы»): у старой картины,
+ *   если год не сменить руками, на сайте окажется неверный год.
+ *
+ * Функция, а не константа, по той же причине, что `artworkYears()`:
+ * сервер живёт месяцами, и посчитанный при запуске год после Нового года
+ * стал бы прошлогодним.
+ */
+export function newArtworkValues(): ArtworkFormRaw {
+  return {
+    title: "",
+    description: "",
+    category: "",
+    technique: defaultTechnique,
+    dimensions: "",
+    dimensionsCustom: "",
+    year: String(currentYear()),
+    price: "",
+    status: "AVAILABLE",
+    featured: true,
+  };
+}
 
 /**
  * Размер из базы — в пару полей формы: стандартный размер уходит

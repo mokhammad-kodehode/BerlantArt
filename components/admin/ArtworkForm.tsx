@@ -68,7 +68,7 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
     {},
   );
 
-  const values = state.values ?? initial?.values ?? newArtworkValues;
+  const values = state.values ?? initial?.values ?? newArtworkValues();
   const years = artworkYears().map(String);
   const errors = state.errors ?? {};
 

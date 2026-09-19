@@ -5,6 +5,7 @@ import {
   customSize,
   dimensionsFields,
   firstYear,
+  newArtworkValues,
   parseArtworkForm,
   readArtworkForm,
 } from "@/lib/artwork-form";
@@ -189,6 +190,21 @@ describe("год", () => {
     expect(parse({ year: "20025" }).ok).toBe(false);
     expect(parse({ year: String(firstYear - 1) }).ok).toBe(false);
     expect(parse({ year: String(new Date().getFullYear() + 1) }).ok).toBe(false);
+  });
+});
+
+describe("значения новой работы", () => {
+  it("проходят проверку как есть и ставят текущий год", () => {
+    // Всё, что форма подставляет сама, обязано сохраняться без правки:
+    // иначе первое же «Создать» с одним названием упало бы на ошибке
+    // в поле, которое человек не трогал.
+    const result = parseArtworkForm({ ...newArtworkValues(), title: "Новая" });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.year).toBe(new Date().getFullYear());
+    expect(result.data.technique).toBe("Холст, масло");
+    expect(result.data.featured).toBe(true);
   });
 });
 
