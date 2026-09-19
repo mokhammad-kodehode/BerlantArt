@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { login, type LoginState } from "@/lib/actions/auth";
@@ -18,6 +18,7 @@ import { login, type LoginState } from "@/lib/actions/auth";
  */
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState<LoginState, FormData>(login, {});
+  const [isPasswordShown, setIsPasswordShown] = useState(false);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -40,14 +41,30 @@ export function LoginForm() {
         <label htmlFor="password" className="text-sm font-medium">
           Пароль
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="input"
-        />
+        {/* Кнопка лежит поверх поля справа, поэтому у поля отступ справа
+            под её ширину — иначе длинный пароль уходил бы под надпись. */}
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={isPasswordShown ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            className="input pr-24"
+          />
+          {/* type="button" обязателен: без него кнопка внутри формы
+              отправляла бы её. aria-pressed сообщает скринридеру, что это
+              переключатель и в каком он положении. */}
+          <button
+            type="button"
+            onClick={() => setIsPasswordShown((shown) => !shown)}
+            aria-pressed={isPasswordShown}
+            aria-controls="password"
+            className="text-ink/70 hover:text-accent rounded-pill absolute inset-y-0 right-0 px-4 text-sm"
+          >
+            {isPasswordShown ? "Скрыть" : "Показать"}
+          </button>
+        </div>
       </div>
 
       {/* Включена по умолчанию: в админку заходит одна художница со своего
