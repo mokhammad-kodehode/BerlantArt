@@ -519,6 +519,41 @@ export async function getArtworksForAdmin(
   });
 }
 
+/** Сводка для первого экрана админки. */
+export type AdminSummary = {
+  /** Сколько работ в каждом статусе; статус без работ — ноль, а не пропуск. */
+  counts: Record<ArtworkStatus, number>;
+  total: number;
+  /** Последние добавленные — то, что художница, скорее всего, дописывает. */
+  recent: ArtworkWithImages[];
+};
+
+/**
+ * Счётчики по статусам и последние работы.
+ *
+ * Счётчики — один `groupBy`, а не три `count`: запросов на страницу два
+ * при любом числе работ. Статус, у которого работ нет, `groupBy` не вернёт
+ * вовсе — поэтому все три заводятся нулями заранее, иначе на экране
+ * вместо «Продано: 0» было бы пусто.
+ */
+export async function getAdminSummary(recentLimit = 5): Promise<AdminSummary> {
+  const [groups, recent] = await Promise.all([
+    db.artwork.groupBy({ by: ["status"], _count: { _all: true } }),
+    db.artwork.findMany({
+      include: withImages,
+      orderBy: { createdAt: "desc" },
+      take: recentLimit,
+    }),
+  ]);
+
+  const counts: Record<ArtworkStatus, number> = { AVAILABLE: 0, RESERVED: 0, SOLD: 0 };
+  for (const group of groups) counts[group.status] = group._count._all;
+
+  const total = counts.AVAILABLE + counts.RESERVED + counts.SOLD;
+
+  return { counts, total, recent };
+}
+
 /** Сменить статус одной работы. `false`, если её нет. */
 export async function setArtworkStatus(id: string, status: ArtworkStatus): Promise<boolean> {
   const { count } = await db.artwork.updateMany({ where: { id }, data: { status } });
