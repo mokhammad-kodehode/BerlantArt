@@ -28,12 +28,25 @@ import { verifyPassword } from "@/lib/password";
 export const sessionCookieName =
   serverEnv.NODE_ENV === "production" ? "__Host-admin_session" : "admin_session";
 
+const hourMs = 60 * 60 * 1000;
+
 /**
- * Сколько живёт сессия. Неделя: художница заходит в админку редко,
- * и логин при каждом заходе превратился бы в повод записать пароль
- * на бумажке рядом с ноутбуком.
+ * Сколько живёт сессия — зависит от галочки «Запомнить меня».
+ *
+ * С галочкой — 30 дней и кука переживает закрытие браузера: художница
+ * заходит в админку редко, и логин при каждом заходе стал бы поводом
+ * записать пароль на бумажке. Не «навсегда»: потерянный телефон не должен
+ * держать админку открытой бессрочно.
+ *
+ * Без галочки — кука живёт до закрытия браузера (без `expires`), а подпись
+ * всё равно истекает через 12 часов: браузеры, восстанавливающие вкладки,
+ * воскрешают и такие куки, и чужой компьютер остался бы открытым.
  */
-const sessionTtlMs = 7 * 24 * 60 * 60 * 1000;
+export function sessionLifetime(remember: boolean): { ttlMs: number; isPersistent: boolean } {
+  return remember
+    ? { ttlMs: 30 * 24 * hourMs, isPersistent: true }
+    : { ttlMs: 12 * hourMs, isPersistent: false };
+}
 
 /**
  * Ключ, которым подписывается кука.
@@ -114,15 +127,18 @@ export async function checkCredentials(email: string, password: string): Promise
 
 /** Выдаёт куку сессии. Зовётся Server Action'ом формы входа после того,
  * как пара логин-пароль сошлась. */
-export async function startSession(): Promise<void> {
-  const expiresAt = Date.now() + sessionTtlMs;
+export async function startSession(remember: boolean): Promise<void> {
+  const { ttlMs, isPersistent } = sessionLifetime(remember);
+  const expiresAt = Date.now() + ttlMs;
 
   (await cookies()).set(sessionCookieName, signSession(expiresAt, sessionKey()), {
     httpOnly: true,
     secure: serverEnv.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: new Date(expiresAt),
+    // Без `expires` кука сессионная — браузер забудет её при закрытии.
+    // Срок в подписи при этом действует всегда.
+    expires: isPersistent ? new Date(expiresAt) : undefined,
   });
 }
 

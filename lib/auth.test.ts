@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { signSession, verifySession } from "@/lib/auth";
+import { sessionLifetime, signSession, verifySession } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
 
 /**
@@ -49,6 +49,18 @@ describe("подпись сессии", () => {
     expect(verifySession("без-точки", key, now)).toBe(false);
     expect(verifySession(".подпись", key, now)).toBe(false);
     expect(verifySession(`${now + 1000}.коротко`, key, now)).toBe(false);
+  });
+});
+
+describe("срок сессии", () => {
+  it("с галочкой — 30 дней и кука переживает закрытие браузера", () => {
+    expect(sessionLifetime(true)).toEqual({ ttlMs: 30 * 24 * 60 * 60 * 1000, isPersistent: true });
+  });
+
+  it("без галочки — кука до закрытия браузера и не дольше 12 часов", () => {
+    // Срок в подписи обязателен и здесь: браузер, восстанавливающий
+    // вкладки, воскрешает и сессионные куки.
+    expect(sessionLifetime(false)).toEqual({ ttlMs: 12 * 60 * 60 * 1000, isPersistent: false });
   });
 });
 

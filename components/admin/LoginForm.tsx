@@ -50,6 +50,14 @@ export function LoginForm() {
         />
       </div>
 
+      {/* Включена по умолчанию: в админку заходит одна художница со своего
+          телефона или ноутбука. На чужом компьютере галочку снимают —
+          тогда вход не переживёт закрытия браузера. */}
+      <label className="flex cursor-pointer items-center gap-3 text-sm">
+        <input type="checkbox" name="remember" defaultChecked className="accent-accent size-4" />
+        Запомнить меня на 30 дней
+      </label>
+
       {state.error && (
         // role="alert" — чтобы скринридер прочитал ошибку, а не оставил
         // человека гадать, почему форма не отправилась (.ai/rules/quality.md).

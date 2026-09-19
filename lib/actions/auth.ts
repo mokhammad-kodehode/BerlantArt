@@ -46,7 +46,9 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
     return { error: wrongCredentials, email: parsed.data.email };
   }
 
-  await startSession();
+  // Невыбранный флажок браузер не присылает вовсе — его отсутствие
+  // и означает «не запоминать».
+  await startSession(formData.get("remember") !== null);
 
   // redirect бросает исключение внутри, поэтому стоит последним и вне
   // try/catch — иначе переход был бы проглочен как ошибка.
