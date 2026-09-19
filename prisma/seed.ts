@@ -47,9 +47,9 @@ const db = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
  * Это допустимо: сюжет виден на репродукции, в отличие от размера холста
  * или года, которые выдумывать нельзя (.ai/rules/content.md).
  *
- * Перечень выбран по пяти имеющимся работам и рассчитан на рост:
- * «Горный пейзаж» — горы и башни, «Полевой пейзаж» — поля, дороги, берёзы,
- * «Сельский мотив» — дворы и постройки, «Цветы» — букеты и травы.
+ * Значения — из списка категорий формы (`artworkCategories` в
+ * lib/artwork-form.ts, Э6-6): категория мимо списка не сохранилась бы
+ * при первом же редактировании работы в админке.
  *
  * Фотографии лежат в public/. С этапа 5 их место займут ссылки на R2.
  */
@@ -57,19 +57,19 @@ const artworks = [
   {
     title: "Башни в тумане",
     file: "bashni-v-tumane.jpg",
-    category: "Горный пейзаж",
+    category: "Башни",
     status: "AVAILABLE",
   },
   {
     title: "Осенняя дорога",
     file: "osennyaya-doroga.jpg",
-    category: "Полевой пейзаж",
+    category: "Поле и дорога",
     status: "AVAILABLE",
   },
   {
     title: "Берёза в поле",
     file: "bereza-v-pole.jpg",
-    category: "Полевой пейзаж",
+    category: "Поле и дорога",
     status: "AVAILABLE",
   },
   {
@@ -81,7 +81,7 @@ const artworks = [
   {
     title: "Сельский двор",
     file: "selskiy-dvor.jpg",
-    category: "Сельский мотив",
+    category: "Село",
     status: "AVAILABLE",
   },
 ] as const;

@@ -6,6 +6,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { ArtworkForm, type ArtworkFormInitial } from "@/components/admin/ArtworkForm";
 import { ArtworkImages, type AdminImage } from "@/components/admin/ArtworkImages";
 import { DeleteArtwork } from "@/components/admin/DeleteArtwork";
+import { dimensionsFields } from "@/lib/artwork-form";
 import { getArtworkById, imageUrl } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 
@@ -43,7 +44,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       description: artwork.description ?? "",
       category: artwork.category ?? "",
       technique: artwork.technique ?? "",
-      dimensions: artwork.dimensions ?? "",
+      ...dimensionsFields(artwork.dimensions),
       year: artwork.year === null ? "" : String(artwork.year),
       price: artwork.price === null ? "" : String(artwork.price),
       status: artwork.status,

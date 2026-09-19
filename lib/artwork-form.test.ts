@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { artworkStatuses, parseArtworkForm, readArtworkForm } from "@/lib/artwork-form";
+import {
+  artworkStatuses,
+  customSize,
+  dimensionsFields,
+  firstYear,
+  parseArtworkForm,
+  readArtworkForm,
+} from "@/lib/artwork-form";
 import type { ArtworkInput } from "@/lib/artworks";
 import { ArtworkStatus } from "@/lib/generated/prisma/enums";
 
@@ -66,9 +73,9 @@ describe("необязательные поля", () => {
   });
 
   it("обрезает пробелы по краям", () => {
-    // Иначе «пейзаж» и «пейзаж » станут двумя разными категориями
+    // Иначе «Горы» и «Горы » станут двумя разными категориями
     // в фильтре галереи, и одна из них на вид будет пустой.
-    expect(parsed({ category: "  пейзаж  " }).category).toBe("пейзаж");
+    expect(parsed({ category: "  Горы  " }).category).toBe("Горы");
   });
 
   it("поле из одних пробелов — тоже пусто", () => {
@@ -87,6 +94,69 @@ describe("название", () => {
 
   it("не проходит из одних пробелов", () => {
     expect(parse({ title: "   " }).ok).toBe(false);
+  });
+});
+
+describe("категория", () => {
+  it("принимает значение из списка", () => {
+    expect(parsed({ category: "Река и мост" }).category).toBe("Река и мост");
+  });
+
+  it("отвергает значение мимо списка", () => {
+    // Селект не даёт выбрать чужое, но запрос можно отправить и в обход
+    // формы. И старые значения вроде «Горный пейзаж» сохраниться заново
+    // не должны — иначе фильтр галереи снова расползётся.
+    for (const bad of ["Горный пейзаж", "Арх", "горы"]) {
+      const result = parse({ category: bad });
+      expect(result.ok, bad).toBe(false);
+      if (result.ok) continue;
+      expect(result.errors.category).toBeTruthy();
+    }
+  });
+});
+
+describe("размер", () => {
+  it("сохраняет стандартный размер как есть", () => {
+    expect(parsed({ dimensions: "40 × 50 см" }).dimensions).toBe("40 × 50 см");
+  });
+
+  it("берёт текст «другого размера», только когда он выбран", () => {
+    expect(parsed({ dimensions: customSize, dimensionsCustom: " 35 × 45 см " }).dimensions).toBe(
+      "35 × 45 см",
+    );
+    // Поле «Другой размер» есть в форме всегда, просто спрятано. Текст,
+    // оставшийся в нём, не должен перебить выбранный стандартный размер.
+    expect(parsed({ dimensions: "40 × 50 см", dimensionsCustom: "35 × 45 см" }).dimensions).toBe(
+      "40 × 50 см",
+    );
+    expect(parsed({ dimensionsCustom: "35 × 45 см" }).dimensions).toBeNull();
+  });
+
+  it("не пропускает пустой «другой размер» и размер мимо списка", () => {
+    const cases: Record<string, string>[] = [
+      { dimensions: customSize, dimensionsCustom: "  " },
+      { dimensions: "33 × 33 см" },
+    ];
+
+    for (const overrides of cases) {
+      const result = parse(overrides);
+      expect(result.ok, JSON.stringify(overrides)).toBe(false);
+      if (result.ok) continue;
+      expect(result.errors.dimensions).toBeTruthy();
+    }
+  });
+
+  it("раскладывает размер из базы обратно на поля формы", () => {
+    expect(dimensionsFields(null)).toEqual({ dimensions: "", dimensionsCustom: "" });
+    expect(dimensionsFields("60 × 80 см")).toEqual({
+      dimensions: "60 × 80 см",
+      dimensionsCustom: "",
+    });
+    // Нестандартный размер не теряется: он уходит в «Другой размер».
+    expect(dimensionsFields("35 × 45 см")).toEqual({
+      dimensions: customSize,
+      dimensionsCustom: "35 × 45 см",
+    });
   });
 });
 
@@ -115,9 +185,9 @@ describe("год", () => {
     expect(parsed({ year: "2024" }).year).toBe(2024);
   });
 
-  it("отвергает опечатку и год из будущего", () => {
+  it("отвергает опечатку, год раньше списка и год из будущего", () => {
     expect(parse({ year: "20025" }).ok).toBe(false);
-    expect(parse({ year: "1899" }).ok).toBe(false);
+    expect(parse({ year: String(firstYear - 1) }).ok).toBe(false);
     expect(parse({ year: String(new Date().getFullYear() + 1) }).ok).toBe(false);
   });
 });

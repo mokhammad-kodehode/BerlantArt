@@ -4,7 +4,17 @@ import { useActionState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { saveArtwork, type ArtworkFormState } from "@/lib/actions/artworks";
-import { artworkStatusNames, artworkStatuses, type ArtworkFormRaw } from "@/lib/artwork-form";
+import {
+  artworkCategories,
+  artworkSizes,
+  artworkStatusNames,
+  artworkStatuses,
+  artworkYears,
+  customSize,
+  isListed,
+  newArtworkValues,
+  type ArtworkFormRaw,
+} from "@/lib/artwork-form";
 
 /**
  * Форма работы: одна на создание и на редактирование.
@@ -28,8 +38,23 @@ import { artworkStatusNames, artworkStatuses, type ArtworkFormRaw } from "@/lib/
  *
  * Управляемыми (`value` + `onChange`) их делать не стали: это то же
  * лечение ценой состояния, которое пришлось бы синхронизировать руками, —
- * а рассинхронизация с сервером и есть источник таких ошибок.
+ * а рассинхронизация с сервером и есть источник таких ошибок. По той же
+ * причине поле «Другой размер» показывает CSS, а не состояние компонента.
  */
+
+/**
+ * Пункт для значения, которого нет в списке, — например, старой категории.
+ *
+ * Без него селект молча показал бы первый пункт, и одно нажатие
+ * «Сохранить» переписало бы категорию работы, хотя её никто не трогал.
+ * С ним видно, что стоит сейчас, а сервер не даст сохранить значение
+ * мимо списка и попросит выбрать.
+ */
+function unlistedOption(list: readonly string[], value: string) {
+  if (value === "" || isListed(list, value)) return null;
+
+  return <option value={value}>{value} — нет в списке, выберите другое</option>;
+}
 
 /** Значения для заполнения формы. `null` — создание новой работы. */
 export type ArtworkFormInitial = {
@@ -43,7 +68,8 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
     {},
   );
 
-  const values = state.values ?? initial?.values;
+  const values = state.values ?? initial?.values ?? newArtworkValues;
+  const years = artworkYears().map(String);
   const errors = state.errors ?? {};
 
   /** Свойства поля без значения: разметка ошибки и оформление.
@@ -60,7 +86,7 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
   /** То же плюс значение — для неуправляемых текстовых полей. */
   const field = (name: keyof ArtworkFormRaw) => ({
     ...fieldProps(name),
-    defaultValue: typeof values?.[name] === "string" ? values[name] : "",
+    defaultValue: typeof values[name] === "string" ? values[name] : "",
   });
 
   const fieldError = (name: keyof ArtworkFormRaw) =>
@@ -91,32 +117,75 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="field">
           <label htmlFor="category">Категория</label>
-          <input {...field("category")} type="text" autoComplete="off" />
-          <p className="field-hint">Например: пейзаж. По ней работает фильтр в галерее.</p>
+          {/* key стоит до spread намеренно: после него JSX собирается через
+              createElement, и React 19 требует key у каждого <option>,
+              переданного рядом со списком. */}
+          <select
+            key={`category-${values.category}`}
+            {...fieldProps("category")}
+            defaultValue={values.category}
+          >
+            <option value="">Не выбрана</option>
+            {unlistedOption(artworkCategories, values.category)}
+            {artworkCategories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          <p className="field-hint">По ней работает фильтр в галерее.</p>
           {fieldError("category")}
         </div>
 
         <div className="field">
           <label htmlFor="technique">Техника</label>
           <input {...field("technique")} type="text" autoComplete="off" />
-          <p className="field-hint">Например: холст, масло.</p>
           {fieldError("technique")}
         </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-3">
-        <div className="field">
-          <label htmlFor="dimensions">Размеры</label>
-          <input {...field("dimensions")} type="text" autoComplete="off" placeholder="60 × 80 см" />
+        {/* Поле «Другой размер» появляется, только когда он выбран, — через
+            :has() на обёртке. Значение `other` в классе — это `customSize`
+            из lib/artwork-form.ts: Tailwind собирает классы по тексту
+            исходников, подставить константу в имя класса нельзя. */}
+        <div className="field group">
+          <label htmlFor="dimensions">Размер</label>
+          <select
+            key={`dimensions-${values.dimensions}`}
+            {...fieldProps("dimensions")}
+            defaultValue={values.dimensions}
+          >
+            <option value="">Не указан</option>
+            {artworkSizes.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+            <option value={customSize}>Другой размер</option>
+          </select>
+          <input
+            {...field("dimensionsCustom")}
+            type="text"
+            autoComplete="off"
+            aria-label="Другой размер"
+            placeholder="Например: 35 × 45 см"
+            className="input mt-2 hidden group-has-[option[value=other]:checked]:block"
+          />
           {fieldError("dimensions")}
         </div>
 
         <div className="field">
           <label htmlFor="year">Год</label>
-          {/* inputMode="numeric" поднимает на телефоне цифровую клавиатуру,
-              а type="text" оставлен намеренно: type="number" в Safari
-              позволяет ввести «12e3» и молча отдаёт пустое значение. */}
-          <input {...field("year")} type="text" inputMode="numeric" autoComplete="off" />
+          <select key={`year-${values.year}`} {...fieldProps("year")} defaultValue={values.year}>
+            <option value="">Не указан</option>
+            {unlistedOption(years, values.year)}
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
           {fieldError("year")}
         </div>
 
@@ -133,8 +202,8 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
           <label htmlFor="status">Статус</label>
           <select
             {...fieldProps("status")}
-            key={`status-${values?.status ?? "AVAILABLE"}`}
-            defaultValue={values?.status ?? "AVAILABLE"}
+            key={`status-${values.status}`}
+            defaultValue={values.status}
           >
             {artworkStatuses.map((value) => (
               <option key={value} value={value}>
@@ -149,8 +218,8 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
           <input
             type="checkbox"
             name="featured"
-            key={`featured-${values?.featured ?? false}`}
-            defaultChecked={values?.featured ?? false}
+            key={`featured-${values.featured}`}
+            defaultChecked={values.featured}
             className="accent-accent size-4"
           />
           Показывать на главной

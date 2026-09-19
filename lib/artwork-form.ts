@@ -36,6 +36,81 @@ export const artworkStatusNames: Record<ArtworkStatus, string> = {
 };
 
 /**
+ * Категории работ — выбор из списка, а не свободный текст (Э6-6).
+ *
+ * Свободный текст давал «Горный пейзаж», «горы» и «Арх» как разные
+ * категории, и каждая становилась отдельной кнопкой фильтра в галерее.
+ * В базе категория — обычная строка, а не enum: новая категория
+ * добавляется здесь одной строкой, без миграции. Порядок — порядок
+ * в селекте. Список составлен по работам художницы, утверждён
+ * заказчиком 19 сентября 2026.
+ */
+export const artworkCategories = [
+  "Горы",
+  "Башни",
+  "Поле и дорога",
+  "Деревья и лес",
+  "Село",
+  "Река и мост",
+  "Цветы",
+  "Старая архитектура",
+  "Натюрморт",
+  "Другое",
+] as const;
+
+/**
+ * Стандартные размеры подрамников, от меньшего к большему.
+ *
+ * Без ориентации: 40 × 50 и 50 × 40 — один подрамник, повёрнут он или нет,
+ * видно по фотографии. Размер не из списка вводится через `customSize`.
+ */
+export const artworkSizes = [
+  "20 × 30 см",
+  "30 × 30 см",
+  "30 × 40 см",
+  "40 × 40 см",
+  "40 × 50 см",
+  "40 × 60 см",
+  "50 × 50 см",
+  "50 × 60 см",
+  "50 × 70 см",
+  "60 × 60 см",
+  "60 × 80 см",
+  "70 × 90 см",
+  "80 × 100 см",
+  "90 × 120 см",
+] as const;
+
+/** Значение пункта «Другой размер» в селекте размера. */
+export const customSize = "other";
+
+/** Техника новой работы по умолчанию: со слов заказчика, у художницы
+ * она всегда одна. Поле остаётся редактируемым ради исключений. */
+export const defaultTechnique = "Холст, масло";
+
+/** Первый год в списке: художница пишет с 2020 года. */
+export const firstYear = 2020;
+
+/**
+ * Годы для селекта: от текущего вниз до `firstYear`.
+ *
+ * Функция, а не константа, по той же причине, что `currentYear()` ниже:
+ * посчитанный при загрузке модуля список после Нового года не содержал бы
+ * наступивший год.
+ */
+export function artworkYears(): number[] {
+  const years: number[] = [];
+  for (let year = currentYear(); year >= firstYear; year--) years.push(year);
+  return years;
+}
+
+/** Есть ли значение в списке. Отдельная функция, потому что `includes`
+ * у кортежа `as const` не принимает произвольную строку. */
+export function isListed(list: readonly string[], value: string): boolean {
+  return list.includes(value);
+}
+
+/**
  * Значения полей как их набрал человек — строками, до всякой проверки.
  *
  * Возвращаются обратно в форму при ошибке: React 19 после Server Action
@@ -47,7 +122,10 @@ export type ArtworkFormRaw = {
   description: string;
   category: string;
   technique: string;
+  /** Значение селекта: размер из `artworkSizes`, `customSize` или пусто. */
   dimensions: string;
+  /** Текст поля «Другой размер»; учитывается, только если выбран `customSize`. */
+  dimensionsCustom: string;
   year: string;
   price: string;
   status: string;
@@ -56,6 +134,32 @@ export type ArtworkFormRaw = {
 
 /** Поля, у которых бывает своя ошибка под полем. */
 export type ArtworkFieldErrors = Partial<Record<keyof ArtworkFormRaw, string>>;
+
+/** Значения новой работы: всё пусто, кроме техники и статуса. */
+export const newArtworkValues: ArtworkFormRaw = {
+  title: "",
+  description: "",
+  category: "",
+  technique: defaultTechnique,
+  dimensions: "",
+  dimensionsCustom: "",
+  year: "",
+  price: "",
+  status: "AVAILABLE",
+  featured: false,
+};
+
+/**
+ * Размер из базы — в пару полей формы: стандартный размер уходит
+ * в селект, любой другой — в «Другой размер» своим текстом.
+ */
+export function dimensionsFields(
+  value: string | null,
+): Pick<ArtworkFormRaw, "dimensions" | "dimensionsCustom"> {
+  if (value === null || value === "") return { dimensions: "", dimensionsCustom: "" };
+  if (isListed(artworkSizes, value)) return { dimensions: value, dimensionsCustom: "" };
+  return { dimensions: customSize, dimensionsCustom: value };
+}
 
 /** Читает форму в строки. Отсутствующее поле — пустая строка, а не
  * `undefined`: дальше всё равно пришлось бы приводить, а `undefined`
@@ -72,6 +176,7 @@ export function readArtworkForm(formData: FormData): ArtworkFormRaw {
     category: text("category"),
     technique: text("technique"),
     dimensions: text("dimensions"),
+    dimensionsCustom: text("dimensionsCustom"),
     year: text("year"),
     price: text("price"),
     status: text("status"),
@@ -127,6 +232,49 @@ function currentYear(): number {
   return new Date().getFullYear();
 }
 
+/**
+ * Необязательный выбор из списка: пусто — `null`, иначе только значение
+ * из списка. Проверка на сервере, а не только селектом: запрос можно
+ * отправить и в обход формы.
+ */
+const optionalListed = (list: readonly string[], message: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => value === "" || isListed(list, value), { message })
+    .transform((value) => (value === "" ? null : value));
+
+/**
+ * Размер: пара «значение селекта + текст другого размера» превращается
+ * в одну строку для базы. Своё поле в схеме, а не проверка всей формы
+ * целиком: та в zod запускается, только когда остальные поля уже верны,
+ * и ошибка размера всплывала бы лишь со второй попытки.
+ */
+const dimensionsField = z
+  .object({ choice: z.string(), custom: z.string() })
+  .transform((value, ctx) => {
+    if (value.choice === "") return null;
+
+    if (value.choice === customSize) {
+      const custom = value.custom.trim();
+      const message =
+        custom === ""
+          ? "Впишите размер или выберите его из списка"
+          : custom.length > 100
+            ? "Размер: не длиннее 100 символов"
+            : null;
+      if (message === null) return custom;
+
+      ctx.addIssue({ code: "custom", message });
+      return z.NEVER;
+    }
+
+    if (isListed(artworkSizes, value.choice)) return value.choice;
+
+    ctx.addIssue({ code: "custom", message: "Выберите размер из списка" });
+    return z.NEVER;
+  });
+
 function schema() {
   return z.object({
     title: z
@@ -136,13 +284,13 @@ function schema() {
       .max(200, "Название: не длиннее 200 символов"),
 
     description: optionalText(4000, "Описание"),
-    category: optionalText(100, "Категория"),
+    category: optionalListed(artworkCategories, "Выберите категорию из списка"),
     technique: optionalText(100, "Техника"),
-    dimensions: optionalText(100, "Размеры"),
+    dimensions: dimensionsField,
 
-    // Нижняя граница с запасом: художница пишет с 2020 года, но работа
-    // может быть датирована и раньше, а вот 1899 — уже опечатка.
-    year: optionalInt({ min: 1900, max: currentYear(), label: "Год" }),
+    // Те же границы, что у селекта: раньше 2020 года художница не писала,
+    // а будущий год — опечатка.
+    year: optionalInt({ min: firstYear, max: currentYear(), label: "Год" }),
 
     // Потолок цены — сто миллионов рублей. Не «разумная цена картины»,
     // а защита от лишнего нуля: 4 500 000 вместо 450 000 заметить трудно.
@@ -160,11 +308,14 @@ export type ArtworkFormResult =
  * Проверяет набранные значения и приводит их к виду, который ждёт база.
  *
  * Ошибки возвращаются по полям, а не одной строкой сверху: «Год: допустимо
- * от 1900 до 2026» под самим полем человек читает, а тот же текст над
+ * от 2020 до 2026» под самим полем человек читает, а тот же текст над
  * формой из девяти полей заставляет искать, о чём речь.
  */
 export function parseArtworkForm(raw: ArtworkFormRaw): ArtworkFormResult {
-  const result = schema().safeParse(raw);
+  const result = schema().safeParse({
+    ...raw,
+    dimensions: { choice: raw.dimensions, custom: raw.dimensionsCustom },
+  });
 
   if (result.success) return { ok: true, data: result.data };
 
