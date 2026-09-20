@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import type { DragEvent } from "react";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -13,15 +14,9 @@ import {
   requestUpload,
   saveImageAlt,
 } from "@/lib/actions/images";
+import { cn } from "@/lib/cn";
 import { prepareImage } from "@/lib/prepare-image";
-import {
-  acceptAttribute,
-  checkSource,
-  checkUpload,
-  formatBytes,
-  maxFileBytes,
-  maxLongSide,
-} from "@/lib/upload-limits";
+import { acceptAttribute, checkSource, checkUpload } from "@/lib/upload-limits";
 
 /**
  * Фотографии работы: загрузка, порядок, главная, удаление.
@@ -105,6 +100,7 @@ export function ArtworkImages({
 
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   /** Перерисовывает страницу свежими данными после изменения.
@@ -165,6 +161,17 @@ export function ArtworkImages({
     }
   }
 
+  /**
+   * Бросок файлов в зону. Кроме самой загрузки нужен preventDefault
+   * в dragOver: без него браузер считает, что бросать сюда нельзя,
+   * и на drop просто открывает файл вместо страницы.
+   */
+  function handleDrop(event: DragEvent<HTMLButtonElement>): void {
+    event.preventDefault();
+    setIsDragging(false);
+    void pickFiles(event.dataTransfer.files);
+  }
+
   async function pickFiles(files: FileList | null) {
     if (files === null) return;
     setError(null);
@@ -189,13 +196,7 @@ export function ArtworkImages({
 
   return (
     <section className="mt-12">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-2xl">Фотографии</h2>
-        <p className="text-ink/75 text-sm">
-          JPEG, PNG или WebP. Фото уменьшается до {maxLongSide}px и сохраняется в WebP до{" "}
-          {formatBytes(maxFileBytes)}. Первая становится главной.
-        </p>
-      </div>
+      <h2 className="mb-4 text-2xl">Фотографии</h2>
 
       <input
         ref={fileInput}
@@ -207,20 +208,67 @@ export function ArtworkImages({
         onChange={(event) => void pickFiles(event.target.files)}
       />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => fileInput.current?.click()}
-          disabled={uploads.length > 0}
-        >
-          {uploads.length > 0 ? "Загружаем…" : "Выбрать фотографии"}
-        </Button>
+      {/*
+        Зона загрузки: вся область — одна кнопка. Так принято и так понятнее,
+        чем кнопка внутри панели: там было неясно, что нажимается.
 
-        {images.length === 0 && uploads.length === 0 && (
-          <p className="text-ink/75 text-sm">Пока ни одной — в галерее работа покажется пустой.</p>
+        Именно <button>, а не <div> с обработчиком: кнопка попадает в обход
+        с клавиатуры, нажимается пробелом и Enter и сама объявляет себя
+        скринридеру. Перетаскивание клавиатуре недоступно и на телефоне
+        не работает — оно ускорение для мыши, а не единственный путь,
+        поэтому нажатие обязано открывать обычный выбор файлов.
+      */}
+      <button
+        type="button"
+        onClick={() => fileInput.current?.click()}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        disabled={uploads.length > 0}
+        className={cn(
+          "panel-dashed hover:border-ink/35 flex w-full cursor-pointer flex-col items-center justify-center gap-2 px-5 py-9 text-center transition-colors disabled:cursor-default",
+          isDragging && "border-accent bg-accent/5",
         )}
-      </div>
+      >
+        {/* Значок — стрелка в лоток. Декоративный: всё сказано словами
+            ниже, и зачитывать его скринридеру незачем. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          width="28"
+          height="28"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-ink/60"
+        >
+          <path d="M12 15V3.5m0 0L8 7.5m4-4 4 4" />
+          <path d="M4 14.5v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3" />
+        </svg>
+
+        <span className="font-medium">
+          {uploads.length > 0
+            ? "Загружаем…"
+            : isDragging
+              ? "Отпустите — загрузим"
+              : "Перетащите фотографии сюда"}
+        </span>
+
+        {uploads.length === 0 && !isDragging && (
+          <span className="text-ink/75 text-sm">или нажмите, чтобы выбрать файлы</span>
+        )}
+      </button>
+
+      {images.length === 0 && uploads.length === 0 && (
+        <p className="text-ink/75 mt-3 text-sm">
+          Пока ни одной — в галерее работа покажется пустой.
+        </p>
+      )}
 
       {uploads.length > 0 && (
         <ul className="mt-5 flex flex-col gap-3">
@@ -368,11 +416,14 @@ function ImageRow({
           </Button>
         )}
 
+        {/* Удаление — красным: цвет предупреждает до нажатия, а не после.
+            Подтверждение спрашивается в той же строке, без всплывающего
+            окна: фотографию видно рядом, и понятно, о какой речь. */}
         {confirming ? (
           <>
             <Button
               type="button"
-              variant="primary"
+              variant="danger"
               disabled={busy}
               onClick={() => {
                 setConfirming(false);
@@ -386,8 +437,32 @@ function ImageRow({
             </Button>
           </>
         ) : (
-          <Button type="button" variant="ghost" disabled={busy} onClick={() => setConfirming(true)}>
-            Удалить
+          /* Значком, а не словом: в строке уже три кнопки, и четвёртая
+             со словом ломала её на две. Имя для скринридера и подсказка
+             для мыши обязательны — значок сам по себе ничего не говорит. */
+          <Button
+            type="button"
+            variant="danger"
+            disabled={busy}
+            aria-label="Удалить фотографию"
+            title="Удалить фотографию"
+            onClick={() => setConfirming(true)}
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 7h16M10 7V5.5A1.5 1.5 0 0 1 11.5 4h1A1.5 1.5 0 0 1 14 5.5V7" />
+              <path d="M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7" />
+              <path d="M10.5 11v5M13.5 11v5" />
+            </svg>
           </Button>
         )}
       </div>
