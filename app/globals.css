@@ -9,7 +9,8 @@
    Отличие от макета одно и оно намеренное: шрифты. В макете Caprasimo +
    Figtree, планировались Fraunces + Work Sans — но ни у одной из этих пар
    нет кириллицы, а сайт целиком на русском. Стоят Oranienbaum (заголовки) +
-   Onest (текст), оба кириллические по происхождению.
+   Golos Text (всё остальное: текст, кнопки, поля, фильтры), оба
+   кириллические по происхождению.
 
    У Oranienbaum одно начертание 400 и нет курсива, поэтому
    --font-heading-weight опущен с 600 до 400: любое другое значение браузер
@@ -77,9 +78,8 @@
 
   /* — шрифты — */
   --font-heading: var(--font-heading-family), Georgia, serif;
+  /* Один гротеск на текст и на элементы управления: см. app/layout.tsx. */
   --font-body: var(--font-body-family), system-ui, sans-serif;
-  /* Кнопки, метки, поля, фильтры — всё, на что нажимают. */
-  --font-ui: var(--font-ui-family), system-ui, sans-serif;
 
   /* — радиусы. Имена смысловые, а не размерные: в этой системе кнопки и теги
        всегда таблетки, а карточки и панели — крупные скругления — */
@@ -304,7 +304,7 @@
     white-space: nowrap;
     /* Антиква ушла отсюда по просьбе заказчика: в мелком размере
        и капслоком она читалась хуже интерфейсного шрифта. */
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     font-weight: 500;
     font-size: 16px;
     line-height: 1.2;
@@ -496,7 +496,7 @@
 
   /* — теги — */
   .tag {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     display: inline-flex;
     align-items: center;
     font-size: 13px;
@@ -531,7 +531,7 @@
     background: var(--color-surface);
   }
   .card-kicker {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -567,12 +567,17 @@
   }
 
   /* — формы (понадобятся на /contact и в админке) — */
+  /* Метка поля — обычным цветом текста и чуть плотнее. Была 70%
+     прозрачности: формально это 5.6:1, но рядом с чёрным значением поля
+     метка выглядела блёклой, и заказчик на это указал. Приглушать имя
+     поля незачем — его читают в первую очередь. */
   .field > label {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     display: block;
     font-size: 14px;
-    margin-bottom: 5px;
-    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--color-ink);
   }
   .input {
     width: 100%;
@@ -583,7 +588,7 @@
     font: inherit;
     /* Обязательно после font: inherit — сокращённое свойство сбрасывает
        семейство на унаследованное, и поле возвращалось к текстовому шрифту. */
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     font-size: 16px;
     color: var(--color-ink);
     caret-color: var(--color-accent);
@@ -604,9 +609,11 @@
     resize: vertical;
   }
 
-  /* Селект — то же поле, плюс место под стрелку, которую рисует браузер. */
+  /* Селект. Стрелку рисует браузер, и ставит он её внутрь правого поля:
+     при 10px она упиралась в скруглённый край, при 16px всё ещё стояла
+     тесно — заметно на списке работ. 26px дают ей поле. */
   select.input {
-    padding-right: 10px;
+    padding-right: 26px;
   }
 
   /* Поле с ошибкой. Красная рамка — подсказка, а не сообщение: сам текст
@@ -616,14 +623,14 @@
     border-color: var(--color-danger);
   }
   .field-error {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     margin-top: 5px;
     font-size: 14px;
     color: var(--color-danger);
   }
   /* Пояснение под полем: чем заполнять и что будет, если оставить пустым. */
   .field-hint {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     margin-top: 5px;
     font-size: 14px;
     /* 55% давали контраст около 4:1 при норме 4.5:1 (.ai/rules/quality.md). */
@@ -663,7 +670,7 @@
     border-radius: var(--radius-pill);
   }
   .seg-opt {
-    font-family: var(--font-ui);
+    font-family: var(--font-body);
     display: inline-flex;
     align-items: center;
     gap: 6px;

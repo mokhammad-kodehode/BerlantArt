@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AdminShell } from "@/components/admin/AdminShell";
+import { StatusSelect } from "@/components/admin/StatusSelect";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { changeStatus } from "@/lib/actions/status";
 import { adminArtworksHref, parseAdminFilters } from "@/lib/admin-filters";
 import { artworkStatusNames, artworkStatuses } from "@/lib/artwork-form";
 import { formatPrice, getArtworksForAdmin, primaryImageUrl } from "@/lib/artworks";
@@ -81,19 +81,25 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
       </form>
 
       {/* Переключатели статуса — ссылки, а не кнопки: переход и есть
-          применение фильтра, клиентского кода не нужно вовсе. */}
+          применение фильтра, клиентского кода не нужно вовсе.
+
+          Вид тот же, что у фильтров галереи: выбранный — заливкой, прочие —
+          спокойной серой. Прежде это были метки-таблетки цветом акцента,
+          и заказчик назвал их тусклыми: тонкая охристая обводка на светлом
+          фоне читается слабо, а выбранный вариант почти не отличался
+          от остальных. */}
       <nav aria-label="Фильтр по статусу" className="mb-6 flex flex-wrap gap-2">
         {[undefined, ...artworkStatuses].map((status) => {
           const active = filters.status === status;
           return (
-            <Link
+            <ButtonLink
               key={status ?? "all"}
               href={adminArtworksHref(filters, { status })}
               aria-current={active ? "page" : undefined}
-              className={`tag ${active ? "tag-accent" : "tag-outline"}`}
+              variant={active ? "primary" : "soft"}
             >
               {status === undefined ? "Все" : artworkStatusNames[status]}
-            </Link>
+            </ButtonLink>
           );
         })}
       </nav>
@@ -135,7 +141,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
               return (
                 <li
                   key={work.id}
-                  className="border-divider flex flex-wrap items-center gap-4 rounded-[14px] border p-3"
+                  className="border-divider flex flex-wrap items-center gap-3 rounded-[14px] border p-3"
                 >
                   <Link
                     href={`/admin/artworks/${work.id}`}
@@ -164,36 +170,42 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
                     </p>
                   </div>
 
-                  {/* Смена статуса — форма с кнопкой, а не выбор в списке
-                      с отправкой по изменению: последнее требует JavaScript
-                      и без него молча ничего не делает. */}
-                  <form action={changeStatus} className="flex items-center gap-2">
-                    <input type="hidden" name="id" value={work.id} />
-                    <label htmlFor={`status-${work.id}`} className="sr-only">
-                      Статус работы «{work.title}»
-                    </label>
-                    {/* key со статусом внутри — не украшение. defaultValue
-                        у select действует только при первом появлении
-                        элемента: после смены статуса список показывал бы
-                        прежнее значение, хотя в базе уже новое. Та же
-                        ловушка, что в форме работы (Э6-2а). */}
-                    <select
-                      key={`${work.id}-${work.status}`}
-                      id={`status-${work.id}`}
-                      name="status"
-                      className="input w-auto"
-                      defaultValue={work.status}
+                  <div className="ml-auto flex items-center gap-2">
+                    <StatusSelect artworkId={work.id} title={work.title} status={work.status} />
+
+                    {/* «Редактировать» — значком, а не кнопкой со словом:
+                      со словом она занимала на телефоне целую строку
+                      и спорила по весу с «Добавить работу». Стоит в одном
+                      ряду со статусом: в углу карточки он висел выше
+                      селекта и выглядел сбитым.
+
+                      Значок без подписи обязан иметь имя для скринридера
+                      (aria-label) и всплывающую подсказку для мыши (title) —
+                      иначе действие читается только зрячим и только
+                      по догадке. Название работы в имени не случайно:
+                      в списке таких кнопок шесть, и «Редактировать» подряд
+                      шесть раз ничего не сказало бы. */}
+                    <Link
+                      href={`/admin/artworks/${work.id}`}
+                      aria-label={`Редактировать работу «${work.title}»`}
+                      title="Редактировать"
+                      className="border-divider text-ink/75 hover:text-ink hover:bg-ink/5 flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors"
                     >
-                      {artworkStatuses.map((status) => (
-                        <option key={status} value={status}>
-                          {artworkStatusNames[status]}
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="submit" variant="ghost">
-                      Применить
-                    </Button>
-                  </form>
+                      <svg
+                        aria-hidden
+                        viewBox="0 0 16 16"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M11.2 2.3a1.6 1.6 0 0 1 2.3 2.3L5.6 12.4l-3 .7.7-3z" />
+                      </svg>
+                    </Link>
+                  </div>
                 </li>
               );
             })}

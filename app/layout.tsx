@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Golos_Text, Onest, Oranienbaum } from "next/font/google";
+import { Golos_Text, Oranienbaum } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { site } from "@/lib/site";
@@ -27,26 +27,19 @@ const oranienbaum = Oranienbaum({
   display: "swap",
 });
 
-/** Гротеск для текста — Onest, тоже кириллический по происхождению. */
-const onest = Onest({
-  variable: "--font-body-family",
-  subsets: ["cyrillic", "latin"],
-  display: "swap",
-});
-
 /**
- * Шрифт элементов управления — Golos Text, интерфейсный шрифт Паратайпа.
+ * Гротеск на всё, кроме заголовков, — Golos Text, интерфейсный шрифт
+ * Паратайпа: текст, кнопки, поля, фильтры.
  *
- * Третий шрифт заведён по просьбе заказчика: раньше кнопки, метки и поля
- * набирались заголовочной антиквой, и в мелком размере она читалась плохо
- * — особенно капслоком и на узких кнопках. Теперь антиква осталась там,
- * где она и нужна: в заголовках, имени художницы, девизе и цене.
- *
- * Golos Text рисовался для кириллических интерфейсов, поэтому в кнопке
- * и фильтре он спокоен и не спорит с живописью.
+ * Сначала он заводился третьим шрифтом, только для элементов управления,
+ * а текст оставался на Onest. Заказчик справедливо заметил, что два
+ * похожих гротеска рядом выглядят разнобоем: разницу между ними читатель
+ * не считывает как замысел. Onest убран, шрифтов снова два — антиква
+ * в заголовках и Golos Text во всём остальном. Заодно страница стала
+ * легче на один шрифтовой файл.
  */
 const golos = Golos_Text({
-  variable: "--font-ui-family",
+  variable: "--font-body-family",
   subsets: ["cyrillic", "latin"],
   display: "swap",
 });
@@ -81,7 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // живёт без атрибута — скрипт ниже снимает его у тех, кто выбрал тёмный.
       data-theme="paper"
       suppressHydrationWarning
-      className={`${oranienbaum.variable} ${onest.variable} ${golos.variable} h-full antialiased`}
+      className={`${oranienbaum.variable} ${golos.variable} h-full antialiased`}
     >
       {/*
         Хедер намеренно НЕ здесь: на главной он прозрачный и лежит поверх

@@ -219,6 +219,18 @@ export default function StyleguidePage() {
                 <label htmlFor="sg-name">Имя</label>
                 <input id="sg-name" className="input" placeholder="Как к вам обращаться" />
               </div>
+              {/* Селект — то же поле. В витрине он появился позже
+                  остальных: из-за этого прижатую к краю стрелку заметил
+                  заказчик в списке работ, а не мы здесь. */}
+              <div className="field">
+                <label htmlFor="sg-select">Статус работы</label>
+                <select id="sg-select" className="input" defaultValue="AVAILABLE">
+                  <option value="AVAILABLE">Доступна</option>
+                  <option value="RESERVED">Забронирована</option>
+                  <option value="SOLD">Продана</option>
+                </select>
+                <p className="field-hint">Пояснение под полем выглядит так.</p>
+              </div>
               <div className="field">
                 <label htmlFor="sg-msg">Сообщение</label>
                 <textarea

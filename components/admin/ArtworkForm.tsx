@@ -149,7 +149,6 @@ export function ArtworkForm({
               </option>
             ))}
           </select>
-          <p className="field-hint">По ней работает фильтр в галерее.</p>
           {fieldError("category")}
         </div>
 
@@ -208,7 +207,6 @@ export function ArtworkForm({
         <div className="field">
           <label htmlFor="price">Цена, ₽</label>
           <input {...field("price")} type="text" inputMode="numeric" autoComplete="off" />
-          <p className="field-hint">Пусто — цена не показывается.</p>
           {fieldError("price")}
         </div>
       </div>

@@ -24,8 +24,11 @@ export function AdminShell({
   actions?: ReactNode;
   children: ReactNode;
 }) {
+  // py-6, а не py-12: пустое поле сверху занимало на телефоне полэкрана,
+  // и список работ начинался за сгибом. На витрине воздух уместен,
+  // в рабочем окне — нет.
   return (
-    <main className="py-12">
+    <main className="py-6">
       <Container>
         {back !== undefined && (
           <Link
