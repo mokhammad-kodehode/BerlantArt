@@ -89,6 +89,20 @@ function parse<T extends z.ZodType>(schema: T, values: unknown, label: string): 
   return result.data;
 }
 
+/**
+ * Текст ошибки настройки — для показа тому, кто настраивает сайт.
+ *
+ * Сообщения parse() называют переменную и причину («не похоже на хеш»),
+ * но не значения: показать их на экране можно. Раньше такие ошибки уходили
+ * только в логи хостинга, и владелец сайта после каждой попытки лез туда —
+ * форма входа и загрузка фотографий теперь говорят сразу.
+ *
+ * Переводы строк схлопываются: текст встаёт в одну строку интерфейса.
+ */
+export function describeConfigError(error: unknown): string {
+  return error instanceof Error ? error.message.replace(/\s*\n\s*/g, " ") : "";
+}
+
 export const serverEnv = parse(serverSchema, process.env, "сервер");
 export const clientEnv = parse(clientSchema, clientValues, "клиент");
 

@@ -12,6 +12,7 @@ import {
   type ImageDirection,
 } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
+import { describeConfigError } from "@/lib/env";
 import { createUploadUrl, deleteObject, headObject, type UploadTarget } from "@/lib/r2";
 import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
 import { checkUpload, isOwnObjectKey } from "@/lib/upload-limits";
@@ -59,7 +60,19 @@ export async function requestUpload(input: {
   const refusal = checkUpload({ type: parsed.data.contentType, size: parsed.data.size });
   if (refusal !== null) return { ok: false, error: refusal };
 
-  return { ok: true, target: await createUploadUrl(parsed.data) };
+  // Ключи хранилища проверяются лениво, при первом обращении (lib/env.ts).
+  // Без перехвата исключение выходило из серверного действия наружу, и в
+  // админке появлялся «Minified React error #441»: по нему не понять, что
+  // всего лишь не заполнены переменные R2_*.
+  try {
+    return { ok: true, target: await createUploadUrl(parsed.data) };
+  } catch (error) {
+    console.error("Подписать загрузку не удалось:", error);
+    return {
+      ok: false,
+      error: `Хранилище фотографий не настроено. ${describeConfigError(error)}`.trim(),
+    };
+  }
 }
 
 /**

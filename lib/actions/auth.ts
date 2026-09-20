@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { checkCredentials, destroySession, startSession } from "@/lib/auth";
+import { describeConfigError } from "@/lib/env";
 
 /**
  * Вход и выход администратора.
@@ -37,16 +38,13 @@ const wrongCredentials = "Неверная почта или пароль.";
 /**
  * Настройка сервера сломана — это не ошибка того, кто вводит пароль.
  *
- * На экран выносится и текст проверки переменных: он называет, какая из
- * них не подошла и почему. Имена переменных не секрет, а без них владелец
- * сайта вынужден лезть в логи хостинга после каждой попытки — на этом
- * проекте так и вышло. Значений в тексте нет: схема сообщает только
- * о формате.
+ * Текст проверки переменных выносится на экран (describeConfigError):
+ * он называет, какая из них не подошла и почему. Имена переменных
+ * не секрет, а без них владелец сайта вынужден лезть в логи хостинга
+ * после каждой попытки — на этом проекте так и вышло.
  */
 function notConfigured(error: unknown): string {
-  const details = error instanceof Error ? error.message.replace(/\s*\n\s*/g, " ") : "";
-
-  return `Вход не настроен на сервере. ${details}`.trim();
+  return `Вход не настроен на сервере. ${describeConfigError(error)}`.trim();
 }
 
 export async function login(_state: LoginState, formData: FormData): Promise<LoginState> {
