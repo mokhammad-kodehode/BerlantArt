@@ -36,11 +36,18 @@ const wrongCredentials = "Неверная почта или пароль.";
 
 /**
  * Настройка сервера сломана — это не ошибка того, кто вводит пароль.
- * Текст общий: подробности (какая именно переменная не подошла) уходят
- * в лог сервера, а не на экран, где их прочитал бы посторонний.
+ *
+ * На экран выносится и текст проверки переменных: он называет, какая из
+ * них не подошла и почему. Имена переменных не секрет, а без них владелец
+ * сайта вынужден лезть в логи хостинга после каждой попытки — на этом
+ * проекте так и вышло. Значений в тексте нет: схема сообщает только
+ * о формате.
  */
-const notConfigured =
-  "Вход не настроен на сервере: не заданы или неверны переменные AUTH_*. Подробности — в логах.";
+function notConfigured(error: unknown): string {
+  const details = error instanceof Error ? error.message.replace(/\s*\n\s*/g, " ") : "";
+
+  return `Вход не настроен на сервере. ${details}`.trim();
+}
 
 export async function login(_state: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = credentialsSchema.safeParse({
@@ -55,7 +62,7 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
     credentialsMatch = await checkCredentials(parsed.data.email, parsed.data.password);
   } catch (error) {
     console.error("Проверка пароля невозможна:", error);
-    return { error: notConfigured, email: parsed.data.email };
+    return { error: notConfigured(error), email: parsed.data.email };
   }
 
   if (!credentialsMatch) {
