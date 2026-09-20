@@ -17,9 +17,28 @@ import { sessionCookieName, verifySessionToken } from "@/lib/auth";
  * Похода в базу здесь нет и быть не должно — проверяется только подпись
  * куки, это несколько микросекунд.
  */
+/**
+ * Проверка подписи, которая не роняет сайт.
+ *
+ * verifySessionToken читает переменные AUTH_* и бросает исключение, если
+ * они не заданы или заданы неверно. Раньше это исключение выходило наружу
+ * до страницы, и весь /admin отвечал голым «Internal Server Error»: на
+ * проде так и случилось, а понять по нему было нечего. Теперь незаданная
+ * настройка означает «не вошёл» — человек видит форму входа, а причина
+ * уходит в лог сервера (на Vercel — раздел Logs).
+ */
+function isSessionValid(token: string | undefined): boolean {
+  try {
+    return verifySessionToken(token);
+  } catch (error) {
+    console.error("Вход в админку не настроен, проверка сессии невозможна:", error);
+    return false;
+  }
+}
+
 export function proxy(request: NextRequest): NextResponse {
   const token = request.cookies.get(sessionCookieName)?.value;
-  const isAuthenticated = verifySessionToken(token);
+  const isAuthenticated = isSessionValid(token);
 
   const isLoginPage = request.nextUrl.pathname === "/admin/login";
 

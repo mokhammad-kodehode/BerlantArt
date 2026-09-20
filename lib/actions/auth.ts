@@ -34,6 +34,14 @@ export type LoginState = { error?: string; email?: string };
  */
 const wrongCredentials = "Неверная почта или пароль.";
 
+/**
+ * Настройка сервера сломана — это не ошибка того, кто вводит пароль.
+ * Текст общий: подробности (какая именно переменная не подошла) уходят
+ * в лог сервера, а не на экран, где их прочитал бы посторонний.
+ */
+const notConfigured =
+  "Вход не настроен на сервере: не заданы или неверны переменные AUTH_*. Подробности — в логах.";
+
 export async function login(_state: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = credentialsSchema.safeParse({
     email: formData.get("email"),
@@ -42,7 +50,15 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
 
   if (!parsed.success) return { error: wrongCredentials };
 
-  if (!(await checkCredentials(parsed.data.email, parsed.data.password))) {
+  let credentialsMatch: boolean;
+  try {
+    credentialsMatch = await checkCredentials(parsed.data.email, parsed.data.password);
+  } catch (error) {
+    console.error("Проверка пароля невозможна:", error);
+    return { error: notConfigured, email: parsed.data.email };
+  }
+
+  if (!credentialsMatch) {
     return { error: wrongCredentials, email: parsed.data.email };
   }
 
