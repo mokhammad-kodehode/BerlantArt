@@ -300,7 +300,7 @@ function ImageRow({
     <li className="border-divider flex flex-wrap items-start gap-4 rounded-[14px] border p-3">
       <div className="bg-surface relative h-20 w-20 shrink-0 overflow-hidden rounded-[10px]">
         {image.src === undefined ? (
-          <span className="text-ink/75 flex h-full items-center justify-center text-xs">
+          <span className="text-ink/75 flex h-full items-center justify-center text-sm">
             нет адреса
           </span>
         ) : (
@@ -310,11 +310,11 @@ function ImageRow({
 
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink/75 text-xs tabular-nums">{index + 1}</span>
-          {image.isPrimary && <span className="tag tag-outline text-xs">Главная</span>}
+          <span className="text-ink/75 text-sm tabular-nums">{index + 1}</span>
+          {image.isPrimary && <span className="tag tag-outline text-sm">Главная</span>}
         </div>
 
-        <label className="text-ink/75 text-xs" htmlFor={`alt-${image.id}`}>
+        <label className="text-ink/75 text-sm" htmlFor={`alt-${image.id}`}>
           Подпись для незрячих
         </label>
         <div className="flex flex-wrap gap-2">

@@ -52,7 +52,7 @@ export default async function HomePage() {
 
         {featured.length === 0 ? (
           <div className="panel-dashed p-9">
-            <p className="text-ink/70 m-0 max-w-[46ch] text-[14.5px]">
+            <p className="text-ink/70 m-0 max-w-[46ch] text-[14px]">
               Работы для главной пока не выбраны. Все картины — в галерее.
             </p>
           </div>

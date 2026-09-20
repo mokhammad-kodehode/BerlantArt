@@ -23,7 +23,7 @@ export default function NotFoundPage() {
       <main>
         <Container>
           <section className="panel-dashed my-16 p-10 md:my-24 md:p-14">
-            <p className="text-ink/55 mt-0 mb-3 text-[13px] tracking-[0.14em] uppercase">
+            <p className="text-ink/55 mt-0 mb-3 text-[14px] tracking-[0.14em] uppercase">
               Ошибка 404
             </p>
 

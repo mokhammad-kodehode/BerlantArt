@@ -81,7 +81,7 @@ export function ArtworkImage({
         background: `radial-gradient(120% 100% at 30% 20%, ${from}, ${to})`,
       }}
     >
-      <span aria-hidden className="font-heading text-[11px] leading-tight text-neutral-100/70">
+      <span aria-hidden className="font-heading text-[12px] leading-tight text-neutral-100/70">
         {alt}
       </span>
     </div>

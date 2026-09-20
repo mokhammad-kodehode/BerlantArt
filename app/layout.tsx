@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Onest, Oranienbaum } from "next/font/google";
+import { Golos_Text, Onest, Oranienbaum } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { site } from "@/lib/site";
@@ -34,6 +34,23 @@ const onest = Onest({
   display: "swap",
 });
 
+/**
+ * Шрифт элементов управления — Golos Text, интерфейсный шрифт Паратайпа.
+ *
+ * Третий шрифт заведён по просьбе заказчика: раньше кнопки, метки и поля
+ * набирались заголовочной антиквой, и в мелком размере она читалась плохо
+ * — особенно капслоком и на узких кнопках. Теперь антиква осталась там,
+ * где она и нужна: в заголовках, имени художницы, девизе и цене.
+ *
+ * Golos Text рисовался для кириллических интерфейсов, поэтому в кнопке
+ * и фильтре он спокоен и не спорит с живописью.
+ */
+const golos = Golos_Text({
+  variable: "--font-ui-family",
+  subsets: ["cyrillic", "latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${site.artist} — художница из Чеченской Республики`,
@@ -64,7 +81,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // живёт без атрибута — скрипт ниже снимает его у тех, кто выбрал тёмный.
       data-theme="paper"
       suppressHydrationWarning
-      className={`${oranienbaum.variable} ${onest.variable} h-full antialiased`}
+      className={`${oranienbaum.variable} ${onest.variable} ${golos.variable} h-full antialiased`}
     >
       {/*
         Хедер намеренно НЕ здесь: на главной он прозрачный и лежит поверх

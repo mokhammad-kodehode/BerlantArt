@@ -58,7 +58,7 @@ export default function ErrorPage({
               назвать его, когда напишет.
             */}
             {error.digest && (
-              <p className="text-ink/55 mt-8 mb-0 text-[13px]">
+              <p className="text-ink/55 mt-8 mb-0 text-[14px]">
                 Код ошибки: <span className="font-mono">{error.digest}</span>
               </p>
             )}

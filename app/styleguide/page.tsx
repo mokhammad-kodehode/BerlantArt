@@ -89,11 +89,11 @@ export default function StyleguidePage() {
           <h1 className="mt-0 mb-2">Дизайн-система</h1>
           <p className="text-ink/75 mb-0 max-w-[60ch]">
             Токены и компоненты, перенесённые из макета. Эталон —{" "}
-            <code className="bg-surface rounded px-1.5 py-0.5 text-[13px]">
+            <code className="bg-surface rounded px-1.5 py-0.5 text-[14px]">
               design/tokens/organic.css
             </code>
             , страницы-образцы лежат в{" "}
-            <code className="bg-surface rounded px-1.5 py-0.5 text-[13px]">design/mockups/</code>.
+            <code className="bg-surface rounded px-1.5 py-0.5 text-[14px]">design/mockups/</code>.
           </p>
         </Container>
 
@@ -106,9 +106,9 @@ export default function StyleguidePage() {
                     className="rounded-tile h-16 border border-[var(--color-divider)]"
                     style={{ background: hex }}
                   />
-                  <p className="mt-2 mb-0 text-[13px] font-semibold">{name}</p>
-                  <p className="text-ink/60 m-0 text-[12px]">{hex}</p>
-                  <p className="text-ink/60 m-0 text-[12px]">{note}</p>
+                  <p className="mt-2 mb-0 text-[14px] font-semibold">{name}</p>
+                  <p className="text-ink/60 m-0 text-[13px]">{hex}</p>
+                  <p className="text-ink/60 m-0 text-[13px]">{note}</p>
                 </div>
               ))}
             </div>
@@ -118,7 +118,7 @@ export default function StyleguidePage() {
             <div className="flex flex-col gap-6">
               {ramps.map((ramp) => (
                 <div key={ramp.name}>
-                  <p className="mt-0 mb-2 text-[13px] font-semibold">{ramp.name}</p>
+                  <p className="mt-0 mb-2 text-[14px] font-semibold">{ramp.name}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {ramp.steps.map(([step, hex]) => (
                       <div key={step} className="w-[76px]">
@@ -126,7 +126,7 @@ export default function StyleguidePage() {
                           className="h-12 rounded-md border border-[var(--color-divider)]"
                           style={{ background: hex }}
                         />
-                        <p className="text-ink/60 m-0 mt-1 text-[11px]">
+                        <p className="text-ink/60 m-0 mt-1 text-[12px]">
                           {step} · {hex}
                         </p>
                       </div>
@@ -138,7 +138,7 @@ export default function StyleguidePage() {
           </Block>
 
           <Block title="Типографика">
-            <p className="text-ink/60 mb-6 max-w-[60ch] text-[13px]">
+            <p className="text-ink/60 mb-6 max-w-[60ch] text-[14px]">
               Заголовки — Literata, текст — Manrope. В макете стояли Caprasimo и Figtree; заменены
               потому, что ни один из них не имеет кириллицы.
             </p>
@@ -151,7 +151,7 @@ export default function StyleguidePage() {
                 Основной текст, 15px с интерлиньяжем 1.55. Пишет маслом и акрилом с 2020 года —
                 взявшись за кисть в 54 года, она прошла путь от первых этюдов до признания.
               </p>
-              <p className="text-ink/55 m-0 text-[13px]">
+              <p className="text-ink/55 m-0 text-[14px]">
                 Приглушённый текст — подписи, метаданные работ.
               </p>
             </div>
@@ -251,7 +251,7 @@ export default function StyleguidePage() {
           <Block title="Приёмы оформления">
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <p className="mt-0 mb-2 text-[13px] font-semibold">
+                <p className="mt-0 mb-2 text-[14px] font-semibold">
                   panel-dashed — пустое состояние
                 </p>
                 <div className="panel-dashed p-8">
@@ -262,8 +262,8 @@ export default function StyleguidePage() {
                 </div>
               </div>
               <div>
-                <p className="mt-0 mb-2 text-[13px] font-semibold">Залы</p>
-                <p className="text-ink/70 mt-0 mb-3 text-[13px]">
+                <p className="mt-0 mb-2 text-[14px] font-semibold">Залы</p>
+                <p className="text-ink/70 mt-0 mb-3 text-[14px]">
                   Три темы: тёмный зал, почти белый и белый. Переключатель стоит в шапке сайта,
                   выбор запоминается в браузере. Фильтра <code>washed</code> больше нет — живопись
                   показывается в настоящем цвете, потому что цвета в интерфейсе теперь нет.
@@ -289,8 +289,8 @@ export default function StyleguidePage() {
               ].map(([cls, value, note]) => (
                 <div key={cls} className="w-[168px]">
                   <div className={`bg-surface h-16 ${cls}`} />
-                  <p className="mt-2 mb-0 text-[13px] font-semibold">{cls}</p>
-                  <p className="text-ink/60 m-0 text-[12px]">
+                  <p className="mt-2 mb-0 text-[14px] font-semibold">{cls}</p>
+                  <p className="text-ink/60 m-0 text-[13px]">
                     {value} · {note}
                   </p>
                 </div>

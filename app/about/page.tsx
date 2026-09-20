@@ -179,12 +179,12 @@ export default async function AboutPage() {
                 <h2 className="mt-0 mb-4 text-[26px] text-neutral-100">
                   Дар, о котором она не знала
                 </h2>
-                <p className="mt-0 mb-4 text-[15.5px] leading-relaxed text-neutral-300">
+                <p className="mt-0 mb-4 text-[16px] leading-relaxed text-neutral-300">
                   В 2017 году не стало её мужа, и эти годы дались тяжело. Между потерей и первым
                   холстом — три года. Краски пришли туда, где не хватало слов: прожитое и
                   невысказанное стало ложиться на холст цветом.
                 </p>
-                <p className="m-0 text-[15.5px] leading-relaxed text-neutral-300">
+                <p className="m-0 text-[16px] leading-relaxed text-neutral-300">
                   Сама Берлант объясняет случившееся просто: всю жизнь она видела мир по-своему —
                   различала оттенки там, где другие видят один цвет, и складывала увиденное в
                   картины прямо в голове. Она только не знала, что это дар и что его можно вынести
@@ -209,11 +209,11 @@ export default async function AboutPage() {
         <Container>
           <section className="pb-14">
             <h2 className="mt-0 mb-4 text-[26px]">Что она пишет</h2>
-            <p className="text-ink/80 mt-0 mb-4 max-w-[62ch] text-[15.5px] leading-relaxed">
+            <p className="text-ink/80 mt-0 mb-4 max-w-[62ch] text-[16px] leading-relaxed">
               Маслом — кистью и мастихином. Её сюжеты: чеченские башни, старинная архитектура, вещи,
               за которыми стоит история. Натюрмортов она не пишет.
             </p>
-            <p className="text-ink/80 m-0 max-w-[62ch] text-[15.5px] leading-relaxed">
+            <p className="text-ink/80 m-0 max-w-[62ch] text-[16px] leading-relaxed">
               Отдельной мастерской у неё нет — есть комната, которая ею стала. Работает каждый день:
               идеи приходят наплывом, и тогда она пишет подолгу, не отрываясь, пока не выпустит
               начатое из рук.
@@ -235,7 +235,7 @@ export default async function AboutPage() {
           <p className="font-heading m-0 text-[clamp(24px,3.5vw,38px)] leading-snug text-neutral-100">
             «{site.slogan}»
           </p>
-          <p className="mx-auto mt-5 mb-0 max-w-[52ch] text-[15px] leading-relaxed text-neutral-300">
+          <p className="mx-auto mt-5 mb-0 max-w-[52ch] text-[16px] leading-relaxed text-neutral-300">
             Эту фразу Берлант услышала в кино — и узнала в ней себя. Цели она перед собой не ставит:
             не пишет ради выставок, продаж или признания. Пишет, потому что это приносит ей
             удовлетворение.

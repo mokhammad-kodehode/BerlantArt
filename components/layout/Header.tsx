@@ -120,7 +120,7 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "stage" }) {
           </ButtonLink>
 
           <div className="border-divider mt-5 border-t pt-4">
-            <span className="text-ink/55 mb-2 block text-[11px] tracking-[0.08em] uppercase">
+            <span className="text-ink/55 mb-2 block text-[12px] tracking-[0.08em] uppercase">
               Освещение
             </span>
             <ThemeSwitch />

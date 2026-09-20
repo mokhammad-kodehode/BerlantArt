@@ -119,12 +119,12 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             навигации подряд. */}
         <Link
           href="/gallery"
-          className="text-ink/70 hover:text-ink mb-4 hidden text-[13px] no-underline hover:underline lg:inline-block"
+          className="text-ink/70 hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
         >
           ← Все работы
         </Link>
 
-        <span className="text-accent mb-2.5 block text-[12px] font-semibold tracking-[0.12em] uppercase">
+        <span className="text-accent mb-2.5 block text-[13px] font-semibold tracking-[0.12em] uppercase">
           {work.category ?? "Работа"}
         </span>
 
@@ -140,7 +140,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
         </div>
 
         {work.description && (
-          <p className="text-ink/85 mt-0 mb-4 max-w-[46ch] text-[15.5px] leading-relaxed">
+          <p className="text-ink/85 mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
             {work.description}
           </p>
         )}
@@ -181,7 +181,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             колонки затемнение доходит до 11%, и при /70 контраст падал
             до 4.42 при норме 4.5. При /80 там же 5.62. Посчитано по
             самой тёмной точке снимка в этой зоне. */}
-        <p className="text-ink/80 mt-4 mb-0 max-w-[44ch] text-[13px]">
+        <p className="text-ink/80 mt-4 mb-0 max-w-[44ch] text-[14px]">
           Каждая работа существует в единственном экземпляре. О цене, доставке и сроках — напрямую с
           художницей.
         </p>
@@ -192,7 +192,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
         {hasMore && (
           <a
             href="#more"
-            className="text-accent mt-5 inline-block text-[13px] font-semibold no-underline hover:underline"
+            className="text-accent mt-5 inline-block text-[14px] font-semibold no-underline hover:underline"
           >
             Смотреть дальше ↓
           </a>

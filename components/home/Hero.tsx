@@ -49,7 +49,7 @@ export function Hero() {
       */}
       <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
         <div className="px-[clamp(20px,5vw,64px)] pt-6 pb-6 [grid-area:title] min-[900px]:py-0">
-          <span className="text-accent mb-3.5 block text-[13px] font-semibold tracking-[0.1em] uppercase">
+          <span className="text-accent mb-3.5 block text-[14px] font-semibold tracking-[0.1em] uppercase">
             {site.role}
           </span>
           {/* На телефоне крупнее, чем по формуле десктопа: имя здесь — главное

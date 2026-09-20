@@ -16,13 +16,13 @@ export function Footer() {
       <Container className="flex flex-wrap justify-between gap-10 pt-14 pb-10">
         <div className="max-w-[32ch]">
           <div className="font-heading mb-2 text-xl">{site.artist}</div>
-          <p className="text-ink/65 m-0 text-[13px] leading-relaxed">{site.description}</p>
-          <p className="font-heading text-accent mt-4 mb-0 text-[15px]">{site.slogan}</p>
+          <p className="text-ink/65 m-0 text-[14px] leading-relaxed">{site.description}</p>
+          <p className="font-heading text-accent mt-4 mb-0 text-[16px]">{site.slogan}</p>
         </div>
 
         <div className="flex flex-wrap gap-14">
           <div className="flex flex-col gap-2.5 text-sm">
-            <span className="text-accent mb-0.5 text-[11px] tracking-[0.08em] uppercase">
+            <span className="text-accent mb-0.5 text-[12px] tracking-[0.08em] uppercase">
               Разделы
             </span>
             {footerSections.map((item) => (
@@ -37,7 +37,7 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-2.5 text-sm">
-            <span className="text-accent mb-0.5 text-[11px] tracking-[0.08em] uppercase">
+            <span className="text-accent mb-0.5 text-[12px] tracking-[0.08em] uppercase">
               Контакты
             </span>
             <a href={`mailto:${site.email}`} className="text-accent no-underline hover:underline">

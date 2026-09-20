@@ -156,7 +156,7 @@ export function ArtworkViewer({
         */}
         <span
           aria-hidden
-          className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-neutral-900/60 px-2.5 py-2 text-[13px] leading-none text-neutral-100 backdrop-blur-sm transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100"
+          className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-neutral-900/60 px-2.5 py-2 text-[14px] leading-none text-neutral-100 backdrop-blur-sm transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100"
         >
           <svg
             viewBox="0 0 16 16"

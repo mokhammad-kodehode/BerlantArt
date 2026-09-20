@@ -78,6 +78,8 @@
   /* — шрифты — */
   --font-heading: var(--font-heading-family), Georgia, serif;
   --font-body: var(--font-body-family), system-ui, sans-serif;
+  /* Кнопки, метки, поля, фильтры — всё, на что нажимают. */
+  --font-ui: var(--font-ui-family), system-ui, sans-serif;
 
   /* — радиусы. Имена смысловые, а не размерные: в этой системе кнопки и теги
        всегда таблетки, а карточки и панели — крупные скругления — */
@@ -233,7 +235,10 @@
     background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-body);
-    font-size: 15px;
+    /* 16px, а не 15: заказчик просил крупнее — 16 для основного текста,
+       14 для второстепенного. Ниже 16px мобильный Safari ещё и приближает
+       страницу при касании поля ввода. */
+    font-size: 16px;
     line-height: 1.55;
   }
 
@@ -297,14 +302,16 @@
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
-    font-family: var(--font-heading);
-    font-weight: var(--font-heading-weight);
-    font-size: 14px;
+    /* Антиква ушла отсюда по просьбе заказчика: в мелком размере
+       и капслоком она читалась хуже интерфейсного шрифта. */
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: 16px;
     line-height: 1.2;
     color: var(--color-ink);
     background: transparent;
     border: 1px solid transparent;
-    padding: var(--space-2) calc(var(--space-3) * 1.2);
+    padding: 11px calc(var(--space-3) * 1.2);
     border-radius: var(--radius-pill);
     transition:
       background-color 0.18s ease,
@@ -463,17 +470,16 @@
 
   /* — админка —
 
-     Заголовки и кнопки здесь набраны текстовым шрифтом, а не антиквой
-     Oranienbaum, как на публичных страницах. Причина: Oranienbaum
-     высококонтрастный и узкий, у него тонкие засечки. На витрине это
-     красиво, а в рабочем окне, где заголовки мелкие и часто идут
-     капслоком (название работы), он читается заметно хуже Manrope.
-     Заказчик попросил убрать его из админки. */
+     Заголовки здесь набраны текстовым шрифтом, а не антиквой Oranienbaum,
+     как на публичных страницах: шрифт высококонтрастный и узкий, а в
+     рабочем окне заголовки мелкие и часто идут капслоком (название работы
+     попадает в заголовок как есть). Кнопки, поля и метки на интерфейсный
+     Golos Text переведены уже во всём проекте, отдельного правила им
+     здесь не нужно. */
   .admin-ui h1,
   .admin-ui h2,
   .admin-ui h3,
-  .admin-ui h4,
-  .admin-ui .btn {
+  .admin-ui h4 {
     font-family: var(--font-body);
     font-weight: 600;
   }
@@ -481,18 +487,21 @@
   .btn-block {
     width: 100%;
   }
+  /* Крупная кнопка отличается от обычной полями, а не кеглем: при 17px
+     пара кнопок первого экрана переставала помещаться в колонку на 1280px
+     и вставала в столбик. Замерено: 404px при доступных 391px. */
   .btn-lg {
-    padding: 14px 28px;
-    font-size: 15px;
+    padding: 14px 26px;
   }
 
   /* — теги — */
   .tag {
+    font-family: var(--font-ui);
     display: inline-flex;
     align-items: center;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.02em;
-    padding: 3px 10px;
+    padding: 4px 12px;
     border-radius: var(--radius-pill);
   }
   .tag-accent {
@@ -522,7 +531,8 @@
     background: var(--color-surface);
   }
   .card-kicker {
-    font-size: 10px;
+    font-family: var(--font-ui);
+    font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-accent);
@@ -535,15 +545,15 @@
   }
   .card-body {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
     opacity: 0.8;
   }
   .card-meta {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
-    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+    font-size: 13px;
+    color: color-mix(in srgb, var(--color-ink) 65%, transparent);
   }
 
   .elev-sm {
@@ -558,17 +568,23 @@
 
   /* — формы (понадобятся на /contact и в админке) — */
   .field > label {
+    font-family: var(--font-ui);
     display: block;
-    font-size: 12px;
+    font-size: 14px;
     margin-bottom: 5px;
     color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   }
   .input {
     width: 100%;
-    min-height: 36px;
-    padding: 6px 14px;
+    /* 44px — размер цели для пальца; 16px в поле не даёт мобильному
+       Safari приближать страницу при касании. */
+    min-height: 44px;
+    padding: 10px 16px;
     font: inherit;
-    font-size: 14px;
+    /* Обязательно после font: inherit — сокращённое свойство сбрасывает
+       семейство на унаследованное, и поле возвращалось к текстовому шрифту. */
+    font-family: var(--font-ui);
+    font-size: 16px;
     color: var(--color-ink);
     caret-color: var(--color-accent);
     background: var(--color-surface);
@@ -600,15 +616,18 @@
     border-color: var(--color-danger);
   }
   .field-error {
+    font-family: var(--font-ui);
     margin-top: 5px;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--color-danger);
   }
   /* Пояснение под полем: чем заполнять и что будет, если оставить пустым. */
   .field-hint {
+    font-family: var(--font-ui);
     margin-top: 5px;
-    font-size: 12px;
-    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 14px;
+    /* 55% давали контраст около 4:1 при норме 4.5:1 (.ai/rules/quality.md). */
+    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
   }
 
   /* Ход загрузки файла. Элемент progress, а не крашеный div: скринридер
@@ -644,11 +663,12 @@
     border-radius: var(--radius-pill);
   }
   .seg-opt {
+    font-family: var(--font-ui);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 12px;
-    font-size: 13px;
+    padding: 9px 14px;
+    font-size: 15px;
     cursor: pointer;
   }
   .seg-opt + .seg-opt {

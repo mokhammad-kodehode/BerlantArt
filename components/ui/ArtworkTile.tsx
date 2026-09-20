@@ -60,7 +60,7 @@ export function ArtworkTile({
         <span className="wall-caption absolute inset-x-0 bottom-0 block bg-linear-to-t from-[rgb(20_18_17/0.85)] to-transparent p-4">
           <span className="block text-[14px] tracking-[0.02em] text-neutral-100">{work.title}</span>
           {caption && (
-            <span className="mt-0.5 block text-[11.5px] text-neutral-100/70">{caption}</span>
+            <span className="mt-0.5 block text-[12px] text-neutral-100/70">{caption}</span>
           )}
         </span>
       </Link>

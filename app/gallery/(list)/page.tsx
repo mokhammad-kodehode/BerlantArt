@@ -71,14 +71,14 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
       <main className="flex flex-1 flex-col">
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
           <div>
-            <span className="text-accent mb-2 block text-[12px] font-semibold tracking-[0.1em] uppercase">
+            <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">
               Галерея
             </span>
             <h1 className="text-ink mt-0 mb-1.5 text-[clamp(26px,3.2vw,38px)]">Работы</h1>
             {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
                 отодвигал стену почти на половину экрана, а тапнуть по работе
                 и так очевидно. На десктопе места хватает. */}
-            <p className="text-ink/70 m-0 hidden max-w-[46ch] text-[14.5px] leading-relaxed md:block">
+            <p className="text-ink/70 m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
               Живопись маслом и акрилом. Нажмите на работу — она откроется во весь экран.
             </p>
           </div>
@@ -95,14 +95,14 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
               {filters.status || filters.category ? (
                 <>
                   <h2 className="text-ink mt-0 mb-2 text-[20px]">По этому фильтру ничего нет</h2>
-                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14.5px]">
+                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14px]">
                     Попробуйте другой статус или категорию.
                   </p>
                 </>
               ) : (
                 <>
                   <h2 className="text-ink mt-0 mb-2 text-[20px]">Работ пока нет</h2>
-                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14.5px]">
+                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14px]">
                     Картины появятся здесь, как только художница добавит их.
                   </p>
                 </>

@@ -142,7 +142,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
                     className="bg-surface relative h-14 w-14 shrink-0 overflow-hidden rounded-[10px]"
                   >
                     {src === undefined ? (
-                      <span className="text-ink/75 flex h-full items-center justify-center text-[10px]">
+                      <span className="text-ink/75 flex h-full items-center justify-center text-sm">
                         нет фото
                       </span>
                     ) : (
