@@ -3,10 +3,16 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { footerSections, site } from "@/lib/site";
 
-/** Подвал одинаков на всех страницах, поэтому подключён в корневом layout. */
+/**
+ * Подвал одинаков на всех страницах, поэтому подключён в корневом layout.
+ *
+ * Внешнего отступа сверху нет: отступ до подвала задаёт сама страница.
+ * Прежний mt-4 оставлял полосу фона между подвалом и блоком во весь экран —
+ * видео в конце главной, стеной галереи.
+ */
 export function Footer() {
   return (
-    <footer className="bg-wall text-ink mt-4">
+    <footer className="bg-wall text-ink">
       <Container className="flex flex-wrap justify-between gap-10 pt-14 pb-10">
         <div className="max-w-[32ch]">
           <div className="font-heading mb-2 text-xl">{site.artist}</div>

@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
-import type { MouseEvent, ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
 
 import type { ArtworkLink } from "@/lib/artworks";
 
@@ -50,7 +50,47 @@ export function ArtworkViewer({
   children: ReactNode;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+  const [paintedBox, setPaintedBox] = useState<CSSProperties | null>(null);
+
+  // Кнопка — ровно по холсту, а не по всему блоку. Картина вписана в блок
+  // по своим пропорциям (object-contain), и кнопка во весь блок давала лупу
+  // над пустыми полями вокруг — заказчик заметил. Где именно лёг холст,
+  // CSS не знает: считаем по натуральному размеру фото и размеру блока,
+  // пересчитываем после загрузки и при каждом изменении блока. До замера
+  // кнопка покрывает весь блок, как раньше.
+  useEffect(() => {
+    const trigger = triggerRef.current;
+    const box = trigger?.parentElement;
+    const img = trigger?.querySelector("img");
+    if (!box || !img) return;
+
+    const measure = (): void => {
+      if (!img.naturalWidth) return;
+      const scale = Math.min(
+        box.clientWidth / img.naturalWidth,
+        box.clientHeight / img.naturalHeight,
+      );
+      const width = img.naturalWidth * scale;
+      const height = img.naturalHeight * scale;
+      setPaintedBox({
+        left: (box.clientWidth - width) / 2,
+        top: (box.clientHeight - height) / 2,
+        width,
+        height,
+      });
+    };
+
+    measure();
+    img.addEventListener("load", measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => {
+      img.removeEventListener("load", measure);
+      observer.disconnect();
+    };
+  }, []);
 
   // Пришли стрелкой из просмотра — открываем сразу. Layout-эффект, а не
   // обычный: он срабатывает до отрисовки, и страница работы не мелькает
@@ -99,12 +139,39 @@ export function ArtworkViewer({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={open}
         aria-label={`Открыть «${title}» во весь экран`}
-        className="absolute inset-0 block cursor-zoom-in border-0 bg-transparent p-0"
+        style={paintedBox ?? undefined}
+        className="group absolute inset-0 block cursor-zoom-in border-0 bg-transparent p-0"
       >
         {children}
+
+        {/*
+          Подсказка в углу холста. С мышью — плашка с текстом, проявляется
+          при наведении и при фокусе с клавиатуры; без наведения холст чистый.
+          На телефоне наведения нет — там постоянно виден один значок, иначе
+          о том, что картину можно открыть, не узнать.
+        */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-neutral-900/60 px-2.5 py-2 text-[13px] leading-none text-neutral-100 backdrop-blur-sm transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M10 2.5h3.5V6M6 13.5H2.5V10M13.5 2.5 9 7M2.5 13.5 7 9" />
+          </svg>
+          <span className="hidden pr-0.5 [@media(hover:hover)]:inline">Во весь экран</span>
+        </span>
       </button>
 
       <dialog
