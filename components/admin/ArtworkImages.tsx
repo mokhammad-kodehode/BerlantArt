@@ -190,8 +190,8 @@ export function ArtworkImages({
   return (
     <section className="mt-12">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="font-display text-2xl">Фотографии</h2>
-        <p className="text-ink/55 text-sm">
+        <h2 className="text-2xl">Фотографии</h2>
+        <p className="text-ink/75 text-sm">
           JPEG, PNG или WebP. Фото уменьшается до {maxLongSide}px и сохраняется в WebP до{" "}
           {formatBytes(maxFileBytes)}. Первая становится главной.
         </p>
@@ -218,7 +218,7 @@ export function ArtworkImages({
         </Button>
 
         {images.length === 0 && uploads.length === 0 && (
-          <p className="text-ink/55 text-sm">Пока ни одной — в галерее работа покажется пустой.</p>
+          <p className="text-ink/75 text-sm">Пока ни одной — в галерее работа покажется пустой.</p>
         )}
       </div>
 
@@ -228,7 +228,7 @@ export function ArtworkImages({
             <li key={upload.id} className="text-sm">
               <div className="mb-1 flex justify-between gap-4">
                 <span className="truncate">{upload.name}</span>
-                <span className="text-ink/55 tabular-nums">
+                <span className="text-ink/75 tabular-nums">
                   {upload.isCompressing ? "Сжимаем…" : `${upload.percent}%`}
                 </span>
               </div>
@@ -300,7 +300,7 @@ function ImageRow({
     <li className="border-divider flex flex-wrap items-start gap-4 rounded-[14px] border p-3">
       <div className="bg-surface relative h-20 w-20 shrink-0 overflow-hidden rounded-[10px]">
         {image.src === undefined ? (
-          <span className="text-ink/55 flex h-full items-center justify-center text-xs">
+          <span className="text-ink/75 flex h-full items-center justify-center text-xs">
             нет адреса
           </span>
         ) : (
@@ -310,11 +310,11 @@ function ImageRow({
 
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink/55 text-xs tabular-nums">{index + 1}</span>
+          <span className="text-ink/75 text-xs tabular-nums">{index + 1}</span>
           {image.isPrimary && <span className="tag tag-outline text-xs">Главная</span>}
         </div>
 
-        <label className="text-ink/55 text-xs" htmlFor={`alt-${image.id}`}>
+        <label className="text-ink/75 text-xs" htmlFor={`alt-${image.id}`}>
           Подпись для незрячих
         </label>
         <div className="flex flex-wrap gap-2">

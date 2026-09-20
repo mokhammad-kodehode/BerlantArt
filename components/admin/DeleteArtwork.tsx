@@ -47,7 +47,7 @@ export function DeleteArtwork({
 
       <dialog ref={dialog} className="dialog" aria-labelledby="delete-title">
         <div className="flex flex-col gap-4 p-6">
-          <h2 id="delete-title" className="font-display text-xl">
+          <h2 id="delete-title" className="text-xl">
             Удалить «{title}»?
           </h2>
 
@@ -58,7 +58,7 @@ export function DeleteArtwork({
 
           {/* Названо прямо: чаще всего человеку нужно не это. Подсказка
               в момент решения полезнее, чем правило в инструкции. */}
-          <p className="text-ink/55 text-sm">
+          <p className="text-ink/75 text-sm">
             Если работа просто больше не продаётся — не удаляй её, а поставь статус «Продана». Она
             останется на сайте, и её историю будет видно.
           </p>

@@ -19,8 +19,8 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center py-16">
       <Container>
         <div className="mx-auto w-full max-w-[380px]">
-          <h1 className="font-display mb-2 text-3xl">Вход</h1>
-          <p className="text-ink/55 mb-8 text-sm">Управление работами на сайте.</p>
+          <h1 className="mb-2 text-3xl">Вход</h1>
+          <p className="text-ink/75 mb-8 text-sm">Управление работами на сайте.</p>
 
           <LoginForm />
         </div>

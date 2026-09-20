@@ -30,14 +30,14 @@ export function AdminShell({
         {back !== undefined && (
           <Link
             href={back.href}
-            className="text-ink/55 hover:text-accent mb-4 inline-block text-sm"
+            className="text-ink/75 hover:text-accent mb-4 inline-block text-sm"
           >
             ← {back.label}
           </Link>
         )}
 
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-display text-3xl">{title}</h1>
+          <h1 className="text-3xl">{title}</h1>
           {actions}
         </div>
 

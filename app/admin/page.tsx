@@ -64,8 +64,8 @@ export default async function AdminPage() {
               href={tile.href}
               className="border-divider hover:border-accent rounded-tile block border p-3 sm:p-4"
             >
-              <span className="font-display block text-3xl">{tile.count}</span>
-              <span className="text-ink/55 text-sm">{tile.label}</span>
+              <span className="block text-3xl">{tile.count}</span>
+              <span className="text-ink/75 text-sm">{tile.label}</span>
             </Link>
           </li>
         ))}
@@ -79,10 +79,10 @@ export default async function AdminPage() {
         <ButtonLink href="/gallery">Открыть галерею</ButtonLink>
       </div>
 
-      <h2 className="font-display mb-4 text-2xl">Добавлены последними</h2>
+      <h2 className="mb-4 text-2xl">Добавлены последними</h2>
 
       {recent.length === 0 ? (
-        <div className="panel-dashed text-ink/55 p-6 text-sm">
+        <div className="panel-dashed text-ink/75 p-6 text-sm">
           Работ пока нет. Первая появится здесь сразу после создания.
         </div>
       ) : (
@@ -98,7 +98,7 @@ export default async function AdminPage() {
                 >
                   <span className="bg-surface relative h-14 w-14 shrink-0 overflow-hidden rounded-[10px]">
                     {src === undefined ? (
-                      <span className="text-ink/55 flex h-full items-center justify-center text-[10px]">
+                      <span className="text-ink/75 flex h-full items-center justify-center text-[10px]">
                         нет фото
                       </span>
                     ) : (
@@ -107,7 +107,7 @@ export default async function AdminPage() {
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-base font-medium">{work.title}</span>
-                    <span className="text-ink/55 text-sm">
+                    <span className="text-ink/75 text-sm">
                       {[work.category, artworkStatusNames[work.status]].filter(Boolean).join(" · ")}
                     </span>
                   </span>

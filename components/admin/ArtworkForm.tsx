@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { saveArtwork, type ArtworkFormState } from "@/lib/actions/artworks";
@@ -62,7 +63,22 @@ export type ArtworkFormInitial = {
   values: ArtworkFormRaw;
 } | null;
 
-export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
+export function ArtworkForm({
+  initial,
+  photos,
+}: {
+  initial: ArtworkFormInitial;
+  /**
+   * Блок фотографий. Стоит внутри формы, между полями и кнопкой
+   * «Сохранить», по просьбе заказчика: фотография — часть работы,
+   * и искать её ниже кнопки сохранения неестественно.
+   *
+   * Отправке формы блок не мешает: все его кнопки объявлены type="button",
+   * а поля не имеют name и в данные формы не попадают. Свои изменения
+   * он сохраняет сам, отдельными действиями.
+   */
+  photos?: ReactNode;
+}) {
   const [state, formAction, isPending] = useActionState<ArtworkFormState, FormData>(
     saveArtwork,
     {},
@@ -196,6 +212,8 @@ export function ArtworkForm({ initial }: { initial: ArtworkFormInitial }) {
           {fieldError("price")}
         </div>
       </div>
+
+      {photos}
 
       <div className="grid items-start gap-5 sm:grid-cols-2">
         <div className="field">

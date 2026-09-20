@@ -69,7 +69,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       actions={
         <Link
           href={`/gallery/${artwork.id}`}
-          className="text-ink/55 hover:text-accent text-sm"
+          className="text-ink/75 hover:text-accent text-sm"
           target="_blank"
         >
           Посмотреть на сайте ↗
@@ -77,16 +77,19 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       }
     >
       <div className="max-w-[760px]">
-        <ArtworkForm initial={initial} />
-
-        <ArtworkImages artworkId={artwork.id} artworkTitle={artwork.title} images={images} />
+        <ArtworkForm
+          initial={initial}
+          photos={
+            <ArtworkImages artworkId={artwork.id} artworkTitle={artwork.title} images={images} />
+          }
+        />
 
         {/* Удаление стоит в самом низу и отделено чертой: рядом с
             «Сохранить» его однажды нажали бы по инерции. В строке списка
             работ его нет вовсе — там соседняя кнопка меняет статус,
             и промах в необратимом действии стоит слишком дорого. */}
         <div className="border-divider mt-14 border-t pt-6">
-          <p className="text-ink/55 mb-3 text-sm">
+          <p className="text-ink/75 mb-3 text-sm">
             Убрать работу с сайта насовсем, вместе с фотографиями.
           </p>
           <DeleteArtwork

@@ -74,7 +74,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
         </Button>
 
         {hasFilters && (
-          <Link href="/admin/artworks" className="text-ink/55 hover:text-accent pb-2 text-sm">
+          <Link href="/admin/artworks" className="text-ink/75 hover:text-accent pb-2 text-sm">
             Сбросить
           </Link>
         )}
@@ -106,13 +106,13 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
           {hasFilters ? (
             <>
               <p className="mb-2 font-medium">По этому запросу ничего не нашлось</p>
-              <p className="text-ink/55 mb-5 text-sm">Попробуй другое слово или сбрось фильтры.</p>
+              <p className="text-ink/75 mb-5 text-sm">Попробуй другое слово или сбрось фильтры.</p>
               <ButtonLink href="/admin/artworks">Показать все работы</ButtonLink>
             </>
           ) : (
             <>
               <p className="mb-2 font-medium">Работ пока нет</p>
-              <p className="text-ink/55 mb-5 text-sm">
+              <p className="text-ink/75 mb-5 text-sm">
                 Добавь первую — она появится на сайте сразу после сохранения.
               </p>
               <ButtonLink href="/admin/artworks/new" variant="primary">
@@ -123,7 +123,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
         </div>
       ) : (
         <>
-          <p className="text-ink/55 mb-3 text-sm">
+          <p className="text-ink/75 mb-3 text-sm">
             {works.length === 1 ? "1 работа" : `Работ: ${works.length}`}
           </p>
 
@@ -142,7 +142,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
                     className="bg-surface relative h-14 w-14 shrink-0 overflow-hidden rounded-[10px]"
                   >
                     {src === undefined ? (
-                      <span className="text-ink/55 flex h-full items-center justify-center text-[10px]">
+                      <span className="text-ink/75 flex h-full items-center justify-center text-[10px]">
                         нет фото
                       </span>
                     ) : (
@@ -157,7 +157,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
                     >
                       {work.title}
                     </Link>
-                    <p className="text-ink/55 text-sm">
+                    <p className="text-ink/75 text-sm">
                       {[work.category, price, `фото: ${work.images.length}`]
                         .filter(Boolean)
                         .join(" · ")}

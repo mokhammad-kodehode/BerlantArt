@@ -60,7 +60,7 @@ export function LoginForm() {
             onClick={() => setIsPasswordShown((shown) => !shown)}
             aria-pressed={isPasswordShown}
             aria-controls="password"
-            className="text-ink/70 hover:text-accent rounded-pill absolute inset-y-0 right-0 px-4 text-sm"
+            className="text-ink/75 hover:text-accent rounded-pill absolute inset-y-0 right-0 px-4 text-sm"
           >
             {isPasswordShown ? "Скрыть" : "Показать"}
           </button>
