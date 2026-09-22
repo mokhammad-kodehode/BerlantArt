@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AdminShell } from "@/components/admin/AdminShell";
+import { OpenGalleryLink } from "@/components/admin/OpenGalleryLink";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { logout } from "@/lib/actions/auth";
 import { adminArtworksHref } from "@/lib/admin-filters";
@@ -76,7 +77,7 @@ export default async function AdminPage() {
           Добавить работу
         </ButtonLink>
         <ButtonLink href="/admin/artworks">Все работы</ButtonLink>
-        <ButtonLink href="/gallery">Открыть галерею</ButtonLink>
+        <OpenGalleryLink />
       </div>
 
       <h2 className="mb-4 text-2xl">Добавлены последними</h2>

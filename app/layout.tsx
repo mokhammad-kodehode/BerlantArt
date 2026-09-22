@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Golos_Text, Oranienbaum } from "next/font/google";
 
+import { AdminReturnBar } from "@/components/layout/AdminReturnBar";
 import { Footer } from "@/components/layout/Footer";
 import { site } from "@/lib/site";
 
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <div className="flex-1">{children}</div>
         <Footer />
+        <AdminReturnBar />
       </body>
     </html>
   );
