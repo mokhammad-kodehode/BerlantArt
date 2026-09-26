@@ -30,17 +30,17 @@ const SWITCH_DELAY_MS = 700;
 const DECODE_WAIT_MS = 1500;
 
 /**
- * Инструменты нижней строки на телефоне. Рама, цвет и стена открывают
- * ряд вариантов — соответствующий раздел панели; «картина» — ряд
+ * Инструменты нижней строки на телефоне. Рама и стена открывают ряд
+ * вариантов — соответствующий раздел панели (у рамы в нём и цвет:
+ * цвет — свойство рамы, а не отдельный инструмент, так попросил заказчик); «картина» — ряд
  * миниатюр. Свет и «издали» инструментами не считаются: это мгновенные
  * переключатели, ряда вариантов у них нет.
  */
-type RoomTool = "painting" | "frame" | "finish" | "wall";
+type RoomTool = "painting" | "frame" | "wall";
 
 const roomTools: { id: RoomTool; label: string; icon: IconName }[] = [
   { id: "painting", label: "Картина", icon: "painting" },
   { id: "frame", label: "Рама", icon: "frame" },
-  { id: "finish", label: "Цвет", icon: "palette" },
   { id: "wall", label: "Стена", icon: "wall" },
 ];
 
@@ -53,7 +53,6 @@ type IconName =
   | "collapse"
   | "painting"
   | "frame"
-  | "palette"
   | "wall"
   | "info"
   | "close";
@@ -105,14 +104,6 @@ function ViewIcon({ name, className = "size-[18px]" }: { name: IconName; classNa
         <>
           <rect x="3" y="3" width="18" height="18" rx="1" />
           <rect x="7.5" y="7.5" width="9" height="9" />
-        </>
-      )}
-      {name === "palette" && (
-        <>
-          <path d="M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.6 0-.9-.7-1.3-.7-2.1 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.9-4-8.8-9-8.8Z" />
-          <circle cx="7.5" cy="11" r="1" />
-          <circle cx="10" cy="7.5" r="1" />
-          <circle cx="14.5" cy="7.5" r="1" />
         </>
       )}
       {name === "wall" && (
@@ -560,7 +551,9 @@ export function ArtworkRoom({
           <h2 className="room-section-title" id="room-frame-title">
             <span className="room-section-name">Рама</span>
             <span className="room-section-value">
-              {options.frame === "none" ? model.label : `${model.label}, ${model.widthCm} см`}
+              {options.frame === "none"
+                ? model.label
+                : `${model.label}, ${model.widthCm} см · ${finish.label}`}
             </span>
           </h2>
           <div className="room-models" role="radiogroup" aria-labelledby="room-frame-title">
@@ -590,46 +583,40 @@ export function ArtworkRoom({
               </label>
             ))}
           </div>
-        </section>
 
-        {model.finishes.length === 0 && (
-          <section className="room-section lg:hidden" data-active={tool === "finish"}>
-            <p className="m-0 text-[14px] opacity-80">
-              У холста без рамы цвета нет — выберите раму.
-            </p>
-          </section>
-        )}
-
-        {model.finishes.length > 0 && (
-          <section className="room-section" data-active={tool === "finish"}>
-            <h2 className="room-section-title" id="room-finish-title">
-              <span className="room-section-name">Цвет рамы</span>
-              <span className="room-section-value">{finish.label}</span>
-            </h2>
-            <div className="room-swatches" role="radiogroup" aria-labelledby="room-finish-title">
-              {model.finishes.map((id) => {
-                const item = frameFinish(id);
-                return (
-                  <label
-                    key={id}
-                    title={item.label}
-                    className="room-swatch room-swatch-finish"
-                    data-finish={id}
-                  >
-                    <input
-                      type="radio"
-                      name="room-finish"
-                      value={id}
-                      aria-label={item.label}
-                      checked={options.finish === id}
-                      onChange={() => update({ finish: id })}
-                    />
-                  </label>
-                );
-              })}
+          {/* Цвет — внутри раздела «Рама», вторым рядом: это свойство
+              выбранной рамы, и у каждой модели свой набор. У холста
+              без рамы цвета нет — ряда нет. */}
+          {model.finishes.length > 0 && (
+            <div className="room-finishes">
+              <p className="room-subtitle" id="room-finish-title">
+                Цвет рамы
+              </p>
+              <div className="room-swatches" role="radiogroup" aria-labelledby="room-finish-title">
+                {model.finishes.map((id) => {
+                  const item = frameFinish(id);
+                  return (
+                    <label
+                      key={id}
+                      title={item.label}
+                      className="room-swatch room-swatch-finish"
+                      data-finish={id}
+                    >
+                      <input
+                        type="radio"
+                        name="room-finish"
+                        value={id}
+                        aria-label={item.label}
+                        checked={options.finish === id}
+                        onChange={() => update({ finish: id })}
+                      />
+                    </label>
+                  );
+                })}
+              </div>
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
         <section className="room-section" data-active={tool === "wall"}>
           <h2 className="room-section-title" id="room-wall-title">

@@ -2037,6 +2037,36 @@
     opacity: 0.8;
   }
 
+  /* Цвет рамы — второй ряд раздела «Рама». */
+  .room-finishes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .room-subtitle {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  @media (max-width: 1023px) {
+    /* На телефоне подпись не нужна — цвет и так под своей рамой,
+       а выбранный назван в заголовке раздела. */
+    .room-subtitle {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .room-finishes {
+      margin-top: 0;
+    }
+    .room-finishes .room-swatches {
+      padding: 2px 4px;
+    }
+  }
+
   /* Карточки моделей рам: образец, название, ширина. */
   .room-models {
     display: grid;
@@ -2522,6 +2552,13 @@
     .room[data-tool] {
       --tray-h: 112px;
     }
+    /* У рамы два ряда: модели и цвет выбранной рамы. */
+    .room[data-tool="frame"] {
+      --tray-h: 180px;
+    }
+    .room[data-tool="frame"][data-frame="none"] {
+      --tray-h: 112px;
+    }
 
     .room-scene {
       /* Сверху — место под лампу над рамой; верхняя строка стоит
@@ -2585,7 +2622,7 @@
     .room-panel {
       inset: auto 0 var(--toolbar-h);
       z-index: 7;
-      height: 112px;
+      height: var(--tray-h);
       gap: 8px;
       padding: 10px 14px 12px;
       overflow: hidden;
@@ -2597,7 +2634,7 @@
         transform 0.35s var(--room-ease),
         visibility 0s linear 0.35s;
     }
-    .room:is([data-tool="frame"], [data-tool="finish"], [data-tool="wall"]) .room-panel {
+    .room:is([data-tool="frame"], [data-tool="wall"]) .room-panel {
       visibility: visible;
       transform: none;
       transition:
