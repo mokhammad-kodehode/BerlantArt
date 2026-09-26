@@ -176,17 +176,30 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
           </ExternalButtonLink>
         </div>
 
-        {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
-            есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
-            с клавиатуры и читается скринридером. */}
-        {hasMore && (
-          <a
-            href="#more"
-            className="text-accent mt-5 inline-block text-[14px] font-semibold no-underline hover:underline"
-          >
-            Смотреть дальше ↓
-          </a>
-        )}
+        <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
+          {/* Картина в тёмной комнате под лампой (/gallery/[id]/room).
+              Без фотографии вешать на стену нечего — ссылки тогда нет. */}
+          {primaryImageUrl(work) && (
+            <Link
+              href={`/gallery/${work.id}/room`}
+              className="text-accent text-[14px] font-semibold no-underline hover:underline"
+            >
+              Посмотреть в интерьере →
+            </Link>
+          )}
+
+          {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
+              есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
+              с клавиатуры и читается скринридером. */}
+          {hasMore && (
+            <a
+              href="#more"
+              className="text-accent text-[14px] font-semibold no-underline hover:underline"
+            >
+              Смотреть дальше ↓
+            </a>
+          )}
+        </div>
       </ArtworkStage>
 
       <main id="more">
