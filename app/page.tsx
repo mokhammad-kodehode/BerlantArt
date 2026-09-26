@@ -4,8 +4,7 @@ import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
 import { PaintingReel } from "@/components/home/PaintingReel";
 import { ButtonLink } from "@/components/ui/Button";
-import { Tag } from "@/components/ui/Tag";
-import { getFeatured } from "@/lib/artworks";
+import { countArtworks, getFeatured } from "@/lib/artworks";
 
 /**
  * Как часто страница перерисовывается заново, в секундах.
@@ -24,71 +23,85 @@ import { getFeatured } from "@/lib/artworks";
 export const revalidate = 300;
 
 /**
+ * Сколько работ на главной — по просьбе заказчика. 30 — шесть полных
+ * блоков коллажа по пять, стена без хвоста-остатка. Остальное — в галерее,
+ * кнопка на неё под стеной — только если там правда есть что-то ещё.
+ */
+const HOME_WORKS = 30;
+
+/**
  * Главная. Собрана по макету design/mockups/Home.dc.html.
  *
- * Запрос в базу с этой страницы один — работы для стены, — и их число
- * не растёт с числом картин.
+ * Запросов в базу с этой страницы два — работы для стены и общее число
+ * работ, — идут разом, и их число не растёт с числом картин.
  */
 export default async function HomePage() {
-  const featured = await getFeatured();
+  const [featured, total] = await Promise.all([getFeatured(HOME_WORKS), countArtworks()]);
+  // Сравнение с общим числом, а не с HOME_WORKS: в галерее есть и работы
+  // без отметки «на главную», их на стене нет, но кнопка должна к ним вести.
+  const hasMore = total > featured.length;
 
   return (
     <>
       <Hero />
 
-      {/*
-        Стена работ — тот же коллаж, что в галерее, тем же компонентом.
-        Прежняя лента «Из мастерской» (горизонтальная прокрутка, работы
-        в рамках-паспарту) убрана по просьбе заказчика: рамки и подписи
-        капслоком спорили с живописью, а картины в ленте были мелкими.
-      */}
-      <section className="bg-wall px-[clamp(20px,5vw,64px)] pt-14 pb-14">
-        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-ink m-0 text-[clamp(24px,3vw,32px)]">Работы</h2>
-          <Link href="/gallery" className="text-accent font-semibold no-underline hover:underline">
-            Вся галерея →
-          </Link>
-        </div>
+      {/* main вокруг стены: у страницы должна быть одна главная область,
+          и после удаления секции «Выставки» ею стала стена работ. Hero
+          снаружи намеренно — внутри него шапка, а шапке в main не место. */}
+      <main>
+        {/*
+          Стена работ — тот же коллаж, что в галерее, тем же компонентом.
+          Поля и заголовок сверху вернулись по просьбе заказчика: стена
+          от края до края вплотную к hero сливалась с первым экраном —
+          было не понять, где кончается одно и начинается другое.
 
-        {featured.length === 0 ? (
-          <div className="panel-dashed p-9">
-            <p className="text-ink/70 m-0 max-w-[46ch] text-[14px]">
-              Работы для главной пока не выбраны. Все картины — в галерее.
-            </p>
-          </div>
-        ) : (
-          /* Высота задаётся здесь: строки сетки — 1fr, и без неё коллаж
-             сожмётся до минимальной высоты строки. 72vh — чтобы стена
-             читалась как отдельный экран, но не прятала следующую секцию. */
-          <ArtworkCollage works={featured} className="min-h-[72vh]" />
-        )}
-      </section>
-
-      {/*
-        Ширина как у стены работ выше — те же поля clamp(20px,5vw,64px)
-        и никакого ограничения в 1200px. Прежде main сидел в Container,
-        и после стены почти во всю ширину блоки ниже читались как
-        ступенька: картины до края, а текст в узкой колонке.
-        Строки при этом не разъезжаются: их держит max-width у самих
-        абзацев, а не у всей колонки.
-      */}
-      <main className="px-[clamp(20px,5vw,64px)]">
-        {/* Выставки: пустое состояние, пока событий нет. Отступ сверху свой:
-            раньше его давал блок «Первый холст — в 54 года», убранный
-            с главной по просьбе заказчика (история — на /about). */}
-        <section className="pt-14 pb-18">
-          <div className="panel-dashed flex flex-wrap items-center justify-between gap-5 p-10">
+          Поля на 20% шире, чем в галерее (24–77px вместо 20–64px, сверху
+          58–115px вместо 48–96px), — тоже по просьбе заказчика: на главной
+          стена — отдельная секция среди других, ей нужно больше воздуха.
+        */}
+        <section
+          aria-labelledby="home-works-title"
+          className="bg-wall px-[clamp(24px,6vw,77px)] pt-[clamp(58px,8.4vw,115px)] pb-[clamp(24px,6vw,77px)]"
+        >
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-x-10 gap-y-3 md:mb-8">
             <div>
-              <Tag tone="outline">Выставки</Tag>
-              <h3 className="mt-4 mb-2">Ближайшие события скоро появятся здесь</h3>
-              <p className="text-ink/70 m-0 max-w-[48ch]">
-                Следите за расписанием выставок и показов работ Берлант.
+              <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">
+                Из мастерской
+              </span>
+              <h2 id="home-works-title" className="text-ink m-0 text-[clamp(26px,3.2vw,38px)]">
+                Работы
+              </h2>
+            </div>
+            <Link
+              href="/gallery"
+              className="text-accent font-semibold no-underline hover:underline"
+            >
+              Вся галерея →
+            </Link>
+          </div>
+
+          {featured.length === 0 ? (
+            <div className="panel-dashed p-9">
+              <p className="text-ink/70 m-0 max-w-[46ch] text-[14px]">
+                Работы для главной пока не выбраны. Все картины — в галерее.
               </p>
             </div>
-            <ButtonLink href="/contact" variant="ghost">
-              Написать художнице →
-            </ButtonLink>
-          </div>
+          ) : (
+            <>
+              <ArtworkCollage works={featured} />
+
+              {/* Кнопка под стеной, а не только ссылка над ней: досмотрев
+                  тридцать работ, посетитель оказывается внизу, и путь
+                  к остальным должен быть там, где он сейчас. */}
+              {hasMore && (
+                <div className="mt-[clamp(32px,4vw,48px)] flex justify-center">
+                  <ButtonLink href="/gallery" variant="primary" size="lg">
+                    Смотреть всю галерею →
+                  </ButtonLink>
+                </div>
+              )}
+            </>
+          )}
         </section>
       </main>
 

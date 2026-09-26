@@ -29,6 +29,52 @@ function cells(className: string, prefix: "" | "md:"): number {
   return span(className, prefix, "col") * span(className, prefix, "row");
 }
 
+/**
+ * Расставляет плитки так же, как браузер в сетке без явных позиций
+ * (grid-auto-flow: row, без dense): курсор идёт слева направо и вниз
+ * и никогда не возвращается назад. Возвращает, в каком столбце начинается
+ * каждая плитка, и число пустых клеток.
+ *
+ * Подсчёта клеток мало: сумма может делиться на 4, а крупная плитка при
+ * неудачном порядке всё равно уедет на следующую строку и оставит дыру.
+ */
+function place(tiles: { className: string }[], columns: number) {
+  const taken = new Set<string>();
+  const startColumns: number[] = [];
+  let row = 0;
+  let col = 0;
+  let lastRow = 0;
+
+  for (const tile of tiles) {
+    const width = span(tile.className, "md:", "col");
+    const height = span(tile.className, "md:", "row");
+
+    const fits = (r: number, c: number) => {
+      if (c + width > columns) return false;
+      for (let dr = 0; dr < height; dr += 1)
+        for (let dc = 0; dc < width; dc += 1) if (taken.has(`${r + dr}:${c + dc}`)) return false;
+      return true;
+    };
+
+    while (!fits(row, col)) {
+      col += 1;
+      if (col >= columns) {
+        col = 0;
+        row += 1;
+      }
+    }
+
+    for (let dr = 0; dr < height; dr += 1)
+      for (let dc = 0; dc < width; dc += 1) taken.add(`${row + dr}:${col + dc}`);
+
+    startColumns.push(col);
+    lastRow = Math.max(lastRow, row + height);
+    col += width;
+  }
+
+  return { startColumns, holes: lastRow * columns - taken.size };
+}
+
 describe("collageLayout", () => {
   it("отдаёт по одной плитке на работу", () => {
     expect(collageLayout(7)).toHaveLength(7);
@@ -62,12 +108,23 @@ describe("collageLayout", () => {
     }
   });
 
-  it("ставит крупную плитку первой в каждом полном блоке", () => {
-    const tiles = collageLayout(10);
+  it("не оставляет дыр при настоящей расстановке по сетке", () => {
+    for (let count = 1; count <= 40; count += 1) {
+      expect(place(collageLayout(count), 4).holes, `работ: ${count}`).toBe(0);
+    }
+  });
 
+  it("чередует крупную работу слева и справа в полных блоках", () => {
+    const tiles = collageLayout(15);
+    const { startColumns } = place(tiles, 4);
+
+    // Блок 1: крупная первой, слева. Блок 2: третьей, справа. Блок 3: снова слева.
     expect(tiles[0].className).toContain("md:row-span-2");
-    expect(tiles[5].className).toContain("md:row-span-2");
-    expect(tiles[1].className).toContain("md:row-span-1");
+    expect(startColumns[0]).toBe(0);
+    expect(tiles[7].className).toContain("md:row-span-2");
+    expect(startColumns[7]).toBe(2);
+    expect(tiles[10].className).toContain("md:row-span-2");
+    expect(startColumns[10]).toBe(0);
   });
 
   it("раскладывает шесть работ двумя крупными и четырьмя мелкими", () => {

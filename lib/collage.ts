@@ -43,6 +43,23 @@ const DESKTOP_BLOCK: Span[] = [
 ];
 
 /**
+ * Тот же блок зеркально: крупная работа справа. Полные блоки чередуются —
+ * крупная слева, крупная справа, — по просьбе заказчика: одинаковые блоки
+ * подряд читались как повторяющийся узор, а не как стена картин.
+ *
+ * Порядок плиток здесь существенен: сетка расставляет их по очереди слева
+ * направо, и только так две мелкие встают слева в первой строке, крупная —
+ * справа на две строки, а оставшиеся две — под первыми двумя.
+ */
+const DESKTOP_BLOCK_MIRRORED: Span[] = [
+  { cols: 1, rows: 1 },
+  { cols: 1, rows: 1 },
+  { cols: 2, rows: 2 },
+  { cols: 1, rows: 1 },
+  { cols: 1, rows: 1 },
+];
+
+/**
  * Блок из шести — на случай, когда работ на одну больше, чем полных
  * пятёрок: две крупные сверху, четыре поменьше снизу, ровно три строки.
  *
@@ -137,7 +154,9 @@ function desktopSpans(count: number): Span[] {
   if (sixAtEnd) blocks -= 1;
 
   const spans: Span[] = [];
-  for (let i = 0; i < blocks; i += 1) spans.push(...DESKTOP_BLOCK);
+  for (let i = 0; i < blocks; i += 1) {
+    spans.push(...(i % 2 === 0 ? DESKTOP_BLOCK : DESKTOP_BLOCK_MIRRORED));
+  }
   if (sixAtEnd) spans.push(...DESKTOP_SIX);
   else if (rest > 0) spans.push(...DESKTOP_TAILS[rest]);
 
