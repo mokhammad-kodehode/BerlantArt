@@ -29,31 +29,48 @@ const SWITCH_DELAY_MS = 700;
 /** Сколько ждать, пока браузер раскодирует фотографию, прежде чем показывать её. */
 const DECODE_WAIT_MS = 1500;
 
-/** Разделы панели — они же вкладки на телефоне. */
-type RoomTab = "frame" | "finish" | "wall";
+/**
+ * Инструменты нижней строки на телефоне. Рама, цвет и стена открывают
+ * ряд вариантов — соответствующий раздел панели; «картина» — ряд
+ * миниатюр. Свет и «издали» инструментами не считаются: это мгновенные
+ * переключатели, ряда вариантов у них нет.
+ */
+type RoomTool = "painting" | "frame" | "finish" | "wall";
 
-const roomTabs: { id: RoomTab; label: string }[] = [
-  { id: "frame", label: "Рама" },
-  { id: "finish", label: "Цвет" },
-  { id: "wall", label: "Стена" },
+const roomTools: { id: RoomTool; label: string; icon: IconName }[] = [
+  { id: "painting", label: "Картина", icon: "painting" },
+  { id: "frame", label: "Рама", icon: "frame" },
+  { id: "finish", label: "Цвет", icon: "palette" },
+  { id: "wall", label: "Стена", icon: "wall" },
 ];
 
+type IconName =
+  | "sun"
+  | "moon"
+  | "zoom-in"
+  | "zoom-out"
+  | "settings"
+  | "collapse"
+  | "painting"
+  | "frame"
+  | "palette"
+  | "wall"
+  | "info"
+  | "close";
+
 /**
- * Иконки управления видом: солнце — день, луна — вечер, лупа с минусом —
+ * Иконки примерочной: солнце — день, луна — вечер, лупа с минусом —
  * отдалить, с плюсом — вернуться к картине, ползунки — настройки,
- * стрелка — убрать панель. Линией, как значки контактов,
- * цвет — от текста кнопки.
+ * стрелка — убрать панель, и значки инструментов нижней строки.
+ * Линией, как значки контактов, цвет — от текста кнопки. Размер —
+ * пропсом: классы размера сильнее любых правил globals.css.
  */
-function ViewIcon({
-  name,
-}: {
-  name: "sun" | "moon" | "zoom-in" | "zoom-out" | "settings" | "collapse";
-}) {
+function ViewIcon({ name, className = "size-[18px]" }: { name: IconName; className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="size-[18px]"
+      className={className}
       fill="none"
       stroke="currentColor"
       strokeWidth={1.7}
@@ -77,6 +94,41 @@ function ViewIcon({
       {/* Стрелка «убрать»: на компьютере панель уезжает вправо, на
           телефоне вниз — поворот задаёт CSS (.room-panel-close svg). */}
       {name === "collapse" && <path d="m9 6 6 6-6 6" />}
+      {name === "painting" && (
+        <>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <circle cx="9" cy="10" r="1.6" />
+          <path d="m21 16-5-5-9 9" />
+        </>
+      )}
+      {name === "frame" && (
+        <>
+          <rect x="3" y="3" width="18" height="18" rx="1" />
+          <rect x="7.5" y="7.5" width="9" height="9" />
+        </>
+      )}
+      {name === "palette" && (
+        <>
+          <path d="M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.6 0-.9-.7-1.3-.7-2.1 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.9-4-8.8-9-8.8Z" />
+          <circle cx="7.5" cy="11" r="1" />
+          <circle cx="10" cy="7.5" r="1" />
+          <circle cx="14.5" cy="7.5" r="1" />
+        </>
+      )}
+      {name === "wall" && (
+        <>
+          <rect x="3" y="3" width="15" height="6" rx="1.5" />
+          <path d="M18 6h2v5h-8v3" />
+          <rect x="10.5" y="14" width="3" height="7" rx="1" />
+        </>
+      )}
+      {name === "info" && (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v5M12 8h.01" />
+        </>
+      )}
+      {name === "close" && <path d="M6 6l12 12M18 6 6 18" />}
       {(name === "zoom-in" || name === "zoom-out") && (
         <>
           <circle cx="10.5" cy="10.5" r="6.5" />
@@ -133,9 +185,12 @@ export function ArtworkRoom({
   const [aspect, setAspect] = useState<number | null>(null);
   const [isLampOn, setIsLampOn] = useState(false);
   const [isStripOpen, setIsStripOpen] = useState(false);
-  // Открытая вкладка нижней панели на телефоне. На компьютере разделы
-  // видны все сразу, и это состояние ни на что не влияет.
-  const [tab, setTab] = useState<RoomTab>("frame");
+  // Открытый инструмент нижней строки на телефоне; null — ряд вариантов
+  // закрыт и видна вся комната. На компьютере разделы панели видны все
+  // сразу, и это состояние ни на что не влияет.
+  const [tool, setTool] = useState<RoomTool | null>(null);
+  // Карточка «о картине» на телефоне: табличке на стене там нет места.
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   // Панель можно убрать, чтобы смотреть на комнату целиком. В адрес это
   // не пишется: ссылку пересылают ради рамы и стены, а не ради того,
   // открыта ли у отправителя панель.
@@ -211,6 +266,8 @@ export function ArtworkRoom({
     isLandscape ? `${value.long} × ${value.short} см` : `${value.short} × ${value.long} см`;
   const framed = sides === null ? null : framedSides(sides, options.frame);
 
+  const toggleTool = (id: RoomTool) => setTool((current) => (current === id ? null : id));
+
   const query = roomQuery(options);
   const message = roomMessage(work.title, options, `${siteUrl}/gallery/${work.id}/room${query}`);
 
@@ -228,22 +285,47 @@ export function ArtworkRoom({
       data-sofa={isSofaShown}
       data-has-size={sides !== null}
       data-panel={isPanelOpen ? "open" : "closed"}
+      data-tool={tool ?? undefined}
       aria-label={`Примерочная: «${work.title}»`}
     >
       <div className="room-bar flex items-center justify-between gap-3 px-[clamp(12px,4vw,48px)] pt-4 md:pt-6 lg:pr-[calc(var(--panel-w)+24px)]">
-        <Link href={`/gallery/${work.id}`} className="room-pill text-[15px]">
-          ← К работе
+        {/* На телефоне — только стрелка: строка узкая, а подпись у ссылки
+            остаётся для скринридера. */}
+        <Link
+          href={`/gallery/${work.id}`}
+          className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
+          aria-label="К работе"
+        >
+          <span aria-hidden="true">←</span>
+          <span className="max-lg:hidden">К работе</span>
         </Link>
+
+        {/* Название и размер — на телефоне вместо таблички на стене. */}
+        <p className="room-heading m-0 min-w-0 flex-1 text-center lg:hidden">
+          <span className="block truncate text-[14px]">{work.title}</span>
+          {sides !== null && <span className="block text-[12px] opacity-75">{orient(sides)}</span>}
+        </p>
 
         <div className="flex gap-2">
           <button
             type="button"
-            className="room-pill text-[15px]"
+            className="room-pill text-[15px] max-lg:hidden"
             aria-expanded={isStripOpen}
             aria-controls="room-strip"
             onClick={() => setIsStripOpen((value) => !value)}
           >
             Другая картина
+          </button>
+
+          <button
+            type="button"
+            className="room-pill w-10 justify-center px-0 lg:hidden"
+            aria-expanded={isInfoOpen}
+            aria-controls="room-info"
+            aria-label="О картине"
+            onClick={() => setIsInfoOpen((value) => !value)}
+          >
+            <ViewIcon name="info" />
           </button>
 
           {/* На компьютере эта кнопка — главная, внизу боковой панели;
@@ -253,7 +335,7 @@ export function ArtworkRoom({
               href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="room-pill text-[15px] lg:hidden"
+              className="room-pill w-10 justify-center px-0 text-[15px] lg:hidden"
               aria-label="Написать о картине в WhatsApp"
             >
               <ContactIcon id="whatsapp" className="size-[18px]" />
@@ -261,6 +343,34 @@ export function ArtworkRoom({
           )}
         </div>
       </div>
+
+      {isInfoOpen && (
+        <div id="room-info" className="room-info" role="dialog" aria-label="О картине">
+          <button
+            type="button"
+            className="room-info-close"
+            aria-label="Закрыть"
+            onClick={() => setIsInfoOpen(false)}
+          >
+            <ViewIcon name="close" />
+          </button>
+          <p className="room-info-title">{work.title}</p>
+          <p className="m-0 text-[14px]">{site.artist}</p>
+          {work.details && <p className="mt-1 mb-0 text-[13px] opacity-75">{work.details}</p>}
+          {sides !== null && (
+            <dl className="room-sizes mt-3">
+              <dt>Холст</dt>
+              <dd>{orient(sides)}</dd>
+              {framed !== null && options.frame !== "none" && (
+                <>
+                  <dt>В раме</dt>
+                  <dd>{orient(framed)}</dd>
+                </>
+              )}
+            </dl>
+          )}
+        </div>
+      )}
 
       <div className="room-scene">
         <div className="room-piece">
@@ -382,7 +492,7 @@ export function ArtworkRoom({
         </button>
       )}
 
-      {isStripOpen && (
+      {(isStripOpen || tool === "painting") && (
         <div className="room-strip-wrap">
           <ul id="room-strip" className="room-strip" aria-label="Другие работы">
             {works.map((item) => (
@@ -432,24 +542,7 @@ export function ArtworkRoom({
           <h1 className="room-panel-title">{work.title}</h1>
         </header>
 
-        {/* Вкладки — только на телефоне; на компьютере разделы видны все. */}
-        <div className="room-tabs" role="group" aria-label="Разделы">
-          {roomTabs.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="room-tab"
-              aria-pressed={tab === item.id}
-              // У холста без рамы выбирать цвет нечего.
-              disabled={item.id === "finish" && options.frame === "none"}
-              onClick={() => setTab(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <section className="room-section" data-active={tab === "frame"}>
+        <section className="room-section" data-active={tool === "frame"}>
           <h2 className="room-section-title" id="room-frame-title">
             <span className="room-section-name">Рама</span>
             <span className="room-section-value">
@@ -485,8 +578,16 @@ export function ArtworkRoom({
           </div>
         </section>
 
+        {model.finishes.length === 0 && (
+          <section className="room-section lg:hidden" data-active={tool === "finish"}>
+            <p className="m-0 text-[14px] opacity-80">
+              У холста без рамы цвета нет — выберите раму.
+            </p>
+          </section>
+        )}
+
         {model.finishes.length > 0 && (
-          <section className="room-section" data-active={tab === "finish"}>
+          <section className="room-section" data-active={tool === "finish"}>
             <h2 className="room-section-title" id="room-finish-title">
               <span className="room-section-name">Цвет рамы</span>
               <span className="room-section-value">{finish.label}</span>
@@ -516,7 +617,7 @@ export function ArtworkRoom({
           </section>
         )}
 
-        <section className="room-section" data-active={tab === "wall"}>
+        <section className="room-section" data-active={tool === "wall"}>
           <h2 className="room-section-title" id="room-wall-title">
             <span className="room-section-name">Стена</span>
             <span className="room-section-value">{wallLabel}</span>
@@ -569,6 +670,51 @@ export function ArtworkRoom({
           )}
         </footer>
       </aside>
+
+      {/*
+        Строка инструментов — только на телефоне. Всё управление в одном
+        месте, как в редакторе фото: прежде кнопки вида висели над панелью
+        и наезжали на табличку, а «Настройки» — на «Ближе» (найдено на
+        iPhone 15).
+      */}
+      <nav className="room-toolbar" aria-label="Примерочная">
+        {roomTools.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className="room-tool"
+            aria-pressed={tool === item.id}
+            onClick={() => toggleTool(item.id)}
+          >
+            <ViewIcon name={item.icon} className="size-[22px]" />
+            {item.label}
+          </button>
+        ))}
+
+        <button
+          type="button"
+          className="room-tool"
+          aria-pressed={options.light === "evening"}
+          aria-label={options.light === "evening" ? "Вечер, включить день" : "День, включить вечер"}
+          onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
+        >
+          <ViewIcon name={options.light === "evening" ? "moon" : "sun"} className="size-[22px]" />
+          {options.light === "evening" ? "Вечер" : "День"}
+        </button>
+
+        {sides !== null && (
+          <button
+            type="button"
+            className="room-tool"
+            aria-pressed={options.hasSofa}
+            aria-label={options.hasSofa ? "Ближе к картине" : "Посмотреть издали, с диваном 210 см"}
+            onClick={() => update({ hasSofa: !options.hasSofa })}
+          >
+            <ViewIcon name={options.hasSofa ? "zoom-in" : "zoom-out"} className="size-[22px]" />
+            {options.hasSofa ? "Ближе" : "Издали"}
+          </button>
+        )}
+      </nav>
     </section>
   );
 }

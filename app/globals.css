@@ -1290,6 +1290,10 @@
     --w-art: 0.6;
     --v-art: 58svh;
     --v-room: 60svh;
+    /* С диваном: какая доля ширины сцены отдана комнате и сколько
+       сантиметров обязано поместиться по ширине. */
+    --w-room: 0.8;
+    --sofa-fit: 240;
 
     /* Под экран вписывается картина вместе с рамой, а не один холст:
        барокко в 10 см на холсте 50 см прибавляет по 20% с каждой стороны.
@@ -1302,7 +1306,10 @@
        диван шириной 210 см и высотой 85. --wcm и --hcm — ширина и высота
        холста в сантиметрах, их выставляет компонент по размеру из базы. */
     --unit: min(
-      calc(var(--scene-w) * 0.8 / max(240, calc(var(--wcm) + var(--frame-cm) + 30))),
+      calc(
+        var(--scene-w) * var(--w-room) /
+          max(var(--sofa-fit), calc(var(--wcm) + var(--frame-cm) + 30))
+      ),
       calc(var(--v-room) / calc(var(--hcm) + var(--frame-cm) + 125))
     );
     --pw: min(
@@ -1348,16 +1355,6 @@
       --panel-w: 360px;
     }
   }
-  @media (max-width: 1023px) {
-    .room {
-      --sheet-space: 212px;
-      --w-art: 0.8;
-      /* 320 — сверху лампа и кнопки, снизу табличка под рамой. */
-      --v-art: calc(100svh - var(--sheet-space) - 320px);
-      --v-room: calc(100svh - var(--sheet-space) - 170px);
-    }
-  }
-
   /* Надписи — поверх всего, и света, и темноты. */
   .room-bar {
     position: relative;
@@ -1992,15 +1989,6 @@
       border-left: 1px solid rgb(255 255 255 / 0.08);
     }
   }
-  @media (max-width: 1023px) {
-    .room-panel {
-      inset: auto 0 0;
-      gap: 12px;
-      padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
-      border-radius: 20px 20px 0 0;
-      box-shadow: 0 -10px 30px rgb(0 0 0 / 0.35);
-    }
-  }
 
   .room-panel-head {
     display: flex;
@@ -2021,37 +2009,6 @@
     font-size: 24px;
     font-weight: var(--font-heading-weight);
     line-height: 1.2;
-  }
-
-  .room-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    background: rgb(255 255 255 / 0.06);
-    border-radius: 12px;
-  }
-  .room-tab {
-    flex: 1;
-    min-height: 38px;
-    font: inherit;
-    font-size: 14px;
-    color: inherit;
-    cursor: pointer;
-    background: transparent;
-    border: 0;
-    border-radius: 9px;
-  }
-  .room-tab[aria-pressed="true"] {
-    color: var(--label-ink);
-    background: var(--room-ink);
-  }
-  .room-tab:disabled {
-    cursor: default;
-    opacity: 0.35;
-  }
-  .room-tab:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
   }
 
   .room-section {
@@ -2323,18 +2280,13 @@
   /* Что видно на какой ширине. Эти правила — после общих намеренно:
      при равной специфичности побеждает то, что ниже, и раньше вкладки
      оставались на компьютере, а неактивные разделы — на телефоне. */
-  @media (min-width: 1024px) {
-    .room-tabs {
-      display: none;
-    }
-  }
   @media (max-width: 1023px) {
     .room-section[data-active="false"],
     .room-panel-head,
     .room-summary {
       display: none;
     }
-    /* Название раздела уже на вкладке — в заголовке остаётся выбранное. */
+    /* Название раздела — на кнопке инструмента, в заголовке остаётся выбранное. */
     .room-section-name {
       display: none;
     }
@@ -2440,24 +2392,16 @@
       transform 0.45s var(--room-ease),
       visibility 0s linear 0s;
   }
-  .room[data-panel="closed"] {
-    --panel-w: 0px;
-    --sheet-space: 0px;
-  }
-  .room[data-panel="closed"] .room-panel {
-    visibility: hidden;
-    transition:
-      transform 0.45s var(--room-ease),
-      visibility 0s linear 0.45s;
-  }
   @media (min-width: 1024px) {
-    .room[data-panel="closed"] .room-panel {
-      transform: translateX(100%);
+    .room[data-panel="closed"] {
+      --panel-w: 0px;
     }
-  }
-  @media (max-width: 1023px) {
     .room[data-panel="closed"] .room-panel {
-      transform: translateY(100%);
+      visibility: hidden;
+      transform: translateX(100%);
+      transition:
+        transform 0.45s var(--room-ease),
+        visibility 0s linear 0.45s;
     }
   }
 
@@ -2484,26 +2428,6 @@
     outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
   }
-  @media (max-width: 1023px) {
-    /* На телефоне стрелка смотрит вниз — панель уезжает туда, — а вкладки
-       уступают ей место справа. */
-    .room-panel-close {
-      top: 12px;
-      right: 12px;
-    }
-    .room-panel-close svg {
-      rotate: 90deg;
-    }
-    .room-tabs {
-      margin-right: 46px;
-    }
-    /* Панель одной высоты на любой вкладке: иначе на короткой «Стене»
-       кнопки вида висели далеко над ней. */
-    .room-panel {
-      min-height: var(--sheet-space);
-    }
-  }
-
   /* Миниатюры «другая картина» — поверх сцены, над кнопкой вида. */
   .room-strip-wrap {
     position: absolute;
@@ -2547,6 +2471,204 @@
   .room-thumb:focus-visible {
     outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
+  }
+
+  /* — телефон: строка инструментов —
+
+     На телефоне всё управление — в одной строке внизу, как в редакторе
+     фото: Картина, Рама, Цвет, Стена открывают один ряд вариантов над
+     строкой, Свет и «Издали» переключают сразу. Макет согласован
+     с заказчиком. Прежде управление было в трёх местах — панель,
+     кнопки над ней, «Настройки» в углу — и на iPhone 15 всё это
+     наезжало друг на друга, а картина сжималась до 130 px: место под
+     закрытую панель и табличку резервировалось всегда.
+
+     Примерочная на телефоне ровно в высоту видимого экрана (svh — высота
+     при показанной адресной строке Safari), иначе низ уходил под неё. */
+  .room-toolbar,
+  .room-info {
+    display: none;
+  }
+  .room-heading {
+    color: var(--view-ink);
+  }
+  .room {
+    --view-ink: var(--label-ink);
+  }
+  .room[data-mode="evening"],
+  .room[data-wall="graphite"],
+  .room[data-wall="olive"],
+  .room[data-wall="terracotta"] {
+    --view-ink: var(--room-ink);
+  }
+
+  @media (max-width: 1023px) {
+    .room {
+      --toolbar-h: calc(60px + env(safe-area-inset-bottom));
+      --tray-h: 0px;
+      --sheet-space: calc(var(--toolbar-h) + var(--tray-h));
+      --w-art: 0.84;
+      /* 150 — верхняя строка и лампа над рамой; остальное — картине. */
+      --v-art: calc(100svh - var(--sheet-space) - 150px);
+      --v-room: calc(100svh - var(--sheet-space) - 130px);
+      /* Диван может выходить за края кадра, как на снимке с телефона:
+         иначе ради 210 см по ширине картина сжималась до точки. */
+      --w-room: 1;
+      --sofa-fit: 175;
+      height: 100svh;
+      min-height: 0;
+    }
+    /* Открыт ряд вариантов — картина плавно уменьшается над ним. */
+    .room[data-tool] {
+      --tray-h: 112px;
+    }
+
+    .room-scene {
+      /* Сверху — место под лампу над рамой; верхняя строка стоит
+         в общем потоке выше, её высоту считать не нужно. */
+      padding: 64px 16px calc(var(--sheet-space) + 20px);
+    }
+
+    /* На телефоне нет ни таблички на стене, ни кнопок вида в углу,
+       ни боковой панели с её кнопками — всё это в строке инструментов
+       и в карточке «о картине». */
+    .room-label,
+    .room-view,
+    .room-panel-open,
+    .room-panel-close {
+      display: none;
+    }
+
+    .room-toolbar {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 8;
+      display: grid;
+      height: var(--toolbar-h);
+      grid-auto-columns: 1fr;
+      grid-auto-flow: column;
+      padding: 6px 4px env(safe-area-inset-bottom);
+      color: var(--room-ink);
+      background: rgb(22 19 17);
+      border-top: 1px solid rgb(255 255 255 / 0.08);
+    }
+    .room-tool {
+      display: flex;
+      min-height: 48px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 0;
+      font: inherit;
+      font-size: 11px;
+      color: inherit;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      border-radius: 10px;
+      opacity: 0.72;
+    }
+    .room-tool[aria-pressed="true"] {
+      background: rgb(255 255 255 / 0.1);
+      opacity: 1;
+    }
+    .room-tool:focus-visible {
+      outline: 2px solid var(--room-light-warm);
+      outline-offset: -2px;
+    }
+
+    /* Ряд вариантов — та же панель, что на компьютере, но одним разделом
+       и над строкой инструментов. Закрыт — уезжает за неё. */
+    .room-panel {
+      inset: auto 0 var(--toolbar-h);
+      z-index: 7;
+      height: 112px;
+      gap: 8px;
+      padding: 10px 14px 12px;
+      overflow: hidden;
+      visibility: hidden;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -8px 24px rgb(0 0 0 / 0.3);
+      transform: translateY(calc(100% + var(--toolbar-h)));
+      transition:
+        transform 0.35s var(--room-ease),
+        visibility 0s linear 0.35s;
+    }
+    .room:is([data-tool="frame"], [data-tool="finish"], [data-tool="wall"]) .room-panel {
+      visibility: visible;
+      transform: none;
+      transition:
+        transform 0.35s var(--room-ease),
+        visibility 0s linear 0s;
+    }
+    .room-section {
+      gap: 8px;
+    }
+    .room-section-title {
+      font-size: 13px;
+    }
+    .room-models {
+      grid-auto-columns: 74px;
+      gap: 6px;
+    }
+    .room-model {
+      row-gap: 4px;
+      padding: 6px 2px;
+    }
+    .room-model-meta {
+      display: none;
+    }
+
+    /* Миниатюры — тоже рядом над строкой инструментов. */
+    .room-strip-wrap {
+      right: 0;
+      bottom: calc(var(--toolbar-h) + 10px);
+      padding: 0 10px;
+    }
+
+    /* Карточка «о картине» — под верхней строкой, по кнопке «i». */
+    .room-info {
+      position: absolute;
+      top: 64px;
+      right: 12px;
+      left: 12px;
+      z-index: 9;
+      display: block;
+      padding: 16px 44px 16px 18px;
+      color: var(--room-ink);
+      background: rgb(22 19 17 / 0.96);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+    }
+    .room-info-title {
+      margin: 0 0 4px;
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: var(--font-heading-weight);
+      line-height: 1.25;
+    }
+    .room-info-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      padding: 0;
+      color: inherit;
+      cursor: pointer;
+      background: none;
+      border: 1px solid rgb(255 255 255 / 0.18);
+      border-radius: 50%;
+    }
+    .room-info-close:focus-visible {
+      outline: 2px solid var(--room-light-warm);
+      outline-offset: 2px;
+    }
   }
 
   /* «Меньше движения» в настройках системы: отъезд камеры — именно
