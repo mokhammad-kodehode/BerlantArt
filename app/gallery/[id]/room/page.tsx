@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ArtworkRoom } from "@/components/gallery/ArtworkRoom";
+import { ArtworkRoom, type RoomThumb } from "@/components/gallery/ArtworkRoom";
 import { getArtworkById, getArtworks, primaryImageUrl } from "@/lib/artworks";
-
-/** Как у страницы работы: готовится заранее, обновляется раз в пять минут. */
-export const revalidate = 300;
-
-export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const works = await getArtworks();
-  return works.map((work) => ({ id: work.id }));
-}
+import { clientEnv } from "@/lib/env";
+import { parseCanvasSides, parseRoomOptions } from "@/lib/room-options";
 
 export async function generateMetadata({
   params,
@@ -20,7 +14,7 @@ export async function generateMetadata({
   if (!work) return { title: "Работа не найдена" };
 
   return {
-    title: `«${work.title}» в интерьере`,
+    title: `Примерочная: «${work.title}»`,
     // Та же картина, что на странице работы, только в другой подаче.
     // В поиске ей появляться незачем — там должна быть сама страница работы.
     robots: { index: false, follow: true },
@@ -28,17 +22,28 @@ export async function generateMetadata({
 }
 
 /**
- * Работа в тёмной комнате под лампой — по просьбе заказчика: посмотреть,
- * как картина будет висеть на стене. Устройство — в
- * components/gallery/ArtworkRoom.tsx, свет и рама — в globals.css.
+ * Примерочная — по просьбе заказчика: посмотреть картину на стене, выбрать
+ * раму, цвет стены и свет, сменить картину, не выходя из комнаты.
+ * Устройство — в components/gallery/ArtworkRoom.tsx, варианты выбора
+ * и разбор адреса — в lib/room-options.ts.
  *
- * Шапки сайта здесь нет, как и в полноэкранном просмотре: комната — это
- * весь экран, а шапка поверх темноты разрушила бы впечатление. Путь назад —
- * ссылкой «К работе» в углу.
+ * Страница читает параметры адреса, поэтому готовится при каждом заходе,
+ * а не заранее — как галерея с фильтрами. Запросов в базу два, разом:
+ * сама работа и список работ для полосы «другая картина».
+ *
+ * Шапки сайта здесь нет, как в полноэкранном просмотре: комната — это
+ * весь экран. Путь назад — «К работе» в углу.
  */
-export default async function ArtworkRoomPage({ params }: PageProps<"/gallery/[id]/room">) {
+export default async function ArtworkRoomPage({
+  params,
+  searchParams,
+}: PageProps<"/gallery/[id]/room">) {
   const { id } = await params;
-  const work = await getArtworkById(id);
+  const [work, all, rawOptions] = await Promise.all([
+    getArtworkById(id),
+    getArtworks(),
+    searchParams,
+  ]);
   if (!work) notFound();
 
   // Без фотографии вешать на стену нечего: комната из одной рамы
@@ -46,15 +51,27 @@ export default async function ArtworkRoomPage({ params }: PageProps<"/gallery/[i
   const src = primaryImageUrl(work);
   if (src === undefined) notFound();
 
+  const works: RoomThumb[] = all.flatMap((item) => {
+    const thumb = primaryImageUrl(item);
+    return thumb === undefined ? [] : [{ id: item.id, title: item.title, src: thumb }];
+  });
+
   const details = [work.technique, work.dimensions, work.year].filter(Boolean).join(" · ");
 
   return (
     <main>
       <ArtworkRoom
-        src={src}
-        title={work.title}
-        details={details || undefined}
-        backHref={`/gallery/${work.id}`}
+        work={{
+          id: work.id,
+          title: work.title,
+          src,
+          details: details || undefined,
+          sides: parseCanvasSides(work.dimensions),
+        }}
+        works={works}
+        initialOptions={parseRoomOptions(rawOptions)}
+        whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
+        siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
       />
     </main>
   );

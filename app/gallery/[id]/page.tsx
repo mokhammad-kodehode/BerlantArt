@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ArtworkStage } from "@/components/gallery/ArtworkStage";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
-import { ExternalButtonLink } from "@/components/ui/Button";
+import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
 import {
@@ -165,6 +165,29 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             </ExternalButtonLink>
           )}
 
+          {/* Примерочная (/gallery/[id]/room): рама, стена, свет, диван
+              для масштаба. Кнопкой, а не ссылкой в строку — текстовую
+              ссылку под кнопками легко пропустить, а это сильный довод
+              купить: картину видно «у себя на стене». Без фотографии
+              вешать на стену нечего — кнопки тогда нет. */}
+          {primaryImageUrl(work) && (
+            <ButtonLink href={`/gallery/${work.id}/room`} variant="soft" size="lg">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="1.5" />
+                <rect x="7" y="7" width="10" height="10" />
+              </svg>
+              Примерить на стену
+            </ButtonLink>
+          )}
+
           {/* Приглушённая вместо `secondary`: она берёт цвет от текста темы
               и потому читается в любом зале. */}
           <ExternalButtonLink
@@ -176,30 +199,17 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
           </ExternalButtonLink>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
-          {/* Картина в тёмной комнате под лампой (/gallery/[id]/room).
-              Без фотографии вешать на стену нечего — ссылки тогда нет. */}
-          {primaryImageUrl(work) && (
-            <Link
-              href={`/gallery/${work.id}/room`}
-              className="text-accent text-[14px] font-semibold no-underline hover:underline"
-            >
-              Посмотреть в интерьере →
-            </Link>
-          )}
-
-          {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
-              есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
-              с клавиатуры и читается скринридером. */}
-          {hasMore && (
-            <a
-              href="#more"
-              className="text-accent text-[14px] font-semibold no-underline hover:underline"
-            >
-              Смотреть дальше ↓
-            </a>
-          )}
-        </div>
+        {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
+            есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
+            с клавиатуры и читается скринридером. */}
+        {hasMore && (
+          <a
+            href="#more"
+            className="text-accent mt-5 inline-block text-[14px] font-semibold no-underline hover:underline"
+          >
+            Смотреть дальше ↓
+          </a>
+        )}
       </ArtworkStage>
 
       <main id="more">
