@@ -114,6 +114,18 @@ export function ArtworkStage({
       <Header variant="stage" />
 
       {/*
+        Картина и подпись на десктопе лежат в одной клетке сетки: картина
+        заполняет её, подпись прижата к низу слева. Прежде подпись была
+        абсолютной, «приклеенной» к низу сцены, и в раскладке не участвовала:
+        длинное описание росло вверх и заезжало под шапку — поймал заказчик
+        на работе с описанием в семь строк. Теперь клетка вырастает под
+        подпись, сцена становится выше экрана, и страница просто прокручивается.
+
+        У обёртки нет position: relative намеренно — накладка со стрелками
+        позиционируется от всей сцены, и стрелки остаются посередине экрана.
+      */}
+      <div className="flex flex-1 flex-col lg:grid lg:grid-cols-1 lg:grid-rows-[minmax(0,1fr)]">
+        {/*
         Высота картины набирается flex-ом, а не процентами: `h-full` внутри
         flex-контейнера с неопределённой высотой разрешался в ноль, и картина
         пропадала с экрана совсем — проверено в браузере.
@@ -123,23 +135,23 @@ export function ArtworkStage({
         край окна и читалась обрезанной. В остальных залах холст стоит как
         стоял — тёмный зал заказчик просил не трогать.
       */}
-      <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%]">
-        {/*
+        <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]">
+          {/*
           Нажатие на картину открывает её на весь экран (ArtworkViewer).
           Без фотографии открывать нечего — заглушка остаётся как есть.
         */}
-        <div className="relative flex-1">
-          {src ? (
-            <ArtworkViewer src={src} title={alt} prev={prev} next={next}>
-              {stageArt}
-            </ArtworkViewer>
-          ) : (
-            stageArt
-          )}
+          <div className="relative flex-1">
+            {src ? (
+              <ArtworkViewer src={src} title={alt} prev={prev} next={next}>
+                {stageArt}
+              </ArtworkViewer>
+            ) : (
+              stageArt
+            )}
+          </div>
         </div>
-      </div>
 
-      {/*
+        {/*
         Ряд со стрелками. На телефоне он в обычном потоке и потому раздвигает
         картину и подпись; на десктопе становится прозрачной накладкой во всю
         сцену, внутри которой стрелки встают по краям (клики сквозь неё
@@ -148,11 +160,11 @@ export function ArtworkStage({
         Названия соседних работ — в подписи ссылки, а не только в стрелке:
         иначе скринридер прочитал бы «ссылка, стрелка влево».
       */}
-      <nav
-        aria-label="Навигация по работам"
-        className="relative z-[2] flex items-center justify-between gap-2.5 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:absolute lg:inset-0 lg:p-0"
-      >
-        {/*
+        <nav
+          aria-label="Навигация по работам"
+          className="relative z-[2] flex items-center justify-between gap-2.5 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:absolute lg:inset-0 lg:p-0"
+        >
+          {/*
           «Все работы» в одном ряду со стрелками — только на телефоне.
           Раньше ссылка стояла над надстрочником в подписи, а стрелки
           висели отдельной строкой выше: две строки навигации подряд.
@@ -161,41 +173,41 @@ export function ArtworkStage({
           На десктопе она не нужна: там стрелки уходят к краям окна
           накладкой во весь экран, и ссылка осталась в подписи внизу слева.
         */}
-        <Link
-          href="/gallery"
-          className="text-ink/70 hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
-        >
-          ← Все работы
-        </Link>
+          <Link
+            href="/gallery"
+            className="text-ink/70 hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
+          >
+            ← Все работы
+          </Link>
 
-        {/* lg:contents убирает обёртку на десктопе, и стрелки снова
+          {/* lg:contents убирает обёртку на десктопе, и стрелки снова
             позиционируются прямо в накладке, как и раньше. */}
-        <div className="flex gap-2.5 lg:contents">
-          {prev && (
-            <Link
-              href={`/gallery/${prev.id}`}
-              rel="prev"
-              aria-label={`Предыдущая работа: «${prev.title}»`}
-              className="stage-nav lg:left-[calc(36%-58px)]"
-            >
-              ←
-            </Link>
-          )}
+          <div className="flex gap-2.5 lg:contents">
+            {prev && (
+              <Link
+                href={`/gallery/${prev.id}`}
+                rel="prev"
+                aria-label={`Предыдущая работа: «${prev.title}»`}
+                className="stage-nav lg:left-[calc(36%-58px)]"
+              >
+                ←
+              </Link>
+            )}
 
-          {next && (
-            <Link
-              href={`/gallery/${next.id}`}
-              rel="next"
-              aria-label={`Следующая работа: «${next.title}»`}
-              className="stage-nav lg:right-[17px]"
-            >
-              →
-            </Link>
-          )}
-        </div>
-      </nav>
+            {next && (
+              <Link
+                href={`/gallery/${next.id}`}
+                rel="next"
+                aria-label={`Следующая работа: «${next.title}»`}
+                className="stage-nav lg:right-[17px]"
+              >
+                →
+              </Link>
+            )}
+          </div>
+        </nav>
 
-      {/*
+        {/*
         Ширина подписи на десктопе — 27%, а не 48%. Грань стены проходит
         на 30%, и при прежней ширине заголовок доезжал до 31%: текст
         наползал на стену, которой он принадлежать не должен. Замерено
@@ -204,8 +216,9 @@ export function ArtworkStage({
         Длинное название от этого переносится на две строки — так даже
         лучше держится колонка.
       */}
-      <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:absolute lg:bottom-0 lg:left-0 lg:max-w-[27%] lg:pb-14">
-        {children}
+        <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:max-w-[27%] lg:self-end lg:pt-8 lg:pb-14 lg:[grid-area:1/1]">
+          {children}
+        </div>
       </div>
     </section>
   );
