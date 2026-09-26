@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { PictureLamp } from "@/components/gallery/PictureLamp";
-import { RoomSofa } from "@/components/gallery/RoomSofa";
 import { ContactIcon } from "@/components/ui/ContactIcon";
 import {
   finishFor,
@@ -409,7 +408,19 @@ export function ArtworkRoom({
           </div>
 
           <div className="room-sofa" aria-hidden="true">
-            <RoomSofa />
+            {/*
+              Снимок 3D-модели из Meshy, отрисованный строго спереди на
+              прозрачном фоне. Сама модель (16.5 МБ, 200 тыс. точек) на сайт
+              не идёт — снимок весит 56 КБ. Лицензия модели — CC BY 4.0,
+              поэтому в примерочной есть подпись «Диван — модель Meshy».
+            */}
+            <Image
+              src="/room/sofa.webp"
+              alt=""
+              width={1680}
+              height={688}
+              sizes="(max-width: 1023px) 110vw, 60vw"
+            />
           </div>
 
           <div className="room-light" aria-hidden="true">
@@ -441,53 +452,13 @@ export function ArtworkRoom({
 
       <div className="room-dark" aria-hidden="true" />
 
-      {/*
-        Управление видом — прямо на сцене, по центру снизу, как
-        переключатели вида на картах: свет и «издалека» меняют то, как
-        смотришь на комнату, а не саму раму, и в боковой панели среди рам
-        и стен их не замечали. В панели осталось только оформление.
-        «Издалека» — только у работ с известным размером: без него масштаб
-        дивана был бы выдумкой (lib/room-options.ts, parseCanvasSides).
-      */}
-      <div className="room-view">
-        <div className="room-view-group" role="radiogroup" aria-label="Свет">
-          {roomLights.map((light) => (
-            <label
-              key={light.id}
-              className="room-view-btn"
-              title={light.id === "day" ? "Дневной свет" : "Вечер, лампа для картины"}
-            >
-              <input
-                type="radio"
-                name="room-light"
-                value={light.id}
-                checked={options.light === light.id}
-                onChange={() => update({ light: light.id })}
-              />
-              <ViewIcon name={light.id === "day" ? "sun" : "moon"} />
-              {light.label}
-            </label>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="room-view-btn"
-          aria-pressed={isSofaShown}
-          title={isSofaShown ? "Вернуться к картине" : "Посмотреть издалека, с диваном 210 см"}
-          onClick={toggleFarView}
-        >
-          <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
-          {isSofaShown ? "Ближе" : "Издалека"}
-        </button>
-      </div>
-
-      {/* Вернуть убранную панель — в правом нижнем углу, напротив кнопок
-          вида. Пока панель открыта, кнопки нет: закрывают её в самой панели. */}
+      {/* Вернуть убранную панель — в правом нижнем углу. Сплошной
+          плашкой, как «К работе»: прозрачную на полу было не разглядеть.
+          Пока панель открыта, кнопки нет: закрывают её в самой панели. */}
       {!isPanelOpen && (
         <button
           type="button"
-          className="room-view-btn room-panel-open"
+          className="room-pill room-panel-open text-[15px]"
           aria-controls="room-panel"
           aria-expanded={false}
           onClick={() => setIsPanelOpen(true)}
@@ -546,6 +517,47 @@ export function ArtworkRoom({
           <p className="room-kicker">Примерочная</p>
           <h1 className="room-panel-title">{work.title}</h1>
         </header>
+
+        {/*
+          Вид — первым разделом, над рамами. Прежде день, вечер и «издали»
+          были прозрачными кнопками на самой сцене и на коричневом полу
+          почти не читались (заказчик). В панели они на тёмном фоне и видны
+          при любой стене. На телефоне этого раздела нет: там те же кнопки
+          в нижней строке инструментов.
+        */}
+        <section className="room-section max-lg:hidden">
+          <h2 className="room-section-title" id="room-view-title">
+            <span className="room-section-name">Вид</span>
+            <span className="room-section-value">
+              {options.light === "evening" ? "Вечер, лампа" : "День"}
+              {isSofaShown ? " · издали" : ""}
+            </span>
+          </h2>
+          <div className="room-seg" role="radiogroup" aria-labelledby="room-view-title">
+            {roomLights.map((light) => (
+              <label key={light.id}>
+                <input
+                  type="radio"
+                  name="room-light"
+                  value={light.id}
+                  checked={options.light === light.id}
+                  onChange={() => update({ light: light.id })}
+                />
+                <ViewIcon name={light.id === "day" ? "sun" : "moon"} />
+                {light.label}
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="room-far"
+            aria-pressed={isSofaShown}
+            onClick={toggleFarView}
+          >
+            <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
+            {isSofaShown ? "Вернуться к картине" : "Посмотреть издали, рядом с диваном"}
+          </button>
+        </section>
 
         <section className="room-section" data-active={tool === "frame"}>
           <h2 className="room-section-title" id="room-frame-title">
@@ -714,6 +726,18 @@ export function ArtworkRoom({
           {isSofaShown ? "Ближе" : "Издали"}
         </button>
       </nav>
+
+      {/* Лицензия CC BY 4.0 требует указать, что модель создана в Meshy.
+          Подпись видна, только когда диван в кадре: без дивана она ни к чему. */}
+      {isSofaShown && (
+        <p className="room-credit">
+          Диван — 3D-модель, создана в{" "}
+          <a href="https://www.meshy.ai" target="_blank" rel="noopener noreferrer">
+            Meshy
+          </a>{" "}
+          · CC BY 4.0
+        </p>
+      )}
 
       {/* role="status" — скринридер зачитает подсказку, не сбивая фокус. */}
       <p className="room-hint" role="status">

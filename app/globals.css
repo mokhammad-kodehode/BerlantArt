@@ -1086,10 +1086,6 @@
     --brass-light: #d9bf86;
     --brass-shine: #f6e7bd;
 
-    --sofa-dark: #8a8278;
-    --sofa-mid: #a8a095;
-    --sofa-light: #c2bbb0;
-    --sofa-leg: #2a221b;
     --baseboard: #e8e3da;
     --baseboard-shadow: #b9b1a5;
     --floor-near: #7a604a;
@@ -1645,15 +1641,18 @@
      нарастает по ходу отъезда, чтобы на высоком экране крупным планом
      край дивана не маячил внизу. Работа без известного размера дивана
      не получает вовсе (data-has-size). */
+  /* Диван — снимок 3D-модели строго спереди (public/room/sofa.webp):
+     210 × 86 см, ножки внизу кадра. Верх — на 24 см ниже рамы, чтобы
+     ножки стояли на линии пола (110 см под рамой). */
   .room-sofa {
     position: absolute;
-    top: calc(100% + 25 * var(--cm));
+    top: calc(100% + 24 * var(--cm));
     left: 50%;
     z-index: 1;
     width: calc(210 * var(--cm));
     transform: translateX(-50%);
   }
-  .room-sofa svg {
+  .room-sofa img {
     display: block;
     width: 100%;
     height: auto;
@@ -2322,95 +2321,78 @@
     }
   }
 
-  /* Управление видом — в левом нижнем углу сцены: небольшие кнопки
-     без заливки, только контур, иконка с коротким словом. Сначала были
-     одни иконки — заказчик попросил сделать понятнее: солнце и лупу
-     без подписи с первого взгляда не прочитать.
-
-     Цвет — от фона: днём на светлой стене тёмный, вечером и на тёмных
-     стенах — светлый. Лёгкая тень держит кнопки видимыми на любом
-     участке стены. */
-  .room-view {
-    --view-ink: var(--label-ink);
-    position: absolute;
-    bottom: max(20px, calc(var(--sheet-space) + 12px));
-    left: clamp(12px, 4vw, 48px);
-    z-index: 6;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    color: var(--view-ink);
+  /* Раздел «Вид» в панели: «День / Вечер» — две равные половины,
+     «Издали» — кнопка во всю ширину. */
+  .room-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    background: rgb(255 255 255 / 0.06);
+    border-radius: 12px;
   }
-  .room[data-mode="evening"] :is(.room-view, .room-panel-open),
-  .room[data-wall="graphite"] :is(.room-view, .room-panel-open),
-  .room[data-wall="olive"] :is(.room-view, .room-panel-open),
-  .room[data-wall="terracotta"] :is(.room-view, .room-panel-open) {
-    --view-ink: var(--room-ink);
-  }
-  .room-view-group {
-    display: flex;
-    gap: 8px;
-  }
-  .room-view-btn {
+  .room-seg label {
     position: relative;
-    display: inline-flex;
+    display: flex;
     min-height: 38px;
     align-items: center;
+    justify-content: center;
     gap: 7px;
-    padding: 0 14px 0 11px;
-    font: inherit;
     font-size: 14px;
-    color: inherit;
-    white-space: nowrap;
     cursor: pointer;
-    background: transparent;
-    border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
-    border-radius: 999px;
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.2));
-    transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+    border-radius: 9px;
   }
-  .room-view-btn:hover {
-    border-color: currentColor;
+  .room-seg label:has(input:checked) {
+    color: var(--label-ink);
+    background: var(--room-ink);
   }
-  .room-view-btn:has(input:checked),
-  .room-view-btn[aria-pressed="true"] {
-    background: color-mix(in srgb, currentColor 16%, transparent);
-    border-color: currentColor;
-  }
-  .room-view-btn:focus-visible,
-  .room-view-btn:has(input:focus-visible) {
-    outline: 2px solid currentColor;
+  .room-seg label:has(input:focus-visible) {
+    outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
   }
-  .room-view-btn input {
+  .room-seg input {
     position: absolute;
     width: 0;
     height: 0;
     opacity: 0;
   }
-  @media (max-width: 480px) {
-    .room-view,
-    .room-view-group {
-      gap: 6px;
-    }
-    .room-view-btn {
-      min-height: 36px;
-      padding: 0 11px 0 9px;
-      font-size: 13px;
-    }
+  .room-far {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 14px;
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 12px;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .room-far:hover {
+    border-color: rgb(255 255 255 / 0.45);
+  }
+  .room-far[aria-pressed="true"] {
+    color: var(--label-ink);
+    background: var(--room-ink);
+    border-color: var(--room-ink);
+  }
+  .room-far:focus-visible {
+    outline: 2px solid var(--room-light-warm);
+    outline-offset: 2px;
   }
 
   /* «Настройки» — вернуть убранную панель, правый нижний угол. */
   .room-panel-open {
-    --view-ink: var(--label-ink);
     position: absolute;
     right: clamp(12px, 4vw, 48px);
     bottom: 24px;
     z-index: 6;
-    color: var(--view-ink);
   }
 
   /* Убрать панель. На компьютере она уезжает вправо, на телефоне вниз,
@@ -2570,7 +2552,6 @@
        ни боковой панели с её кнопками — всё это в строке инструментов
        и в карточке «о картине». */
     .room-label,
-    .room-view,
     .room-panel-open,
     .room-panel-close {
       display: none;
@@ -2706,6 +2687,44 @@
       outline: 2px solid var(--room-light-warm);
       outline-offset: 2px;
     }
+  }
+
+  /* Одна прокрутка вместо двух. Примерочная — полноэкранный инструмент
+     ровно в высоту окна, и страница под ней не прокручивается: иначе
+     крутились и страница (под примерочной стоит подвал сайта), и панель
+     внутри себя (заказчик). Правило живёт, пока примерочная на странице. */
+  html:has(.room) {
+    overflow: hidden;
+  }
+  .room {
+    height: 100svh;
+    min-height: 0;
+  }
+  .room-panel {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+  }
+
+  /* Подпись к модели дивана (CC BY 4.0) — мелко, в правом нижнем углу
+     сцены, над полом. Не спорит с картиной, но читается. */
+  .room-credit {
+    position: absolute;
+    right: calc(var(--panel-w) + 16px);
+    bottom: calc(max(12px, var(--sheet-space)) + 8px);
+    z-index: 6;
+    margin: 0;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--room-ink);
+    background: rgb(22 19 17 / 0.55);
+    border-radius: 6px;
+  }
+  .room-credit a {
+    color: inherit;
+  }
+  .room-credit a:focus-visible {
+    outline: 2px solid var(--room-light-warm);
+    outline-offset: 2px;
   }
 
   /* Подсказка над сценой: появляется на несколько секунд и гаснет.

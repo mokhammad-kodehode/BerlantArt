@@ -13,7 +13,7 @@ components/
   layout/               Header, Footer
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, ArtworkCollage, ArtworkStage, ArtworkViewer,
-                        ArtworkRoom, PictureLamp и RoomSofa (примерочная)
+                        ArtworkRoom и PictureLamp (примерочная)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
   demo-artworks.ts      временные данные (уйдут на этапе 3)
