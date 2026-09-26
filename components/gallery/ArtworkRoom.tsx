@@ -191,6 +191,10 @@ export function ArtworkRoom({
   const [tool, setTool] = useState<RoomTool | null>(null);
   // Карточка «о картине» на телефоне: табличке на стене там нет места.
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  // Короткая подсказка над сценой — сейчас одна: почему «издали» не
+  // работает у картины без размера.
+  const [hint, setHint] = useState<string | null>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Панель можно убрать, чтобы смотреть на комнату целиком. В адрес это
   // не пишется: ссылку пересылают ради рамы и стены, а не ради того,
   // открыта ли у отправителя панель.
@@ -265,6 +269,20 @@ export function ArtworkRoom({
   const orient = (value: CanvasSides) =>
     isLandscape ? `${value.long} × ${value.short} см` : `${value.short} × ${value.long} см`;
   const framed = sides === null ? null : framedSides(sides, options.frame);
+
+  // «Издали» есть у каждой картины, а не только у картин с размером:
+  // кнопка, которая то появляется, то нет, выглядит поломкой — на iPhone
+  // заказчик решил, что она не поместилась. Без размера диван показать
+  // честно нельзя, и кнопка говорит об этом словами.
+  function toggleFarView() {
+    if (sides === null) {
+      clearTimeout(hintTimer.current);
+      setHint("Размер картины не указан — показать её рядом с диваном нельзя");
+      hintTimer.current = setTimeout(() => setHint(null), 3500);
+      return;
+    }
+    update({ hasSofa: !options.hasSofa });
+  }
 
   const toggleTool = (id: RoomTool) => setTool((current) => (current === id ? null : id));
 
@@ -461,20 +479,16 @@ export function ArtworkRoom({
           ))}
         </div>
 
-        {sides !== null && (
-          <button
-            type="button"
-            className="room-view-btn"
-            aria-pressed={options.hasSofa}
-            title={
-              options.hasSofa ? "Вернуться к картине" : "Посмотреть издалека, с диваном 210 см"
-            }
-            onClick={() => update({ hasSofa: !options.hasSofa })}
-          >
-            <ViewIcon name={options.hasSofa ? "zoom-in" : "zoom-out"} />
-            {options.hasSofa ? "Ближе" : "Издалека"}
-          </button>
-        )}
+        <button
+          type="button"
+          className="room-view-btn"
+          aria-pressed={isSofaShown}
+          title={isSofaShown ? "Вернуться к картине" : "Посмотреть издалека, с диваном 210 см"}
+          onClick={toggleFarView}
+        >
+          <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
+          {isSofaShown ? "Ближе" : "Издалека"}
+        </button>
       </div>
 
       {/* Вернуть убранную панель — в правом нижнем углу, напротив кнопок
@@ -702,19 +716,22 @@ export function ArtworkRoom({
           {options.light === "evening" ? "Вечер" : "День"}
         </button>
 
-        {sides !== null && (
-          <button
-            type="button"
-            className="room-tool"
-            aria-pressed={options.hasSofa}
-            aria-label={options.hasSofa ? "Ближе к картине" : "Посмотреть издали, с диваном 210 см"}
-            onClick={() => update({ hasSofa: !options.hasSofa })}
-          >
-            <ViewIcon name={options.hasSofa ? "zoom-in" : "zoom-out"} className="size-[22px]" />
-            {options.hasSofa ? "Ближе" : "Издали"}
-          </button>
-        )}
+        <button
+          type="button"
+          className="room-tool"
+          aria-pressed={isSofaShown}
+          aria-label={isSofaShown ? "Ближе к картине" : "Посмотреть издали, с диваном 210 см"}
+          onClick={toggleFarView}
+        >
+          <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} className="size-[22px]" />
+          {isSofaShown ? "Ближе" : "Издали"}
+        </button>
       </nav>
+
+      {/* role="status" — скринридер зачитает подсказку, не сбивая фокус. */}
+      <p className="room-hint" role="status">
+        {hint}
+      </p>
     </section>
   );
 }

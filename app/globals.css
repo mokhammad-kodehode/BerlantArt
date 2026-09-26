@@ -2671,6 +2671,36 @@
     }
   }
 
+  /* Подсказка над сценой: появляется на несколько секунд и гаснет.
+     Пустая — не видна и места не занимает. */
+  .room-hint {
+    position: absolute;
+    bottom: calc(max(24px, var(--sheet-space)) + 64px);
+    left: 50%;
+    z-index: 9;
+    /* Без явной ширины блок с left: 50% сжимается до половины экрана
+       и переносит каждое второе слово. */
+    width: max-content;
+    max-width: min(88vw, 420px);
+    margin: 0;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--room-ink);
+    text-align: center;
+    background: rgb(22 19 17 / 0.94);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    transform: translateX(-50%);
+  }
+  .room-hint:empty {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .room-hint {
+      left: calc((100% - var(--panel-w)) / 2);
+    }
+  }
+
   /* «Меньше движения» в настройках системы: отъезд камеры — именно
      то движение, от которого у части людей кружится голова. Масштаб
      меняется сразу, диван просто проявляется. */
