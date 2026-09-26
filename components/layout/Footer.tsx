@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { ContactIcon } from "@/components/ui/ContactIcon";
 import { Container } from "@/components/ui/Container";
+import { contactList } from "@/lib/contacts";
 import { footerSections, site } from "@/lib/site";
 
 /**
@@ -40,17 +42,28 @@ export function Footer() {
             <span className="text-accent mb-0.5 text-[12px] tracking-[0.08em] uppercase">
               Контакты
             </span>
-            <a href={`mailto:${site.email}`} className="text-accent no-underline hover:underline">
-              {site.email}
-            </a>
-            <a
-              href={site.instagram.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent no-underline hover:underline"
-            >
-              Instagram @{site.instagram.handle}
-            </a>
+            {/* Только настроенные контакты (lib/contacts.ts). Прежде здесь
+                стояла почта-заглушка hello@berlant-art.example — выдуманный
+                адрес, по которому письмо ушло бы в пустоту.
+                Телефона здесь нет: это тот же номер, что у WhatsApp строкой
+                выше, и в узкой колонке он читался бы как повтор. Позвонить
+                можно со страницы контактов. */}
+            {contactList()
+              .filter((contact) => contact.id !== "phone")
+              .map((contact) => (
+                <a
+                  key={contact.id}
+                  href={contact.href}
+                  {...(contact.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="text-accent inline-flex items-center gap-2 no-underline hover:underline"
+                >
+                  <ContactIcon id={contact.id} className="size-[18px] shrink-0" />
+                  <span>
+                    <span className="sr-only">{contact.label}: </span>
+                    {contact.value}
+                  </span>
+                </a>
+              ))}
             <span className="text-ink/65">{site.location}</span>
             <Link href="/contact" className="text-accent no-underline hover:underline">
               Написать →

@@ -60,6 +60,37 @@ const clientSchema = z.object({
       message: "только цифры, в международном формате без плюса и пробелов: 79991234567",
     })
     .optional(),
+
+  /**
+   * Почта для связи. Необязательная по той же причине, что и телефон:
+   * настоящего адреса пока нет, а показывать выдуманный нельзя
+   * (.ai/rules/content.md). Пока пусто — почта на /contact не рисуется.
+   */
+  NEXT_PUBLIC_CONTACT_EMAIL: z.email().optional(),
+
+  /**
+   * Имя в Telegram без «собаки»: berlant_art. Необязательная.
+   * Проверка формата здесь же — в имени Telegram допустимы только буквы,
+   * цифры и подчёркивание, а ошибка видна лишь по пустому чату.
+   */
+  NEXT_PUBLIC_TELEGRAM: z
+    .string()
+    .regex(/^[A-Za-z0-9_]{5,32}$/, {
+      message: "имя в Telegram без @: буквы, цифры и подчёркивание",
+    })
+    .optional(),
+
+  /**
+   * Страница в Facebook — только имя из адреса: для
+   * facebook.com/berlant.art это berlant.art. Необязательная, как и
+   * остальные контакты: пока пусто, Facebook на сайте не показывается.
+   */
+  NEXT_PUBLIC_FACEBOOK: z
+    .string()
+    .regex(/^[A-Za-z0-9.]{5,50}$/, {
+      message: "имя страницы Facebook из адреса: буквы, цифры и точки, без facebook.com/",
+    })
+    .optional(),
 });
 
 /**
@@ -70,6 +101,9 @@ const clientValues = {
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
   NEXT_PUBLIC_WHATSAPP_PHONE: process.env.NEXT_PUBLIC_WHATSAPP_PHONE,
+  NEXT_PUBLIC_CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
+  NEXT_PUBLIC_TELEGRAM: process.env.NEXT_PUBLIC_TELEGRAM,
+  NEXT_PUBLIC_FACEBOOK: process.env.NEXT_PUBLIC_FACEBOOK,
 };
 
 function parse<T extends z.ZodType>(schema: T, values: unknown, label: string): z.infer<T> {
