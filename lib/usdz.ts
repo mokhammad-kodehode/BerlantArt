@@ -127,6 +127,11 @@ function material(material: ArMaterial): string {
  * Описание сцены. Устройство — как у сцен из Reality Composer (и у экспорта
  * three.js, который этим пользуется): «библиотека сцен» с одной сценой,
  * и уже на ней — крепление к стене. Так его понимают все версии Quick Look.
+ *
+ * Картина повёрнута на −90° вокруг X: лицом к +Y, верхом к −Z. Так требует
+ * ARKit: у найденной стены ось Y смотрит из стены, а ось Z — вниз. Сцена
+ * же лицом к +Z, как ждёт Android. Без поворота iPhone вешал картину
+ * полкой, лицом в пол (найдено на iPhone 29 сентября 2026).
  */
 function usda(scene: ArScene): string {
   return `#usda 1.0
@@ -155,7 +160,13 @@ def Xform "Root"
         {
             token preliminary:anchoring:type = "plane"
             token preliminary:planeAnchoring:alignment = "vertical"
+
+            def Xform "Painting"
+            {
+                float xformOp:rotateX = -90
+                uniform token[] xformOpOrder = ["xformOp:rotateX"]
 ${scene.parts.map(mesh).join("\n")}
+            }
         }
     }
 

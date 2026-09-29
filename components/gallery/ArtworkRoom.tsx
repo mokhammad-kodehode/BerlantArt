@@ -24,6 +24,10 @@ import {
 } from "@/lib/room-options";
 import { site } from "@/lib/site";
 
+/** Как пользоваться камерой — показывается при входе на страницу камеры. */
+const cameraHowTo =
+  "Нажмите «Открыть камеру» и наведите телефон на стену. Медленно поведите им — на гладкой однотонной стене картина появится не сразу.";
+
 /** Пауза между появлением картины в темноте и щелчком выключателя. */
 const SWITCH_DELAY_MS = 700;
 
@@ -208,7 +212,10 @@ export function ArtworkRoom({
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   // Короткая подсказка над сценой — сейчас одна: почему «издали» не
   // работает у картины без размера.
-  const [hint, setHint] = useState<string | null>(null);
+  // В камере подсказка «как пользоваться» видна сразу при входе: на
+  // телефоне нижней части панели с пояснениями не видно, а пустой экран
+  // «наведите iPhone» без подготовки сбивает с толку (проверено на iPhone).
+  const [hint, setHint] = useState<string | null>(isCamera ? cameraHowTo : null);
   const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Панель можно убрать, чтобы смотреть на комнату целиком. В адрес это
   // не пишется: ссылку пересылают ради рамы и стены, а не ради того,
@@ -292,6 +299,13 @@ export function ArtworkRoom({
     hintTimer.current = setTimeout(() => setHint(null), 5000);
   }, []);
 
+  // Подсказка при входе в камеру уходит сама, как и остальные.
+  useEffect(() => {
+    if (!isCamera) return;
+    hintTimer.current = setTimeout(() => setHint(null), 9000);
+    return () => clearTimeout(hintTimer.current);
+  }, [isCamera]);
+
   // «Издали» есть у каждой картины, а не только у картин с размером:
   // кнопка, которая то появляется, то нет, выглядит поломкой — на iPhone
   // заказчик решил, что она не поместилась. Без размера диван показать
@@ -311,13 +325,27 @@ export function ArtworkRoom({
     ? roomMessage(work.title, options, `${siteUrl}${arPageUrl(work.id, options)}`, "camera")
     : roomMessage(work.title, options, `${siteUrl}/gallery/${work.id}/room${query}`);
 
+  const whatsappUrl = whatsappPhone
+    ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
+    : undefined;
+
   // Модель зависит только от рамы: адрес меняется вместе с выбором.
+  // Подпись плашки в камере — размер: по нему человек сверяет картину
+  // со стеной, а цифра «в раме» — то, что займёт место.
   const camera =
     arVersion === null
       ? null
       : {
           usdzUrl: arFileUrl(work.id, "model.usdz", arVersion, options),
           glbUrl: arFileUrl(work.id, "model.glb", arVersion, options),
+          title: work.title,
+          subtitle: [
+            sides === null ? null : `Холст ${orient(sides)}`,
+            framed === null || options.frame === "none" ? null : `в раме ${orient(framed)}`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          contactUrl: whatsappUrl,
         };
 
   // Переход между режимами с той же рамой. Из примерочной — только если
@@ -407,7 +435,7 @@ export function ArtworkRoom({
               здесь она только на телефоне, где боковой панели нет. */}
           {whatsappPhone && (
             <a
-              href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="room-pill w-10 justify-center px-0 text-[15px] lg:hidden"
@@ -751,22 +779,20 @@ export function ArtworkRoom({
 
           {isCamera && camera !== null && (
             <>
-              <ArCameraButton
-                {...camera}
-                title={work.title}
-                className="room-cta"
-                onNotice={showHint}
-              >
+              <ArCameraButton {...camera} className="room-cta" onNotice={showHint}>
                 <ViewIcon name="camera" className="size-5" />
                 Открыть камеру
               </ArCameraButton>
-              <p className="room-note">Картина встанет на вашу стену в настоящем размере.</p>
+              <p className="room-note">
+                Картина встанет на вашу стену в настоящем размере. Наведите телефон на стену и
+                медленно поведите им — гладкую однотонную стену он находит не сразу.
+              </p>
             </>
           )}
 
           {whatsappPhone && (
             <a
-              href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`}
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="room-cta"
@@ -803,7 +829,7 @@ export function ArtworkRoom({
           ))}
 
         {isCamera && camera !== null && (
-          <ArCameraButton {...camera} title={work.title} className="room-tool" onNotice={showHint}>
+          <ArCameraButton {...camera} className="room-tool" onNotice={showHint}>
             <ViewIcon name="camera" className="size-[22px]" />
             Открыть камеру
           </ArCameraButton>

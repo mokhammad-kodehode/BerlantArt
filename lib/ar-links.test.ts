@@ -61,7 +61,34 @@ describe("открытие камеры", () => {
     expect(intent.endsWith(";end;")).toBe(true);
   });
 
-  it("iPhone: Quick Look без масштаба", () => {
-    expect(quickLookUrl("/m.usdz?v=1")).toBe("/m.usdz?v=1#allowsContentScaling=0");
+  it("iPhone: Quick Look без масштаба, делится страницей", () => {
+    expect(quickLookUrl("/m.usdz?v=1", { pageUrl: "https://site.test/gallery/w1/ar" })).toBe(
+      "/m.usdz?v=1#allowsContentScaling=0&canonicalWebPageURL=https%3A%2F%2Fsite.test%2Fgallery%2Fw1%2Far",
+    );
+  });
+
+  it("iPhone: плашка с названием, размером и кнопкой", () => {
+    const url = quickLookUrl("/m.usdz", {
+      pageUrl: "https://site.test/p",
+      banner: { title: "Ромашки", subtitle: "Холст 60 × 60 см", action: "Написать о картине" },
+    });
+    const params = new URLSearchParams(url.split("#")[1]);
+
+    expect(params.get("checkoutTitle")).toBe("Ромашки");
+    expect(params.get("checkoutSubtitle")).toBe("Холст 60 × 60 см");
+    expect(params.get("callToAction")).toBe("Написать о картине");
+    // Пробелы — %20, а не «+»: так в примерах Apple, «+» Quick Look покажет как есть.
+    expect(url).toContain("callToAction=%D0%9D%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%20");
+  });
+
+  it("Android: кнопка «написать» — параметром link", () => {
+    const url = sceneViewerUrl({
+      glbUrl: "https://site.test/m.glb",
+      title: "Ромашки",
+      link: "https://wa.me/79990000000?text=Здравствуйте",
+      fallbackUrl: "https://site.test/p#no-ar",
+    });
+    const query = new URL(url.split("#")[0].replace("intent://", "https://")).searchParams;
+    expect(query.get("link")).toBe("https://wa.me/79990000000?text=Здравствуйте");
   });
 });

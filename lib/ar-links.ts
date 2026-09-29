@@ -53,15 +53,18 @@ export const noCameraHash = "#no-ar";
  * 3D-просмотра; для него Google велит пакет ARCore. `resizable=false` —
  * масштаб менять нельзя: картина в настоящем размере, в этом весь смысл.
  * `enable_vertical_placement` — вешать на стену, а не ставить на пол.
+ * `link` — кнопка в камере, у нас «написать о картине».
  * Нет ARCore — браузер откроет `fallbackUrl`.
  */
 export function sceneViewerUrl({
   glbUrl,
   title,
+  link,
   fallbackUrl,
 }: {
   glbUrl: string;
   title: string;
+  link?: string;
   fallbackUrl: string;
 }): string {
   const query = new URLSearchParams({
@@ -71,6 +74,7 @@ export function sceneViewerUrl({
     enable_vertical_placement: "true",
     title,
   });
+  if (link !== undefined) query.set("link", link);
   const intent = [
     "Intent",
     "scheme=https",
@@ -82,10 +86,33 @@ export function sceneViewerUrl({
   return `intent://arvr.google.com/scene-viewer/1.0?${query}#${intent}`;
 }
 
+/** Плашка внизу камеры на iPhone: что за картина и какого она размера. */
+export type QuickLookBanner = { title: string; subtitle: string; action: string };
+
 /**
  * Адрес для AR Quick Look на iPhone. `allowsContentScaling=0` запрещает
  * менять масштаб щипком — по той же причине, что `resizable=false`.
+ * `canonicalWebPageURL` — чем делится кнопка «Поделиться» в камере:
+ * страницей, а не голым файлом модели.
+ *
+ * Плашку Apple показывает, только если на ней есть кнопка действия
+ * (`callToAction`); нажатие приходит на страницу событием `message`.
  */
-export function quickLookUrl(usdzUrl: string): string {
-  return `${usdzUrl}#allowsContentScaling=0`;
+export function quickLookUrl(
+  usdzUrl: string,
+  { pageUrl, banner }: { pageUrl: string; banner?: QuickLookBanner },
+): string {
+  const params = [
+    ["allowsContentScaling", "0"],
+    ["canonicalWebPageURL", pageUrl],
+  ];
+  if (banner !== undefined) {
+    params.push(
+      ["checkoutTitle", banner.title],
+      ["checkoutSubtitle", banner.subtitle],
+      ["callToAction", banner.action],
+    );
+  }
+  const hash = params.map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&");
+  return `${usdzUrl}#${hash}`;
 }

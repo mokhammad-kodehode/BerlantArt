@@ -68,6 +68,16 @@ describe("buildUsdz", () => {
     expect(view.getUint32(end + 16, true) + view.getUint32(end + 12, true)).toBe(end);
   });
 
+  it("картина повёрнута лицом из стены — по оси Y, как у стен в ARKit", () => {
+    // Без поворота iPhone вешал картину полкой, лицом в пол.
+    const { usda } = build();
+    expect(usda).toMatch(
+      /def Xform "Painting"\s*\{\s*float xformOp:rotateX = -90\s*uniform token\[\] xformOpOrder = \["xformOp:rotateX"\]/,
+    );
+    const painting = usda.indexOf('def Xform "Painting"');
+    expect(usda.indexOf('def Mesh "Photo"')).toBeGreaterThan(painting);
+  });
+
   it("в метрах, ось Y вверх, крепится к стене", () => {
     const { usda } = build();
     expect(usda).toMatch(/^#usda 1\.0/);
