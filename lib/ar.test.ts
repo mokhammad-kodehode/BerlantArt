@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { arFileUrl, arTarget, isArFile } from "@/lib/ar";
+import { arTarget } from "@/lib/ar";
 import type { ArtworkWithImages } from "@/lib/artworks";
 
 const created = new Date("2026-09-01");
@@ -72,20 +72,5 @@ describe("arTarget", () => {
     expect(arTarget(work())?.version).toBe(base);
     expect(arTarget(work({}, { url: "artworks/other.webp" }))?.version).not.toBe(base);
     expect(arTarget(work({ dimensions: "41 × 51 см" }))?.version).not.toBe(base);
-  });
-});
-
-describe("адрес модели", () => {
-  it("пишет выбор всегда и в одном порядке", () => {
-    expect(arFileUrl("w1", "model.glb", "abc", { frame: "classic", finish: "gold" })).toBe(
-      "/gallery/w1/ar/model.glb?v=abc&frame=classic&finish=gold",
-    );
-  });
-
-  it("знает только два файла", () => {
-    expect(isArFile("model.usdz")).toBe(true);
-    expect(isArFile("model.glb")).toBe(true);
-    expect(isArFile("toString")).toBe(false);
-    expect(isArFile("model.gltf")).toBe(false);
   });
 });

@@ -338,12 +338,22 @@ export function framedSides(sides: CanvasSides, frame: RoomFrame): CanvasSides {
  * Текст для WhatsApp из примерочной: какая работа и в каком виде её
  * смотрели. Художница сразу видит, что понравилось, и может предложить
  * раму, если делает их на заказ.
+ *
+ * Из примерки через камеру стена своя, настоящая, — называть цвет
+ * нарисованной стены там было бы неправдой.
  */
-export function roomMessage(title: string, options: RoomOptions, pageUrl: string): string {
+export function roomMessage(
+  title: string,
+  options: RoomOptions,
+  pageUrl: string,
+  place: "room" | "camera" = "room",
+): string {
   const framing =
     options.frame === "none"
       ? "без рамы"
       : `в раме «${frameModels[options.frame].label}», ${finishText[options.finish].label.toLowerCase()}`;
+  const where =
+    place === "camera" ? "у себя на стене, через камеру" : wallText[options.wall].phrase;
   // «Смотрю её…», а не «примерял»: без рода — пишут и мужчины, и женщины.
-  return `Здравствуйте! Интересует работа «${title}». Смотрю её ${framing}, ${wallText[options.wall].phrase}. ${pageUrl}`;
+  return `Здравствуйте! Интересует работа «${title}». Смотрю её ${framing}, ${where}. ${pageUrl}`;
 }

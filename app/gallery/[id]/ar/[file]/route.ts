@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
-import { arFiles, arFileUrl, arTarget, buildArFile, isArFile } from "@/lib/ar";
+import { arTarget, buildArFile } from "@/lib/ar";
+import { arFiles, arFileUrl, isArFile } from "@/lib/ar-links";
 import { getArtworkById } from "@/lib/artworks";
 import { parseRoomOptions } from "@/lib/room-options";
 

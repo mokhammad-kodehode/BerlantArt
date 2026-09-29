@@ -8,6 +8,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
+import { arTarget } from "@/lib/ar";
 import {
   artworkCaption,
   artworkStatusLabel,
@@ -185,6 +186,27 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
                 <rect x="7" y="7" width="10" height="10" />
               </svg>
               Примерить на стену
+            </ButtonLink>
+          )}
+
+          {/* Примерка через камеру телефона (AR-4): та же рама, но на своей
+              стене в настоящем размере. Только у работ, которые можно
+              показать в камере честно (lib/ar.ts, arTarget). */}
+          {arTarget(work) !== null && (
+            <ButtonLink href={`/gallery/${work.id}/ar`} variant="soft" size="lg">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinejoin="round"
+              >
+                <path d="M4 8h3l2-3h6l2 3h3v11H4Z" />
+                <circle cx="12" cy="13" r="3.5" />
+              </svg>
+              Через камеру
             </ButtonLink>
           )}
 

@@ -2305,6 +2305,27 @@
     outline: 2px solid var(--room-light-warm);
     outline-offset: 3px;
   }
+  /* Кнопкой бывает и <button> — «Открыть камеру» (AR-4). */
+  button.room-cta {
+    border: 0;
+    cursor: pointer;
+  }
+  /* В камере главная — «Открыть камеру», WhatsApp под ней вторым:
+     две одинаковые светлые кнопки спорили бы, какую нажать. */
+  .room-cta[data-secondary] {
+    color: var(--room-ink);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  }
+  .room-cta[data-secondary]:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+  .room-note {
+    margin: -4px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.7;
+  }
 
   /* Что видно на какой ширине. Эти правила — после общих намеренно:
      при равной специфичности побеждает то, что ниже, и раньше вкладки
@@ -2540,6 +2561,13 @@
     }
     .room[data-tool="frame"][data-frame="none"] {
       --tray-h: 112px;
+    }
+    /* В камере у резных рам третья строка — что резьбы там не будет. */
+    .room[data-variant="camera"][data-tool="frame"]:is(
+        [data-frame="classic"],
+        [data-frame="baroque"]
+      ) {
+      --tray-h: 230px;
     }
 
     .room-scene {

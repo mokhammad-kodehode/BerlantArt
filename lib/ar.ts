@@ -2,11 +2,12 @@ import { createHash } from "node:crypto";
 
 import sharp from "sharp";
 
+import type { ArFile, ArOptions } from "@/lib/ar-links";
 import { buildPaintingScene, canvasPlacement, type CanvasPlacement } from "@/lib/ar-model";
 import { imageUrl, type ArtworkWithImages } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { buildGlb } from "@/lib/glb";
-import { parseCanvasSides, type RoomOptions } from "@/lib/room-options";
+import { parseCanvasSides } from "@/lib/room-options";
 import { buildUsdz } from "@/lib/usdz";
 
 /**
@@ -26,18 +27,6 @@ import { buildUsdz } from "@/lib/usdz";
  * будут получать старую модель из кэша.
  */
 const modelRevision = 1;
-
-/** Форматы: USDZ — для iPhone (AR Quick Look), GLB — для Android (Scene Viewer). */
-export const arFiles = {
-  "model.usdz": "model/vnd.usdz+zip",
-  "model.glb": "model/gltf-binary",
-} as const;
-
-export type ArFile = keyof typeof arFiles;
-
-export function isArFile(name: string): name is ArFile {
-  return Object.hasOwn(arFiles, name);
-}
 
 /** Что нужно для модели работы, если её можно показать в камере. */
 export type ArTarget = {
@@ -74,20 +63,6 @@ export function arTarget(work: ArtworkWithImages): ArTarget | null {
 }
 
 /**
- * Адрес модели. Выбор рамы пишется всегда и в одном порядке: одинаковая
- * модель — один адрес, и CDN не хранит её копии под разными.
- */
-export function arFileUrl(
-  workId: string,
-  file: ArFile,
-  version: string,
-  options: Pick<RoomOptions, "frame" | "finish">,
-): string {
-  const query = new URLSearchParams({ v: version, frame: options.frame, finish: options.finish });
-  return `/gallery/${workId}/ar/${file}?${query}`;
-}
-
-/**
  * Фото внутрь модели. Телефоны берут внутрь JPEG и PNG, а не WebP,
  * в котором фото лежат в хранилище. 2048px по длинной стороне — предел
  * текстуры, который держат все телефоны с AR; больше — только вес.
@@ -121,7 +96,7 @@ export async function buildArFile({
 }: {
   target: ArTarget;
   file: ArFile;
-  options: Pick<RoomOptions, "frame" | "finish">;
+  options: ArOptions;
 }): Promise<Uint8Array<ArrayBuffer>> {
   const src = imageUrl(target.photo);
   if (src === undefined) {
