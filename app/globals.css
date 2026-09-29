@@ -2327,6 +2327,140 @@
     opacity: 0.7;
   }
 
+  /* Подготовка к камере (ArGuide). На телефоне — лист снизу, как
+     системные листы iOS и Android; на компьютере — карточка по центру.
+     Цвета — примерочной: диалог лежит внутри .room и берёт её переменные. */
+  .ar-guide {
+    width: min(100%, 440px);
+    max-width: none;
+    max-height: min(92svh, 760px);
+    margin: auto auto 0;
+    padding: 0;
+    color: var(--room-ink);
+    background: rgb(22 19 17);
+    border: 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 40px rgb(0 0 0 / 0.4);
+  }
+  .ar-guide::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+  .ar-guide[open] {
+    animation: ar-guide-in 0.3s var(--room-ease);
+  }
+  @keyframes ar-guide-in {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+  @media (min-width: 640px) {
+    .ar-guide {
+      margin: auto;
+      border-radius: 20px;
+    }
+  }
+  .ar-guide-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  .ar-guide-work {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .ar-guide-thumb {
+    position: relative;
+    flex: none;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+  .ar-guide-kicker {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .ar-guide-title {
+    margin: 2px 0 0;
+    overflow: hidden;
+    font-size: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ar-guide-size {
+    margin: 2px 0 0;
+    font-size: 13px;
+    opacity: 0.75;
+  }
+  .ar-guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ar-guide-step {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    background: rgb(255 255 255 / 0.05);
+    border-radius: 14px;
+  }
+  .ar-guide-picture {
+    width: 96px;
+    height: auto;
+    color: var(--room-light-warm);
+  }
+  .ar-guide-step-title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .ar-guide-step-number {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    color: var(--label-ink);
+    background: var(--room-ink);
+    border-radius: 999px;
+  }
+  .ar-guide-step-text {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.75;
+  }
+  .ar-guide-tip {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.65;
+  }
+  .ar-guide-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   /* Что видно на какой ширине. Эти правила — после общих намеренно:
      при равной специфичности побеждает то, что ниже, и раньше вкладки
      оставались на компьютере, а неактивные разделы — на телефоне. */

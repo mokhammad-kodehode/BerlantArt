@@ -13,7 +13,7 @@ components/
   layout/               Header, Footer
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, ArtworkCollage, ArtworkStage, ArtworkViewer,
-                        ArtworkRoom и PictureLamp (примерочная), ArCameraButton (камера)
+                        ArtworkRoom и PictureLamp (примерочная), ArCamera и ArGuide (камера)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
   demo-artworks.ts      временные данные (уйдут на этапе 3)
@@ -40,8 +40,8 @@ public/                 всё отсюда доступно из интерне
   `PaintingReel` (видео в конце главной, надпись по прокрутке),
   `ArtworkViewer` (просмотр картины на весь экран), `ArtworkRoom` (примерочная:
   рама по пропорциям загруженной фотографии, выбор без перезагрузки; она же
-  примерка через камеру в режиме `variant="camera"`), `ArCameraButton`
-  (выбор просмотрщика телефона в момент нажатия),
+  примерка через камеру в режиме `variant="camera"`), `useArCamera`
+  (`ArCamera`: выбор просмотрщика телефона, `ArGuide`: подготовка перед камерой),
   `ContactForm` (проверка полей, сборка сообщения), `AdminReturnBar`
   (возврат в панель) и `ThemeSwitch` (выбор зала). У последнего своего
   состояния нет — он только пишет атрибут на `<html>` и в localStorage,

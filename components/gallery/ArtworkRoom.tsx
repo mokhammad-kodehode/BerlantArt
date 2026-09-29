@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
-import { ArCameraButton } from "@/components/gallery/ArCameraButton";
+import { ArQuickLookLink, useArCamera, type ArCameraModel } from "@/components/gallery/ArCamera";
+import { ArGuide, hasSeenArGuide, rememberArGuide } from "@/components/gallery/ArGuide";
 import { PictureLamp } from "@/components/gallery/PictureLamp";
 import { ContactIcon } from "@/components/ui/ContactIcon";
 import { arFileUrl, arPageUrl, roomPageUrl } from "@/lib/ar-links";
@@ -23,10 +24,6 @@ import {
   type RoomOptions,
 } from "@/lib/room-options";
 import { site } from "@/lib/site";
-
-/** Как пользоваться камерой — показывается при входе на страницу камеры. */
-const cameraHowTo =
-  "Нажмите «Открыть камеру» и наведите телефон на стену. Медленно поведите им — на гладкой однотонной стене картина появится не сразу.";
 
 /** Пауза между появлением картины в темноте и щелчком выключателя. */
 const SWITCH_DELAY_MS = 700;
@@ -61,7 +58,8 @@ type IconName =
   | "wall"
   | "info"
   | "close"
-  | "camera";
+  | "camera"
+  | "help";
 
 /**
  * Иконки примерочной: солнце — день, луна — вечер, лупа с минусом —
@@ -126,6 +124,12 @@ function ViewIcon({ name, className = "size-[18px]" }: { name: IconName; classNa
         </>
       )}
       {name === "close" && <path d="M6 6l12 12M18 6 6 18" />}
+      {name === "help" && (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01" />
+        </>
+      )}
       {name === "camera" && (
         <>
           <path d="M4 8h3l2-3h6l2 3h3v11H4Z" />
@@ -212,15 +216,14 @@ export function ArtworkRoom({
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   // Короткая подсказка над сценой — сейчас одна: почему «издали» не
   // работает у картины без размера.
-  // В камере подсказка «как пользоваться» видна сразу при входе: на
-  // телефоне нижней части панели с пояснениями не видно, а пустой экран
-  // «наведите iPhone» без подготовки сбивает с толку (проверено на iPhone).
-  const [hint, setHint] = useState<string | null>(isCamera ? cameraHowTo : null);
+  const [hint, setHint] = useState<string | null>(null);
   const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Панель можно убрать, чтобы смотреть на комнату целиком. В адрес это
   // не пишется: ссылку пересылают ради рамы и стены, а не ради того,
   // открыта ли у отправителя панель.
   const [isPanelOpen, setIsPanelOpen] = useState(true);
+  // Экран подготовки к камере (ArGuide).
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const lampTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const isReady = aspect !== null;
@@ -299,13 +302,6 @@ export function ArtworkRoom({
     hintTimer.current = setTimeout(() => setHint(null), 5000);
   }, []);
 
-  // Подсказка при входе в камеру уходит сама, как и остальные.
-  useEffect(() => {
-    if (!isCamera) return;
-    hintTimer.current = setTimeout(() => setHint(null), 9000);
-    return () => clearTimeout(hintTimer.current);
-  }, [isCamera]);
-
   // «Издали» есть у каждой картины, а не только у картин с размером:
   // кнопка, которая то появляется, то нет, выглядит поломкой — на iPhone
   // заказчик решил, что она не поместилась. Без размера диван показать
@@ -332,7 +328,7 @@ export function ArtworkRoom({
   // Модель зависит только от рамы: адрес меняется вместе с выбором.
   // Подпись плашки в камере — размер: по нему человек сверяет картину
   // со стеной, а цифра «в раме» — то, что займёт место.
-  const camera =
+  const camera: ArCameraModel | null =
     arVersion === null
       ? null
       : {
@@ -347,6 +343,27 @@ export function ArtworkRoom({
             .join(" · "),
           contactUrl: whatsappUrl,
         };
+
+  const arCamera = useArCamera(camera, showHint);
+
+  // Экран подготовки — при первом открытии камеры на этом телефоне: без
+  // него на iPhone было непонятно, почему картина полупрозрачная и куда
+  // вести телефон. Где камеры нет, сразу объясняем словами почему.
+  function requestCamera() {
+    const platform = arCamera.detect();
+    const canOpen = platform === "ios" || platform === "android";
+    if (canOpen && !hasSeenArGuide()) {
+      setIsGuideOpen(true);
+      return;
+    }
+    arCamera.launch(platform);
+  }
+
+  function startFromGuide() {
+    rememberArGuide();
+    setIsGuideOpen(false);
+    arCamera.launch(arCamera.detect());
+  }
 
   // Переход между режимами с той же рамой. Из примерочной — только если
   // работу можно показать в камере.
@@ -405,6 +422,19 @@ export function ArtworkRoom({
               <ViewIcon name={otherMode.icon} />
               <span className="max-lg:hidden">{otherMode.label}</span>
             </Link>
+          )}
+
+          {isCamera && camera !== null && (
+            <button
+              type="button"
+              className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
+              aria-label="Как это работает"
+              aria-haspopup="dialog"
+              onClick={() => setIsGuideOpen(true)}
+            >
+              <ViewIcon name="help" />
+              <span className="max-lg:hidden">Как это работает</span>
+            </button>
           )}
 
           {/* Другую картину в камере не предлагаем: у многих работ её нет. */}
@@ -779,13 +809,13 @@ export function ArtworkRoom({
 
           {isCamera && camera !== null && (
             <>
-              <ArCameraButton {...camera} className="room-cta" onNotice={showHint}>
+              <button type="button" className="room-cta" onClick={requestCamera}>
                 <ViewIcon name="camera" className="size-5" />
                 Открыть камеру
-              </ArCameraButton>
+              </button>
               <p className="room-note">
-                Картина встанет на вашу стену в настоящем размере. Наведите телефон на стену и
-                медленно поведите им — гладкую однотонную стену он находит не сразу.
+                Картина встанет на вашу стену в настоящем размере — перед камерой покажем, как
+                навести телефон.
               </p>
             </>
           )}
@@ -829,10 +859,10 @@ export function ArtworkRoom({
           ))}
 
         {isCamera && camera !== null && (
-          <ArCameraButton {...camera} className="room-tool" onNotice={showHint}>
+          <button type="button" className="room-tool" onClick={requestCamera}>
             <ViewIcon name="camera" className="size-[22px]" />
             Открыть камеру
-          </ArCameraButton>
+          </button>
         )}
 
         {!isCamera && (
@@ -877,6 +907,20 @@ export function ArtworkRoom({
           </a>{" "}
           · CC BY 4.0
         </p>
+      )}
+
+      {isCamera && camera !== null && (
+        <>
+          <ArQuickLookLink linkRef={arCamera.linkRef} href={camera.usdzUrl} />
+          <ArGuide
+            isOpen={isGuideOpen}
+            photo={work.src}
+            title={work.title}
+            size={camera.subtitle}
+            onStart={startFromGuide}
+            onClose={() => setIsGuideOpen(false)}
+          />
+        </>
       )}
 
       {/* role="status" — скринридер зачитает подсказку, не сбивая фокус. */}
