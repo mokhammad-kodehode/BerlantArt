@@ -18,7 +18,7 @@ import type { ArMaterial, ArPart, ArScene } from "@/lib/ar-model";
 const sceneFile = "painting.usda";
 const photoFile = "photo.jpg";
 
-export function buildUsdz(scene: ArScene, photoJpeg: Uint8Array): Uint8Array {
+export function buildUsdz(scene: ArScene, photoJpeg: Uint8Array): Uint8Array<ArrayBuffer> {
   return zipStored([
     { name: sceneFile, data: new TextEncoder().encode(usda(scene)) },
     { name: photoFile, data: photoJpeg },
@@ -174,7 +174,7 @@ type ZipEntry = { name: string; data: Uint8Array };
  * в заголовках постоянная: одинаковая сцена даёт одинаковые байты, и кэш
  * их не различает зря.
  */
-function zipStored(entries: ZipEntry[]): Uint8Array {
+function zipStored(entries: ZipEntry[]): Uint8Array<ArrayBuffer> {
   const pieces: Uint8Array[] = [];
   const central: Uint8Array[] = [];
   let offset = 0;

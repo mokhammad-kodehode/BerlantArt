@@ -55,7 +55,7 @@ class BinaryChunk {
   }
 }
 
-export function buildGlb(scene: ArScene, photoJpeg: Uint8Array): Uint8Array {
+export function buildGlb(scene: ArScene, photoJpeg: Uint8Array): Uint8Array<ArrayBuffer> {
   const binary = new BinaryChunk();
   const accessors: Accessor[] = [];
 
@@ -178,7 +178,7 @@ function padTo4(bytes: Uint8Array, filler: number): Uint8Array {
   return concat([bytes, new Uint8Array(padding).fill(filler)]);
 }
 
-function concat(pieces: Uint8Array[]): Uint8Array {
+function concat(pieces: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const result = new Uint8Array(pieces.reduce((sum, piece) => sum + piece.length, 0));
   let offset = 0;
   for (const piece of pieces) {
