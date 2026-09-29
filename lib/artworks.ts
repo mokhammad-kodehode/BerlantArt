@@ -379,10 +379,13 @@ export async function addImage({
   artworkId,
   key,
   alt,
+  size,
 }: {
   artworkId: string;
   key: string;
   alt: string;
+  /** Размер из самого файла (`readImageSize`), не со слов браузера. */
+  size: { width: number; height: number };
 }): Promise<boolean> {
   return db.$transaction(async (tx) => {
     const artwork = await tx.artwork.findUnique({ where: { id: artworkId }, select: { id: true } });
@@ -391,7 +394,15 @@ export async function addImage({
     const count = await tx.image.count({ where: { artworkId } });
 
     await tx.image.create({
-      data: { artworkId, url: key, alt, order: count, isPrimary: count === 0 },
+      data: {
+        artworkId,
+        url: key,
+        alt,
+        order: count,
+        isPrimary: count === 0,
+        width: size.width,
+        height: size.height,
+      },
     });
 
     return true;

@@ -13,7 +13,14 @@ import {
 } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
 import { describeConfigError } from "@/lib/env";
-import { createUploadUrl, deleteObject, headObject, type UploadTarget } from "@/lib/r2";
+import { readImageSize } from "@/lib/image-size";
+import {
+  createUploadUrl,
+  deleteObject,
+  getObjectBytes,
+  headObject,
+  type UploadTarget,
+} from "@/lib/r2";
 import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
 import { checkUpload, isOwnObjectKey } from "@/lib/upload-limits";
 
@@ -122,7 +129,17 @@ export async function attachImage(input: {
     return { ok: false, error: refusal };
   }
 
-  if (!(await addImage({ artworkId, key, alt }))) {
+  // Размер — из самого файла (AR-1): примерка через камеру решает по нему,
+  // какая сторона холста ширина. Не читается — значит это не картинка,
+  // хоть тип и заявлен верный, и заводить на неё запись нельзя.
+  const bytes = await getObjectBytes(key);
+  const size = bytes === null ? null : await readImageSize(bytes).catch(() => null);
+  if (size === null) {
+    await deleteObject(key);
+    return { ok: false, error: "Файл не открывается как изображение — загрузите другой." };
+  }
+
+  if (!(await addImage({ artworkId, key, alt, size }))) {
     // Работы нет — файл уже лежит в бакете и никому не нужен.
     await deleteObject(key);
     return { ok: false, error: "Работа не найдена — возможно, её удалили в другом окне." };

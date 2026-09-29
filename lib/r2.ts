@@ -206,6 +206,26 @@ export async function headObject(key: string): Promise<StoredObject | null> {
 }
 
 /**
+ * Содержимое объекта. `null`, если объекта нет.
+ *
+ * Нужно, чтобы прочитать размер фото после заливки (AR-1): размер берём
+ * из самого файла, а не со слов браузера. Файл не тяжелее 1 МБ
+ * (upload-limits), а исходящий трафик у R2 бесплатный.
+ */
+export async function getObjectBytes(key: string): Promise<Uint8Array | null> {
+  const env = r2Env();
+  const response = await client(env).fetch(objectUrl(env, key));
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) {
+    throw new Error(`Хранилище ответило ${response.status} на чтение объекта «${key}».`);
+  }
+
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+/**
  * Удаляет объект. Молчит, если его уже нет: удаление того, чего нет, —
  * не ошибка, а именно то состояние, которого мы добивались.
  *
