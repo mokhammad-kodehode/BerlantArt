@@ -56,6 +56,11 @@ export type FrameModel = {
   widthCm: number;
   /** Зазор между холстом и рамой — только у парящей рамы-короба. */
   gapCm: number;
+  /**
+   * Насколько рама выступает от стены, в сантиметрах. Нужна объёмной
+   * раме в камере телефона (AR-2); значения типовые, как и ширины.
+   */
+  depthCm: number;
   /** Допустимые покрытия. Первое — то, что выбирается вместе с моделью. */
   finishes: RoomFinish[];
 };
@@ -66,12 +71,20 @@ export type FrameModel = {
  * такая рама, а не продаёт её.
  */
 const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
-  none: { label: "Без рамы", note: "холст на подрамнике", widthCm: 0, gapCm: 0, finishes: [] },
+  none: {
+    label: "Без рамы",
+    note: "холст на подрамнике",
+    widthCm: 0,
+    gapCm: 0,
+    depthCm: 0,
+    finishes: [],
+  },
   thin: {
     label: "Тонкая",
     note: "алюминий, гладкая",
     widthCm: 1.2,
     gapCm: 0,
+    depthCm: 2.5,
     finishes: [
       "black",
       "silver",
@@ -89,6 +102,7 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
     note: "дерево, рама-короб с зазором",
     widthCm: 1.5,
     gapCm: 0.8,
+    depthCm: 3.5,
     finishes: ["black", "white", "oak-light", "oak", "walnut", "wenge"],
   },
   modern: {
@@ -96,6 +110,7 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
     note: "дерево, бусина у холста",
     widthCm: 4,
     gapCm: 0,
+    depthCm: 3,
     finishes: ["oak", "oak-light", "walnut", "wenge", "cherry", "white", "black", "gold", "silver"],
   },
   reverse: {
@@ -103,6 +118,7 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
     note: "дерево, подъём к холсту",
     widthCm: 5,
     gapCm: 0,
+    depthCm: 4,
     finishes: ["walnut", "oak", "wenge", "white", "black", "gold"],
   },
   classic: {
@@ -110,6 +126,7 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
     note: "дерево, резной поясок",
     widthCm: 7,
     gapCm: 0,
+    depthCm: 4.5,
     finishes: ["gold", "old-gold", "silver", "bronze", "walnut", "black"],
   },
   baroque: {
@@ -117,29 +134,39 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
     note: "дерево с лепниной, два пояса орнамента",
     widthCm: 10,
     gapCm: 0,
+    depthCm: 6,
     finishes: ["old-gold", "gold", "silver", "bronze"],
   },
 };
 
 /** Покрытие: подпись и из чего оно — от этого зависит, видно ли волокно. */
-export type FrameFinish = { id: RoomFinish; label: string; kind: "wood" | "metal" | "paint" };
+export type FrameFinish = {
+  id: RoomFinish;
+  label: string;
+  kind: "wood" | "metal" | "paint";
+  /**
+   * Основной тон — тот же, что `--f-mid` в globals.css (сверяет тест).
+   * Рама в камере телефона одноцветная: узор рисует только примерочная.
+   */
+  tone: string;
+};
 
 const finishText: Record<RoomFinish, Omit<FrameFinish, "id">> = {
-  gold: { label: "Золото", kind: "metal" },
-  "old-gold": { label: "Старое золото", kind: "metal" },
-  silver: { label: "Серебро", kind: "metal" },
-  bronze: { label: "Бронза", kind: "metal" },
-  "oak-light": { label: "Светлый дуб", kind: "wood" },
-  oak: { label: "Дуб", kind: "wood" },
-  walnut: { label: "Орех", kind: "wood" },
-  wenge: { label: "Венге", kind: "wood" },
-  cherry: { label: "Вишня", kind: "wood" },
-  white: { label: "Белая", kind: "paint" },
-  black: { label: "Чёрная", kind: "paint" },
-  graphite: { label: "Графит", kind: "paint" },
-  navy: { label: "Тёмно-синяя", kind: "paint" },
-  burgundy: { label: "Бордовая", kind: "paint" },
-  olive: { label: "Оливковая", kind: "paint" },
+  gold: { label: "Золото", kind: "metal", tone: "#a7803a" },
+  "old-gold": { label: "Старое золото", kind: "metal", tone: "#8a6e3a" },
+  silver: { label: "Серебро", kind: "metal", tone: "#9aa1a6" },
+  bronze: { label: "Бронза", kind: "metal", tone: "#8f6238" },
+  "oak-light": { label: "Светлый дуб", kind: "wood", tone: "#cfae80" },
+  oak: { label: "Дуб", kind: "wood", tone: "#b88e5e" },
+  walnut: { label: "Орех", kind: "wood", tone: "#6b4630" },
+  wenge: { label: "Венге", kind: "wood", tone: "#3c2c24" },
+  cherry: { label: "Вишня", kind: "wood", tone: "#8f3e22" },
+  white: { label: "Белая", kind: "paint", tone: "#ece8e1" },
+  black: { label: "Чёрная", kind: "paint", tone: "#1d1d1d" },
+  graphite: { label: "Графит", kind: "paint", tone: "#4a4d52" },
+  navy: { label: "Тёмно-синяя", kind: "paint", tone: "#213257" },
+  burgundy: { label: "Бордовая", kind: "paint", tone: "#5e1c25" },
+  olive: { label: "Оливковая", kind: "paint", tone: "#545a33" },
 };
 
 /** Шесть стен из реальных интерьеров — подобранные цвета выглядят лучше любого «любого». */
