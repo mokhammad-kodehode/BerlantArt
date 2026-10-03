@@ -51,8 +51,9 @@ export function artworkCaption(work: DemoArtwork): string {
 - размеры всех холстов — неизвестны;
 - годы создания — неизвестны;
 - цены — решение «показывать публично или по запросу» не принято;
-- настоящий email и телефон — в `lib/site.ts` стоит заглушка
-  `hello@berlant-art.example`;
+- настоящая почта — `NEXT_PUBLIC_CONTACT_EMAIL` не задана, и кнопок
+  «Написать на почту» на сайте нет (заглушка `hello@berlant-art.example`
+  удалена 3 октября 2026); телефон задан;
 - текст «о художнице» для `/about` — нет.
 
 Подтверждённый контакт один: Instagram **@art_berlant**.

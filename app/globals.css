@@ -511,6 +511,33 @@
     padding: 14px 26px;
   }
 
+  /* Текст документов (/privacy): заголовки разделов текстовым шрифтом,
+     а не антиквой — это справка, её пробегают глазами по пунктам. */
+  .legal {
+    display: grid;
+    gap: 14px;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .legal h2 {
+    margin: 22px 0 0;
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .legal p,
+  .legal ul {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+  .legal ul {
+    padding-left: 1.2em;
+  }
+  .legal a {
+    color: var(--color-accent);
+  }
+
   /* Ряд кнопок. На телефоне — колонка кнопок одной ширины: при переносе
      в flex-wrap каждая строка получала кнопку своей длины, и ряд выглядел
      рваным (на странице работы на 375px — три кнопки трёх разных ширин,

@@ -20,9 +20,9 @@ import {
   imageUrl,
   primaryImageUrl,
 } from "@/lib/artworks";
+import { contactEmail } from "@/lib/contacts";
 import { clientEnv } from "@/lib/env";
 import { purchaseAction } from "@/lib/purchase";
-import { site } from "@/lib/site";
 
 /** Как на главной и в галерее: страница готовится заранее, а не при каждом заходе. */
 export const revalidate = 300;
@@ -217,14 +217,18 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
           )}
 
           {/* Приглушённая вместо `secondary`: она берёт цвет от текста темы
-              и потому читается в любом зале. */}
-          <ExternalButtonLink
-            variant={phone ? "soft" : "primary"}
-            size="lg"
-            href={`mailto:${site.email}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(message)}`}
-          >
-            Написать на почту
-          </ExternalButtonLink>
+              и потому читается в любом зале. Только с настоящей почтой из
+              окружения: прежде кнопка вела на заглушку из lib/site.ts,
+              hello@berlant-art.example, — письмо ушло бы в пустоту. */}
+          {contactEmail && (
+            <ExternalButtonLink
+              variant={phone ? "soft" : "primary"}
+              size="lg"
+              href={`mailto:${contactEmail}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(message)}`}
+            >
+              Написать на почту
+            </ExternalButtonLink>
+          )}
         </div>
 
         {/* Без подсказки «Купить», открывающая мессенджер, а не корзину,

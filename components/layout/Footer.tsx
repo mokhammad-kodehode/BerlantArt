@@ -72,10 +72,15 @@ export function Footer() {
         </div>
       </Container>
 
-      <Container className="pb-8">
+      {/* Права на изображения — здесь, а не только в политике: подвал
+          видят на каждой странице, а копируют картины обычно отсюда же. */}
+      <Container className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pb-8">
         <p className="text-ink-faint m-0 text-xs">
-          © {new Date().getFullYear()} {site.artist}
+          © {new Date().getFullYear()} {site.artist}. Права на изображения работ принадлежат автору.
         </p>
+        <Link href="/privacy" className="text-ink-faint hover:text-ink text-xs underline">
+          Политика конфиденциальности
+        </Link>
       </Container>
     </footer>
   );
