@@ -38,12 +38,12 @@ export default function ErrorPage({
           <section className="panel-dashed my-16 p-10 md:my-24 md:p-14">
             <h1 className="mt-0 mb-4 text-[clamp(26px,4vw,34px)]">Страница не открылась</h1>
 
-            <p className="text-ink/75 mt-0 mb-8 max-w-[52ch] text-[16px] leading-relaxed">
+            <p className="text-ink-soft mt-0 mb-8 max-w-[52ch] text-[16px] leading-relaxed">
               Что-то пошло не так на нашей стороне. Чаще всего помогает повторная попытка — данные
               могли не успеть ответить.
             </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="btn-row">
               <Button variant="primary" onClick={reset}>
                 Попробовать снова
               </Button>
@@ -58,7 +58,7 @@ export default function ErrorPage({
               назвать его, когда напишет.
             */}
             {error.digest && (
-              <p className="text-ink/55 mt-8 mb-0 text-[14px]">
+              <p className="text-ink-faint mt-8 mb-0 text-[14px]">
                 Код ошибки: <span className="font-mono">{error.digest}</span>
               </p>
             )}

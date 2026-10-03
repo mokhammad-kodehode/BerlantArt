@@ -175,7 +175,7 @@ export function ArtworkStage({
         */}
           <Link
             href="/gallery"
-            className="text-ink/70 hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
+            className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
           >
             ← Все работы
           </Link>

@@ -69,7 +69,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       actions={
         <Link
           href={`/gallery/${artwork.id}`}
-          className="text-ink/75 hover:text-accent text-sm"
+          className="text-ink-soft hover:text-accent text-sm"
           target="_blank"
         >
           Посмотреть на сайте ↗
@@ -89,7 +89,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
             работ его нет вовсе — там соседняя кнопка меняет статус,
             и промах в необратимом действии стоит слишком дорого. */}
         <div className="border-divider mt-14 border-t pt-6">
-          <p className="text-ink/75 mb-3 text-sm">
+          <p className="text-ink-soft mb-3 text-sm">
             Убрать работу с сайта насовсем, вместе с фотографиями.
           </p>
           <DeleteArtwork

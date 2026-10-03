@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Golos_Text, Oranienbaum } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { AdminReturnBar } from "@/components/layout/AdminReturnBar";
 import { Footer } from "@/components/layout/Footer";
@@ -8,38 +8,33 @@ import { site } from "@/lib/site";
 import "./globals.css";
 
 /**
- * Заголовочная антиква — Oranienbaum, русский «дидон» Олега Поспелова:
- * высокий контраст штрихов, узкие буквы, драматичный в крупном размере.
+ * Заголовочная антиква — Cormorant Garamond: классическая гарнитура
+ * в духе гарамонов, «музейная» (решение заказчика 3 октября 2026, выбор
+ * из пяти пар на одной карточке работы).
  *
- * Взят вместо Literata по просьбе заказчика, который принёс референсом
- * ellajonesdesign.com.au с Meno Banner Condensed. Тот платный и кириллицы
- * не имеет, как и Bodoni Moda — ближайший бесплатный родственник. У
- * Oranienbaum кириллица родная, а латиница вторична: для сайта на русском
- * это ровно то, что нужно.
- *
- * Начертание одно, 400, и веса указываем явно — шрифт не переменный.
- * Курсива у него тоже нет, поэтому девиз в hero набран разрядкой,
- * а не наклоном: браузерная подделка курсива ломает высокий контраст.
+ * Заменила Oranienbaum: у того тонкие линии букв в мелком размере почти
+ * пропадали, текст казался бледным, а начертание было одно и без курсива.
+ * Cormorant тоже тонкий, поэтому заголовки идут весом 600, а не 400
+ * (--font-heading-weight в globals.css), — на 400 он бледнел бы так же.
+ * Курсив подключён: Oranienbaum его не имел, и девиз пришлось набирать
+ * разрядкой.
  */
-const oranienbaum = Oranienbaum({
+const cormorant = Cormorant_Garamond({
   variable: "--font-heading-family",
   subsets: ["cyrillic", "latin"],
-  weight: "400",
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
 /**
- * Гротеск на всё, кроме заголовков, — Golos Text, интерфейсный шрифт
- * Паратайпа: текст, кнопки, поля, фильтры.
- *
- * Сначала он заводился третьим шрифтом, только для элементов управления,
- * а текст оставался на Onest. Заказчик справедливо заметил, что два
- * похожих гротеска рядом выглядят разнобоем: разницу между ними читатель
- * не считывает как замысел. Onest убран, шрифтов снова два — антиква
- * в заголовках и Golos Text во всём остальном. Заодно страница стала
- * легче на один шрифтовой файл.
+ * Гротеск на всё, кроме заголовков, — Manrope: текст, кнопки, поля,
+ * фильтры. Выбран в паре с Cormorant: у них общая геометричная
+ * спокойность, а Golos Text рядом с гарамоном смотрелся слишком
+ * «интерфейсно». Шрифтов по-прежнему два: два похожих гротеска рядом
+ * заказчик уже однажды назвал разнобоем.
  */
-const golos = Golos_Text({
+const manrope = Manrope({
   variable: "--font-body-family",
   subsets: ["cyrillic", "latin"],
   display: "swap",
@@ -75,7 +70,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // живёт без атрибута — скрипт ниже снимает его у тех, кто выбрал тёмный.
       data-theme="paper"
       suppressHydrationWarning
-      className={`${oranienbaum.variable} ${golos.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}
     >
       {/*
         Хедер намеренно НЕ здесь: на главной он прозрачный и лежит поверх

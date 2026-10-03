@@ -33,7 +33,7 @@ export function AdminShell({
         {back !== undefined && (
           <Link
             href={back.href}
-            className="text-ink/75 hover:text-accent mb-4 inline-block text-sm"
+            className="text-ink-soft hover:text-accent mb-4 inline-block text-sm"
           >
             ← {back.label}
           </Link>

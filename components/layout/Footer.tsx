@@ -18,7 +18,7 @@ export function Footer() {
       <Container className="flex flex-wrap justify-between gap-10 pt-14 pb-10">
         <div className="max-w-[32ch]">
           <div className="font-heading mb-2 text-xl">{site.artist}</div>
-          <p className="text-ink/65 m-0 text-[14px] leading-relaxed">{site.description}</p>
+          <p className="text-ink-faint m-0 text-[14px] leading-relaxed">{site.description}</p>
           <p className="font-heading text-accent mt-4 mb-0 text-[16px]">{site.slogan}</p>
         </div>
 
@@ -64,7 +64,7 @@ export function Footer() {
                   </span>
                 </a>
               ))}
-            <span className="text-ink/65">{site.location}</span>
+            <span className="text-ink-faint">{site.location}</span>
             <Link href="/contact" className="text-accent no-underline hover:underline">
               Написать →
             </Link>
@@ -72,10 +72,15 @@ export function Footer() {
         </div>
       </Container>
 
-      <Container className="pb-8">
-        <p className="text-ink/50 m-0 text-xs">
-          © {new Date().getFullYear()} {site.artist}
+      {/* Права на изображения — здесь, а не только в политике: подвал
+          видят на каждой странице, а копируют картины обычно отсюда же. */}
+      <Container className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pb-8">
+        <p className="text-ink-faint m-0 text-xs">
+          © {new Date().getFullYear()} {site.artist}. Права на изображения работ принадлежат автору.
         </p>
+        <Link href="/privacy" className="text-ink-faint hover:text-ink text-xs underline">
+          Политика конфиденциальности
+        </Link>
       </Container>
     </footer>
   );

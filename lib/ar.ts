@@ -30,6 +30,14 @@ import { buildUsdz } from "@/lib/usdz";
  */
 const modelRevision = 2;
 
+/**
+ * Выключатель примерки через камеру. 3 октября 2026 её ставили на паузу
+ * (на iPhone без LiDAR стену ищут до минуты, картина не прижата к стене)
+ * и в тот же день вернули по просьбе заказчика. Что доработать —
+ * TICKETS-ar.md, раздел «Пауза». `false` снова скрывает все кнопки.
+ */
+const isCameraOn = true;
+
 /** Что нужно для модели работы, если её можно показать в камере. */
 export type ArTarget = {
   canvas: CanvasPlacement;
@@ -37,6 +45,15 @@ export type ArTarget = {
   photo: string;
   version: string;
 };
+
+/**
+ * То же, что `arTarget`, но с учётом паузы: им пользуются страницы
+ * и отдача моделей. Пока камера выключена — `null` у всех работ, и кнопок
+ * «Через камеру» нигде нет, а старые ссылки ведут в примерочную.
+ */
+export function cameraTarget(work: ArtworkWithImages): ArTarget | null {
+  return isCameraOn ? arTarget(work) : null;
+}
 
 /**
  * Можно ли показать работу в камере (решение 6). Нельзя, если: работа

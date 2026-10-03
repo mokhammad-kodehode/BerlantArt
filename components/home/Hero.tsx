@@ -80,9 +80,9 @@ export function Hero() {
         </div>
 
         <div className="flex flex-col gap-6 px-[clamp(20px,5vw,64px)] pt-6 pb-8 [grid-area:rest] min-[900px]:gap-7 min-[900px]:pt-5 min-[900px]:pb-0">
-          {/* Разрядка вместо курсива: у Oranienbaum курсива нет, и браузер
-              подделал бы его наклоном — у высококонтрастной антиквы это
-              сразу видно. */}
+          {/* Разрядка, а не курсив, — так девиз набирался с прежним
+              Oranienbaum, у которого курсива не было. У Cormorant курсив
+              есть и подключён: перейти на него — решение заказчика. */}
           <p className="font-heading text-accent m-0 text-[clamp(19px,2.2vw,28px)] tracking-[0.06em]">
             {site.slogan}
           </p>
@@ -93,12 +93,12 @@ export function Hero() {
             Прежний текст из макета обещал выставки, которых нечем подтвердить.
             На телефоне скрыт — см. описание компонента.
           */}
-          <p className="text-ink/80 m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
+          <p className="text-ink-soft m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
             Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
             единого урока рисования, — и с тех пор пишет каждый день.
           </p>
 
-          <div className="flex flex-wrap gap-3.5">
+          <div className="btn-row">
             <ButtonLink href="/gallery" variant="primary" size="lg">
               Смотреть галерею
             </ButtonLink>
