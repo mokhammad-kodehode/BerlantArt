@@ -37,6 +37,15 @@
   --color-ink-faint: var(--theme-ink-faint);
   --color-accent: var(--theme-accent);
   --color-accent-2: var(--theme-accent-2);
+  /* Мазок мастихина (меню и первый экран) — три краски на одном
+     мастихине, сверху вниз: бирюза, неаполитанская жёлтая, розовый краплак.
+     Цвета из её же картин: ставни «Дома», солнце пейзажей, закатное небо.
+     Охра одним цветом заказчику не понравилась — «коричневый».
+     Текст лежит прямо на мазке, поэтому каждая краска проверена на контраст
+     с ink своего зала: светлый 9.3 / 10.5 / 8.3, тёмный 5.2 / 5.2 / 6.9 к 1. */
+  --color-stroke-1: var(--theme-stroke-1);
+  --color-stroke-2: var(--theme-stroke-2);
+  --color-stroke-3: var(--theme-stroke-3);
   --color-divider: var(--theme-divider);
   /* Главная кнопка: не цветная, а контрастная фону — в галерее самым
      ярким пятном должна быть живопись, а не призыв к действию. */
@@ -140,6 +149,9 @@
   --theme-ink-faint: #a9a6a1;
   --theme-accent: #c99a6a;
   --theme-accent-2: #8a9878;
+  --theme-stroke-1: #2f6b60;
+  --theme-stroke-2: #7a5c19;
+  --theme-stroke-3: #7d3b3a;
   --theme-divider: #2c2825;
   --theme-btn: #efebe5;
   --theme-btn-ink: #2b251f;
@@ -181,6 +193,9 @@
   --theme-ink-faint: #6c6762;
   --theme-accent: #7a5632;
   --theme-accent-2: #5b6b48;
+  --theme-stroke-1: #a9d3c9;
+  --theme-stroke-2: #f1d48a;
+  --theme-stroke-3: #ecb8b2;
   --theme-divider: #dcd9d3;
   --theme-btn: #2b251f;
   --theme-btn-ink: #f5f4f1;
@@ -307,6 +322,87 @@
   @media (prefers-reduced-motion: reduce) {
     .reel-letter {
       transform: none;
+    }
+  }
+
+  /* — пункт меню в шапке (components/layout/Header.tsx) —
+
+     Текущий раздел отмечен мазком мастихина под словом — тем же
+     инструментом, каким пишет художница (выбор заказчика 03.10.2026 из пяти
+     концептов). Все пункты — полным ink и весом 500: приглушённые до
+     ink-soft соседи вместе с бледным мазком делали шапку тусклой.
+
+     Нанесение (v2): сначала касание — пятно краски в начале, мастихин лёг
+     на холст; затем семь ворсинок протягивают краску каждая в своём темпе
+     (длительность и задержка приходят из Header.tsx через --dur и --delay).
+     Кривая — быстрый рывок и долгое замедление: рука тянет и отрывает.
+     Проигрывается при каждом появлении мазка — он рисуется только у
+     текущего пункта, и при переходе в другой раздел элемент создаётся заново.
+
+     prefers-reduced-motion здесь намеренно не отключает анимацию: мазок
+     ничего не сдвигает по экрану, а проявляется на месте меньше чем за секунду. Эта
+     настройка — против сдвигов, параллакса и масштабирования; у заказчика
+     в Windows выключены «Эффекты анимации», и мазок не рисовался вовсе. */
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+  }
+  .nav-link:not([aria-current]):hover {
+    opacity: 0.7;
+  }
+  .nav-link-label {
+    position: relative;
+  }
+  /* Сам мазок (components/ui/BrushStroke.tsx); положение задаёт место,
+     где он лежит: .nav-stroke в меню, .hero-stroke под фамилией. */
+  .brush-stroke {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .nav-stroke {
+    left: -0.6em;
+    top: 50%;
+    width: calc(100% + 1.2em);
+    height: 2.3em;
+    transform: translateY(-48%);
+  }
+  /* Под фамилией мазок лежит у самой линии букв и ниже — подчёркивание
+     кистью. Первая версия шла через середину строчных (top 62%, высота
+     1.05em), и заказчик прочёл её как зачёркивание: черту через слово
+     проводят именно там. Теперь задевает только низ букв.
+     Размеры в em от кегля заголовка — пропорции одни на любой ширине. */
+  .hero-stroke {
+    left: -0.2em;
+    top: 100%;
+    width: calc(100% + 0.4em);
+    height: 0.85em;
+    transform: translateY(-50%);
+  }
+  .nav-touch {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0);
+    /* Лёгкий перехлёст за 1 — краска чуть растекается под нажимом */
+    animation: stroke-touch 0.2s cubic-bezier(0.3, 1.5, 0.5, 1) 0.08s forwards;
+  }
+  @keyframes stroke-touch {
+    to {
+      transform: scale(1);
+    }
+  }
+  .nav-bristle {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    animation: stroke-draw var(--dur) cubic-bezier(0.3, 0.6, 0.25, 1) var(--delay) forwards;
+  }
+  @keyframes stroke-draw {
+    to {
+      stroke-dashoffset: 0;
     }
   }
 
@@ -768,7 +864,9 @@
   .wall-tile {
     position: relative;
     overflow: hidden;
-    border-radius: 14px;
+    /* Без скругления: у холста прямые углы, скруглённая картина выглядит
+       карточкой интерфейса, а не живописью. */
+    border-radius: 0;
     box-shadow: var(--theme-shadow-tile);
     transition:
       transform 0.35s ease,
@@ -937,27 +1035,70 @@
 
   /* — переключатель зала (components/ui/ThemeSwitch.tsx) —
 
-     Какой кружок выбран, решает CSS по атрибуту на <html>, а не состояние
+     Тумблер: слева солнце, справа луна, ползунок под выбранным залом.
+     Где стоит ползунок, решает CSS по атрибуту на <html>, а не состояние
      React: атрибут выставлен до отрисовки, и копия в состоянии разошлась бы
      с серверной разметкой. */
-  .hall {
-    width: 20px;
-    height: 20px;
-    padding: 0;
+  .hall-toggle {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    width: 56px;
+    height: 30px;
+    padding: 0 3px;
     cursor: pointer;
+    color: var(--color-ink);
+    background: transparent;
     border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
     border-radius: var(--radius-pill);
     transition: border-color 0.18s ease;
   }
-  .hall:hover {
+  .hall-toggle:hover {
     border-color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   }
 
-  :root:not([data-theme]) .hall-dark,
-  :root[data-theme="paper"] .hall-paper {
-    border-color: transparent;
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+  .hall-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-ink);
+    border-radius: var(--radius-pill);
+    transition: transform 0.22s ease;
+  }
+  /* 56 − 2 рамки − 2×3 отступа − 22 ползунка = 26 */
+  :root:not([data-theme]) .hall-toggle-thumb {
+    transform: translateX(26px);
+  }
+
+  .hall-toggle-icon {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: color 0.22s ease;
+  }
+  .hall-toggle-icon + .hall-toggle-icon {
+    margin-left: auto;
+  }
+  /* Значок на ползунке — цветом фона, чтобы читался на заливке ink. */
+  :root[data-theme="paper"] .hall-toggle-icon:first-of-type,
+  :root:not([data-theme]) .hall-toggle-icon:last-of-type {
+    color: var(--color-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hall-toggle-thumb,
+    .hall-toggle-icon {
+      transition: none;
+    }
   }
 
   /* Затемнение под подписью: густое в левом нижнем углу, сходит на нет
@@ -980,9 +1121,20 @@
 
      Пол занимает нижнюю четверть: стык со стеной намечен тонкой полосой
      на 20.6-21.4%, а не жёсткой линией — резкая граница на глаз читается
-     как ошибка вёрстки, а не как угол комнаты. */
+     как ошибка вёрстки, а не как угол комнаты.
+
+     Пол — только с 1024px. Уже этого подпись и кнопки стоят под картиной
+     в столбик, ровно на месте пола, и стык стены с полом резал кнопку
+     «Примерить на стену» пополам — углом комнаты он там не читался
+     (заказчик, 03.10.2026). Белый зал на компьютере пол убирает сам,
+     ниже по файлу. */
   .stage-hall {
-    background: var(--theme-hall-vignette), var(--theme-hall-floor);
+    background: var(--theme-hall-vignette);
+  }
+  @media (min-width: 1024px) {
+    .stage-hall {
+      background: var(--theme-hall-vignette), var(--theme-hall-floor);
+    }
   }
 }
 

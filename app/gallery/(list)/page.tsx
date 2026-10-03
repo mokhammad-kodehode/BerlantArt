@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
-import { Header } from "@/components/layout/Header";
 import { getArtworks, getCategories } from "@/lib/artworks";
 
 /**
@@ -64,59 +63,55 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
   const [works, categories] = await Promise.all([getArtworks(filters), getCategories()]);
 
   return (
-    <div className="bg-wall flex min-h-svh flex-col">
-      <Header />
-
-      <main className="flex flex-1 flex-col">
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
-          <div>
-            <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">
-              Галерея
-            </span>
-            <h1 className="text-ink mt-0 mb-1.5 text-[clamp(26px,3.2vw,38px)]">Работы</h1>
-            {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
+    <main className="flex flex-1 flex-col">
+      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+        <div>
+          <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">
+            Галерея
+          </span>
+          <h1 className="text-ink mt-0 mb-1.5 text-[clamp(26px,3.2vw,38px)]">Работы</h1>
+          {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
                 отодвигал стену почти на половину экрана, а тапнуть по работе
                 и так очевидно. На десктопе места хватает. */}
-            <p className="text-ink-soft m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
-              Живопись маслом и акрилом. Нажмите на работу — она откроется во весь экран.
-            </p>
-          </div>
-
-          <GalleryFilters current={filters} categories={categories} />
+          <p className="text-ink-soft m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
+            Живопись маслом и акрилом. Нажмите на работу — она откроется во весь экран.
+          </p>
         </div>
 
-        {works.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,64px)] pb-8">
-            <div className="panel-dashed w-full max-w-[560px] p-10">
-              {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
+        <GalleryFilters current={filters} categories={categories} />
+      </div>
+
+      {works.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,64px)] pb-8">
+          <div className="panel-dashed w-full max-w-[560px] p-10">
+            {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
                   иначе фильтр по «Проданные» на пустой выборке выглядел бы
                   так, будто сайт вообще без картин. */}
-              {filters.status || filters.category ? (
-                <>
-                  <h2 className="text-ink mt-0 mb-2 text-[20px]">По этому фильтру ничего нет</h2>
-                  <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
-                    Попробуйте другой статус или категорию.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-ink mt-0 mb-2 text-[20px]">Работ пока нет</h2>
-                  <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
-                    Картины появятся здесь, как только художница добавит их.
-                  </p>
-                </>
-              )}
-            </div>
+            {filters.status || filters.category ? (
+              <>
+                <h2 className="text-ink mt-0 mb-2 text-[20px]">По этому фильтру ничего нет</h2>
+                <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
+                  Попробуйте другой статус или категорию.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-ink mt-0 mb-2 text-[20px]">Работ пока нет</h2>
+                <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
+                  Картины появятся здесь, как только художница добавит их.
+                </p>
+              </>
+            )}
           </div>
-        ) : (
-          /* `flex-1` держит подвал внизу, когда по фильтру работ мало
+        </div>
+      ) : (
+        /* `flex-1` держит подвал внизу, когда по фильтру работ мало
              и стена не дотягивает до конца экрана. */
-          <ArtworkCollage
-            works={works}
-            className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
-          />
-        )}
-      </main>
-    </div>
+        <ArtworkCollage
+          works={works}
+          className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+        />
+      )}
+    </main>
   );
 }

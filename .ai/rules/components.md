@@ -9,7 +9,7 @@ app/                    маршруты App Router
   globals.css           дизайн-система: токены и компонентные классы
   styleguide/           витрина дизайн-системы (закрыта от индексации)
 components/
-  ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch
+  ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch, BrushStroke
   layout/               Header, Footer
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, ArtworkCollage, ArtworkStage, ArtworkViewer,

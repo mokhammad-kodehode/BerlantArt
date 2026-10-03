@@ -259,10 +259,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
               <h2 className="mt-0 mb-5 text-[22px]">Другие ракурсы</h2>
               <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-3">
                 {extraImages.map((image) => (
-                  <li
-                    key={image.id}
-                    className="bg-surface rounded-tile relative aspect-square overflow-hidden"
-                  >
+                  <li key={image.id} className="bg-surface relative aspect-square overflow-hidden">
                     <ArtworkImage
                       src={imageUrl(image.url)}
                       alt={image.alt}

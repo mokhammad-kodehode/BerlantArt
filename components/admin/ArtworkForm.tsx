@@ -240,6 +240,26 @@ export function ArtworkForm({
           />
           Показывать на главной
         </label>
+
+        {/* Подсказка честно называет ограничение компьютера: крупных ячеек
+            в коллаже одна на каждые пять работ (lib/collage.ts), и лишним
+            отмеченным работам места может не хватить. */}
+        <label className="flex cursor-pointer items-start gap-3 pt-5 text-sm">
+          <input
+            type="checkbox"
+            name="isLarge"
+            key={`isLarge-${values.isLarge}`}
+            defaultChecked={values.isLarge}
+            className="accent-accent mt-0.5 size-4"
+          />
+          <span>
+            Показывать крупно в галерее
+            <span className="text-ink-faint mt-0.5 block text-[13px]">
+              На телефоне — во всю ширину. На компьютере — в крупной ячейке, если она есть: одна на
+              каждые пять работ.
+            </span>
+          </span>
+        </label>
       </div>
 
       {state.error !== undefined && (

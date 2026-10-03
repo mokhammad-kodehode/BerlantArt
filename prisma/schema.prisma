@@ -57,6 +57,11 @@ model Artwork {
   /// добавленные»: на первом экране должны стоять сильнейшие вещи.
   featured Boolean @default(false)
 
+  /// Показывать крупно в коллаже: на телефоне квадратом во всю ширину,
+  /// на компьютере — в крупной ячейке 2×2 (lib/collage.ts). Выбирает
+  /// художница переключателем в админке, а не порядок в списке.
+  isLarge Boolean @default(false)
+
   images Image[]
 
   createdAt DateTime @default(now())

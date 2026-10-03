@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { ThemeSwitch } from "@/components/ui/ThemeSwitch";
 import { cn } from "@/lib/cn";
@@ -45,12 +46,10 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "stage" }) {
               key={item.href}
               href={item.href}
               aria-current={isCurrent(item.href) ? "page" : undefined}
-              className={cn(
-                "hover:text-accent text-sm no-underline transition-colors",
-                isCurrent(item.href) && "text-accent",
-              )}
+              className="nav-link text-sm"
             >
-              {item.label}
+              {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
+              <span className="nav-link-label">{item.label}</span>
             </Link>
           ))}
           <ThemeSwitch className="mx-1" />
@@ -102,12 +101,12 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "stage" }) {
               href={item.href}
               onClick={() => setOpen(false)}
               aria-current={isCurrent(item.href) ? "page" : undefined}
-              className={cn(
-                "hover:text-accent py-2 text-base no-underline transition-colors",
-                isCurrent(item.href) && "text-accent",
-              )}
+              // self-start — чтобы мазок под текущим пунктом был длиной
+              // в слово, а не во всю ширину выпадающей панели.
+              className="nav-link my-2 self-start text-base"
             >
-              {item.label}
+              {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
+              <span className="nav-link-label">{item.label}</span>
             </Link>
           ))}
           <ButtonLink
@@ -120,9 +119,6 @@ export function Header({ variant = "solid" }: { variant?: "solid" | "stage" }) {
           </ButtonLink>
 
           <div className="border-divider mt-5 border-t pt-4">
-            <span className="text-ink-faint mb-2 block text-[12px] tracking-[0.08em] uppercase">
-              Освещение
-            </span>
             <ThemeSwitch />
           </div>
         </div>

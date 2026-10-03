@@ -116,7 +116,7 @@ export default async function ContactPage() {
               {pinned && (
                 <Link
                   href={`/gallery/${pinned.id}`}
-                  className="rounded-tile border-bg absolute bottom-0 left-0 block aspect-square w-[46%] -rotate-3 overflow-hidden border-[6px] shadow-[var(--shadow-lg)] transition-transform duration-300 hover:rotate-0 focus-visible:outline-offset-4"
+                  className="border-bg absolute bottom-0 left-0 block aspect-square w-[46%] -rotate-3 overflow-hidden border-[6px] shadow-[var(--shadow-lg)] transition-transform duration-300 hover:rotate-0 focus-visible:outline-offset-4"
                 >
                   <ArtworkImage
                     src={primaryImageUrl(pinned)}

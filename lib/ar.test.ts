@@ -21,6 +21,7 @@ function work(
     price: null,
     status: "AVAILABLE",
     featured: false,
+    isLarge: false,
     createdAt: created,
     updatedAt: created,
     images: [

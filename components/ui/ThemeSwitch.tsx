@@ -3,7 +3,8 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Переключатель зала: почти белый (по умолчанию) и тёмный.
+ * Переключатель зала: почти белый (по умолчанию) и тёмный — тумблер
+ * с солнцем и луной.
  *
  * Клиентский по необходимости — он трогает атрибут на `<html>` и
  * localStorage. Больше ничего клиентского темам не нужно: цвета живут
@@ -13,20 +14,13 @@ import { cn } from "@/lib/cn";
  * Своего состояния у компонента нет — и это не экономия, а требование
  * правильности: выбранный зал уже записан в атрибуте `<html>`, который
  * до отрисовки выставил встроенный скрипт из app/layout.tsx. Держи мы
- * копию в `useState`, сервер отрисовал бы «тёмный», браузер — настоящий
- * выбор, и React пожаловался бы на расхождение разметки. Поэтому какой
- * кружок выбран, решает CSS по тому же атрибуту (класс `.hall` там же).
- *
- * Кружки залиты прямыми значениями, а не токенами, — единственное место,
- * где так можно: образец показывает цвет *другого* зала, а токен всегда
- * отдаёт цвет текущего.
+ * копию в `useState`, сервер отрисовал бы один зал, браузер — настоящий
+ * выбор, и React пожаловался бы на расхождение разметки. Поэтому где
+ * стоит ползунок, решает CSS по тому же атрибуту (класс `.hall-toggle`).
+ * По той же причине подпись кнопки не зависит от зала: «вкл/выкл»
+ * в `aria-checked` пришлось бы держать в состоянии.
  */
-const halls = [
-  { value: "paper", label: "Светлый зал", swatch: "#f6f5f3" },
-  { value: "dark", label: "Тёмный зал", swatch: "#131211" },
-] as const;
-
-type Hall = (typeof halls)[number]["value"];
+type Hall = "paper" | "dark";
 
 /** Ключ в localStorage. То же имя читает встроенный скрипт в app/layout.tsx. */
 const STORAGE_KEY = "hall";
@@ -55,28 +49,28 @@ function applyHall(value: Hall): void {
   }
 }
 
+/** Тёмный зал в CSS — это отсутствие атрибута, светлый — `data-theme="paper"`. */
+function currentHall(): Hall {
+  return document.documentElement.dataset.theme === "paper" ? "paper" : "dark";
+}
+
 export function ThemeSwitch({ className }: { className?: string }) {
   return (
-    <div
-      className={cn("flex items-center gap-1.5", className)}
-      role="group"
-      aria-label="Освещение зала"
+    <button
+      type="button"
+      onClick={() => applyHall(currentHall() === "dark" ? "paper" : "dark")}
+      aria-label="Сменить зал: светлый или тёмный"
+      title="Светлый или тёмный зал"
+      className={cn("hall-toggle", className)}
     >
-      {halls.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => applyHall(option.value)}
-          title={option.label}
-          aria-label={option.label}
-          /*
-            Обводка выбранного — `outline` из CSS, а не рамка: рамка меняла
-            бы размер кружка, и ряд дёргался бы при переключении.
-          */
-          className={cn("hall", `hall-${option.value}`)}
-          style={{ background: option.swatch }}
-        />
-      ))}
-    </div>
+      <span className="hall-toggle-thumb" aria-hidden="true" />
+      <svg className="hall-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
+      </svg>
+      <svg className="hall-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+      </svg>
+    </button>
   );
 }

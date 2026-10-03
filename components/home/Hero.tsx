@@ -1,8 +1,16 @@
 import Image from "next/image";
 
+import Link from "next/link";
+
 import { Header } from "@/components/layout/Header";
+import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { site } from "@/lib/site";
+
+// Фамилия — последнее слово имени: под ней лежит мазок.
+const nameParts = site.artist.split(" ");
+const lastName = nameParts.pop();
+const firstNames = nameParts.join(" ");
 
 /**
  * Первый экран. Снимок один — художница в мастерской, его выбрала она сама,
@@ -50,12 +58,21 @@ export function Hero() {
       <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
         <div className="px-[clamp(20px,5vw,64px)] pt-6 pb-6 [grid-area:title] min-[900px]:py-0">
           <span className="text-accent mb-3.5 block text-[14px] font-semibold tracking-[0.1em] uppercase">
-            {site.role}
+            Портфолио
           </span>
           {/* На телефоне крупнее, чем по формуле десктопа: имя здесь — главное
               на экране, как название журнала на обложке. */}
+          {/* Мазок под фамилией — тот же, что под пунктом меню: шапка и первый
+              экран говорят одним языком (выбор заказчика 03.10.2026 из пяти
+              вариантов). Наносится медленнее и чуть позже меню: крупный мазок
+              за 0.9 с выглядел бы рывком, а одновременный старт с меню
+              раздваивал внимание. */}
           <h1 className="text-ink m-0 text-[clamp(44px,12.5vw,58px)] leading-[1.02] min-[900px]:text-[clamp(38px,4.6vw,68px)] min-[900px]:leading-[1.06]">
-            {site.artist}
+            {firstNames}{" "}
+            <span className="relative inline-block">
+              <BrushStroke className="hero-stroke" duration={1.3} delay={0.5} />
+              <span className="relative">{lastName}</span>
+            </span>
           </h1>
         </div>
 
@@ -98,13 +115,27 @@ export function Hero() {
             единого урока рисования, — и с тех пор пишет каждый день.
           </p>
 
-          <div className="btn-row">
+          {/* Главное действие одно — галерея. «О художнице» — ссылка, а не
+              вторая кнопка: две кнопки рядом спорили за внимание. */}
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
             <ButtonLink href="/gallery" variant="primary" size="lg">
               Смотреть галерею
             </ButtonLink>
-            <ButtonLink href="/about" variant="secondary" size="lg">
-              О художнице
-            </ButtonLink>
+            <Link
+              href="/about"
+              className="group text-ink decoration-ink/35 hover:decoration-ink text-base font-medium underline underline-offset-[6px] transition-colors"
+            >
+              О художнице{" "}
+              {/* Стрелка уезжает вправо при наведении и фокусе — подсказка
+                  «туда», а не украшение. inline-block — иначе transform на
+                  строчном элементе не работает. */}
+              <span
+                aria-hidden="true"
+                className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-focus-visible:translate-x-1.5"
+              >
+                →
+              </span>
+            </Link>
           </div>
         </div>
       </div>

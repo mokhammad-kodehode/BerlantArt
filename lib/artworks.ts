@@ -295,6 +295,7 @@ export type ArtworkInput = {
   price: number | null;
   status: ArtworkStatus;
   featured: boolean;
+  isLarge: boolean;
 };
 
 /** Создаёт работу и возвращает её идентификатор — он нужен, чтобы сразу

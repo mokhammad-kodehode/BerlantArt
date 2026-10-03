@@ -49,6 +49,7 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       price: artwork.price === null ? "" : String(artwork.price),
       status: artwork.status,
       featured: artwork.featured,
+      isLarge: artwork.isLarge,
     },
   };
 
