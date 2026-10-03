@@ -87,7 +87,7 @@ export default function StyleguidePage() {
       <main>
         <Container className="py-12">
           <h1 className="mt-0 mb-2">Дизайн-система</h1>
-          <p className="text-ink/75 mb-0 max-w-[60ch]">
+          <p className="text-ink-soft mb-0 max-w-[60ch]">
             Токены и компоненты, перенесённые из макета. Эталон —{" "}
             <code className="bg-surface rounded px-1.5 py-0.5 text-[14px]">
               design/tokens/organic.css
@@ -107,8 +107,8 @@ export default function StyleguidePage() {
                     style={{ background: hex }}
                   />
                   <p className="mt-2 mb-0 text-[14px] font-semibold">{name}</p>
-                  <p className="text-ink/60 m-0 text-[13px]">{hex}</p>
-                  <p className="text-ink/60 m-0 text-[13px]">{note}</p>
+                  <p className="text-ink-faint m-0 text-[13px]">{hex}</p>
+                  <p className="text-ink-faint m-0 text-[13px]">{note}</p>
                 </div>
               ))}
             </div>
@@ -126,7 +126,7 @@ export default function StyleguidePage() {
                           className="h-12 rounded-md border border-[var(--color-divider)]"
                           style={{ background: hex }}
                         />
-                        <p className="text-ink/60 m-0 mt-1 text-[12px]">
+                        <p className="text-ink-faint m-0 mt-1 text-[12px]">
                           {step} · {hex}
                         </p>
                       </div>
@@ -138,7 +138,7 @@ export default function StyleguidePage() {
           </Block>
 
           <Block title="Типографика">
-            <p className="text-ink/60 mb-6 max-w-[60ch] text-[14px]">
+            <p className="text-ink-faint mb-6 max-w-[60ch] text-[14px]">
               Заголовки — Literata, текст — Manrope. В макете стояли Caprasimo и Figtree; заменены
               потому, что ни один из них не имеет кириллицы.
             </p>
@@ -151,7 +151,7 @@ export default function StyleguidePage() {
                 Основной текст, 15px с интерлиньяжем 1.55. Пишет маслом и акрилом с 2020 года —
                 взявшись за кисть в 54 года, она прошла путь от первых этюдов до признания.
               </p>
-              <p className="text-ink/55 m-0 text-[14px]">
+              <p className="text-ink-faint m-0 text-[14px]">
                 Приглушённый текст — подписи, метаданные работ.
               </p>
             </div>
@@ -172,6 +172,19 @@ export default function StyleguidePage() {
                 Крупная
               </ButtonLink>
               <Button disabled>Выключена</Button>
+            </div>
+            {/* .btn-row — как под картиной на странице работы: на телефоне
+                колонка одной ширины, с 640px — строка. */}
+            <div className="btn-row mt-4">
+              <ButtonLink href="/styleguide" variant="primary" size="lg">
+                Написать в WhatsApp
+              </ButtonLink>
+              <ButtonLink href="/styleguide" variant="soft" size="lg">
+                Примерить на стену
+              </ButtonLink>
+              <ButtonLink href="/styleguide" variant="soft" size="lg">
+                Написать на почту
+              </ButtonLink>
             </div>
             <div className="rounded-tile mt-4 bg-neutral-900 p-5">
               <ButtonLink href="/styleguide" variant="onDark">
@@ -268,14 +281,14 @@ export default function StyleguidePage() {
                 </p>
                 <div className="panel-dashed p-8">
                   <h3 className="mt-0 mb-2">Пока ничего нет</h3>
-                  <p className="text-ink/70 m-0">
+                  <p className="text-ink-soft m-0">
                     Так показываются разделы без данных: выставки, пресса, отзывы.
                   </p>
                 </div>
               </div>
               <div>
                 <p className="mt-0 mb-2 text-[14px] font-semibold">Залы</p>
-                <p className="text-ink/70 mt-0 mb-3 text-[14px]">
+                <p className="text-ink-soft mt-0 mb-3 text-[14px]">
                   Три темы: тёмный зал, почти белый и белый. Переключатель стоит в шапке сайта,
                   выбор запоминается в браузере. Фильтра <code>washed</code> больше нет — живопись
                   показывается в настоящем цвете, потому что цвета в интерфейсе теперь нет.
@@ -302,7 +315,7 @@ export default function StyleguidePage() {
                 <div key={cls} className="w-[168px]">
                   <div className={`bg-surface h-16 ${cls}`} />
                   <p className="mt-2 mb-0 text-[14px] font-semibold">{cls}</p>
-                  <p className="text-ink/60 m-0 text-[13px]">
+                  <p className="text-ink-faint m-0 text-[13px]">
                     {value} · {note}
                   </p>
                 </div>

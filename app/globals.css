@@ -30,6 +30,12 @@
      а не лежащие на фоне страницы. */
   --color-wall: var(--theme-wall);
   --color-ink: var(--theme-ink);
+  /* Второстепенный текст — подписи, мета, описания (контраст ≥ 6.8:1)
+     и третьестепенный — подвал, служебные пометки (≥ 4.6:1). Раньше это
+     были text-ink-faint…85: при 50–60% светлый зал давал 3.0–4.0:1, ниже
+     нормы 4.5:1, а «/75 тут, /70 там» плодило шесть разных серых. */
+  --color-ink-soft: var(--theme-ink-soft);
+  --color-ink-faint: var(--theme-ink-faint);
   --color-accent: var(--theme-accent);
   --color-accent-2: var(--theme-accent-2);
   --color-divider: var(--theme-divider);
@@ -102,6 +108,14 @@
    фильтр `washed` — он гасил живопись, чтобы она не спорила с интерфейсом.
    Лечили симптом; теперь цвет в интерфейсе убран, а фильтр удалён.
 
+   «Галерейная умбра» (решение заказчика 03.10.2026). Чёрный без оттенка
+   рядом с коричневыми надписями читался как два чужих цвета: у чернил
+   насыщенность была почти нулевой, а надписи (оттенок 52° в OKLCH)
+   краснее умбры на самих картинах (69°, замерено по фото работ). Теперь
+   чернила и кнопка — тёмная умбра, надписи сдвинуты к 65°, а стена
+   осталась почти нейтральной: кремовый фон рядом с тёплой живописью
+   съедал бы её тепло. Сравнение вариантов — в ARCHITECTURE.md.
+
    Два зала, переключаются кнопкой в шапке (components/ui/ThemeSwitch.tsx),
    выбор хранится в localStorage. По умолчанию — почти белый (решение
    заказчика 19.09.2026); третий, чисто белый, тогда же убран.
@@ -119,15 +133,17 @@
 :root {
   color-scheme: dark;
 
-  --theme-bg: #131211;
-  --theme-surface: #1d1b1a;
-  --theme-wall: #0d0c0c;
-  --theme-ink: #f2f1ef;
-  --theme-accent: #c98a5e;
+  --theme-bg: #151311;
+  --theme-surface: #1f1c19;
+  --theme-wall: #0f0d0c;
+  --theme-ink: #efebe5;
+  --theme-ink-soft: #c3c0bb;
+  --theme-ink-faint: #a9a6a1;
+  --theme-accent: #c99a6a;
   --theme-accent-2: #8a9878;
-  --theme-divider: #2b2927;
-  --theme-btn: #f2f1ef;
-  --theme-btn-ink: #131211;
+  --theme-divider: #2c2825;
+  --theme-btn: #efebe5;
+  --theme-btn-ink: #2b251f;
   --theme-danger: #e2806d;
 
   /* Тень плитки и картины. В тёмном зале она почти чёрная и глубокая,
@@ -158,21 +174,23 @@
 :root[data-theme="paper"] {
   color-scheme: light;
 
-  --theme-bg: #f6f5f3;
-  --theme-surface: #ecebe7;
-  --theme-wall: #f0efec;
-  --theme-ink: #1b1a19;
-  --theme-accent: #8a5a3c;
+  --theme-bg: #f5f4f1;
+  --theme-surface: #ebe9e4;
+  --theme-wall: #efeeea;
+  --theme-ink: #2b251f;
+  --theme-ink-soft: #534e49;
+  --theme-ink-faint: #6c6762;
+  --theme-accent: #7a5632;
   --theme-accent-2: #5b6b48;
-  --theme-divider: #dedbd6;
-  --theme-btn: #1b1a19;
-  --theme-btn-ink: #f6f5f3;
+  --theme-divider: #dcd9d3;
+  --theme-btn: #2b251f;
+  --theme-btn-ink: #f5f4f1;
   --theme-danger: #a32f22;
 
-  --theme-shadow-tile: 0 6px 18px rgb(27 26 25 / 0.16);
-  --theme-shadow-tile-hover: 0 18px 44px rgb(27 26 25 / 0.26);
-  --theme-shadow-art: drop-shadow(0 2px 2px rgb(27 26 25 / 0.22))
-    drop-shadow(0 22px 44px rgb(27 26 25 / 0.26));
+  --theme-shadow-tile: 0 6px 18px rgb(43 37 31 / 0.16);
+  --theme-shadow-tile-hover: 0 18px 44px rgb(43 37 31 / 0.26);
+  --theme-shadow-art: drop-shadow(0 2px 2px rgb(43 37 31 / 0.22))
+    drop-shadow(0 22px 44px rgb(43 37 31 / 0.26));
   /* Соседний зал слева и угол стены. Правая часть кадра — стена, на
      которой висит холст; левая уходит вглубь, в соседнее помещение.
      Границу между ними даёт не линия, а перепад освещённости с мягким
@@ -181,10 +199,10 @@
      не потеряла контраст. */
   --theme-hall-room: linear-gradient(
     to right,
-    rgb(27 26 25 / 0.1) 0,
-    rgb(27 26 25 / 0.065) 24%,
-    rgb(27 26 25 / 0.095) 32%,
-    rgb(27 26 25 / 0.02) 34.5%,
+    rgb(43 37 31 / 0.1) 0,
+    rgb(43 37 31 / 0.065) 24%,
+    rgb(43 37 31 / 0.095) 32%,
+    rgb(43 37 31 / 0.02) 34.5%,
     transparent 38%
   );
 
@@ -193,16 +211,16 @@
      точки градиента сжаты в те же 0.8 раза. */
   --theme-hall-floor: linear-gradient(
     to top,
-    rgb(27 26 25 / 0.17) 0,
-    rgb(27 26 25 / 0.07) 10.4%,
-    rgb(27 26 25 / 0.12) 16.5%,
-    rgb(27 26 25 / 0.03) 17.1%,
+    rgb(43 37 31 / 0.17) 0,
+    rgb(43 37 31 / 0.07) 10.4%,
+    rgb(43 37 31 / 0.12) 16.5%,
+    rgb(43 37 31 / 0.03) 17.1%,
     transparent 21.6%
   );
   --theme-hall-vignette: radial-gradient(
     ellipse 92% 76% at 50% 40%,
     transparent 40%,
-    rgb(27 26 25 / 0.16) 100%
+    rgb(43 37 31 / 0.16) 100%
   );
   --theme-toplight: radial-gradient(
     ellipse 130% 65% at 50% -15%,
@@ -494,6 +512,21 @@
     padding: 14px 26px;
   }
 
+  /* Ряд кнопок. На телефоне — колонка кнопок одной ширины: при переносе
+     в flex-wrap каждая строка получала кнопку своей длины, и ряд выглядел
+     рваным (на странице работы на 375px — три кнопки трёх разных ширин,
+     замечено заказчиком). С 640px кнопки снова встают в строку. */
+  .btn-row {
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 640px) {
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+
   /* — теги — */
   .tag {
     font-family: var(--font-body);
@@ -553,7 +586,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+    color: var(--color-ink-soft);
   }
 
   .elev-sm {
@@ -634,7 +667,7 @@
     margin-top: 5px;
     font-size: 14px;
     /* 55% давали контраст около 4:1 при норме 4.5:1 (.ai/rules/quality.md). */
-    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+    color: var(--color-ink-soft);
   }
 
   /* Ход загрузки файла. Элемент progress, а не крашеный div: скринридер
@@ -999,9 +1032,9 @@
     inset: 0 70% 0 0;
     background: linear-gradient(
       to right,
-      rgb(27 26 25 / 0) 0,
-      rgb(27 26 25 / 0.03) 52%,
-      rgb(27 26 25 / 0.13) 100%
+      rgb(43 37 31 / 0) 0,
+      rgb(43 37 31 / 0.03) 52%,
+      rgb(43 37 31 / 0.13) 100%
     );
   }
 
@@ -1025,7 +1058,7 @@
         to bottom,
         rgb(255 255 255 / 0.6) 0,
         rgb(255 255 255 / 0) 38%,
-        rgb(27 26 25 / 0.05) 100%
+        rgb(43 37 31 / 0.05) 100%
       ),
       var(--color-wall);
   }

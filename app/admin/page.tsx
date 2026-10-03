@@ -66,7 +66,7 @@ export default async function AdminPage() {
               className="border-divider hover:border-accent rounded-tile block border p-3 sm:p-4"
             >
               <span className="block text-3xl">{tile.count}</span>
-              <span className="text-ink/75 text-sm">{tile.label}</span>
+              <span className="text-ink-soft text-sm">{tile.label}</span>
             </Link>
           </li>
         ))}
@@ -83,7 +83,7 @@ export default async function AdminPage() {
       <h2 className="mb-4 text-2xl">Добавлены последними</h2>
 
       {recent.length === 0 ? (
-        <div className="panel-dashed text-ink/75 p-6 text-sm">
+        <div className="panel-dashed text-ink-soft p-6 text-sm">
           Работ пока нет. Первая появится здесь сразу после создания.
         </div>
       ) : (
@@ -99,7 +99,7 @@ export default async function AdminPage() {
                 >
                   <span className="bg-surface relative h-14 w-14 shrink-0 overflow-hidden rounded-[10px]">
                     {src === undefined ? (
-                      <span className="text-ink/75 flex h-full items-center justify-center text-sm">
+                      <span className="text-ink-soft flex h-full items-center justify-center text-sm">
                         нет фото
                       </span>
                     ) : (
@@ -108,7 +108,7 @@ export default async function AdminPage() {
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-base font-medium">{work.title}</span>
-                    <span className="text-ink/75 text-sm">
+                    <span className="text-ink-soft text-sm">
                       {[work.category, artworkStatusNames[work.status]].filter(Boolean).join(" · ")}
                     </span>
                   </span>

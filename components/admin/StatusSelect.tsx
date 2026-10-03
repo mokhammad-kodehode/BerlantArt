@@ -67,7 +67,7 @@ function StatusFeedback() {
 
   if (pending) {
     return (
-      <span role="status" className="text-ink/75 text-sm">
+      <span role="status" className="text-ink-soft text-sm">
         Сохраняем…
       </span>
     );

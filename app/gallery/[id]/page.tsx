@@ -120,7 +120,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             навигации подряд. */}
         <Link
           href="/gallery"
-          className="text-ink/70 hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
+          className="text-ink-soft hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
         >
           ← Все работы
         </Link>
@@ -137,18 +137,18 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
 
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
           {label && <Tag tone={work.status === "SOLD" ? "neutral" : "accent"}>{label}</Tag>}
-          {meta && <p className="text-ink/75 m-0 text-[14px]">{meta}</p>}
+          {meta && <p className="text-ink-soft m-0 text-[14px]">{meta}</p>}
         </div>
 
         {work.description && (
-          <p className="text-ink/85 mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
+          <p className="text-ink-soft mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
             {work.description}
           </p>
         )}
 
         {price && <p className="font-heading text-ink mt-0 mb-4 text-[24px]">{price}</p>}
 
-        <div className="flex flex-wrap gap-3">
+        <div className="btn-row">
           {/*
             Кнопка WhatsApp появляется только когда номер заполнен
             в переменных окружения. Кнопка с выдуманным телефоном хуже,

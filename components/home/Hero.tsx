@@ -93,12 +93,12 @@ export function Hero() {
             Прежний текст из макета обещал выставки, которых нечем подтвердить.
             На телефоне скрыт — см. описание компонента.
           */}
-          <p className="text-ink/80 m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
+          <p className="text-ink-soft m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
             Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
             единого урока рисования, — и с тех пор пишет каждый день.
           </p>
 
-          <div className="flex flex-wrap gap-3.5">
+          <div className="btn-row">
             <ButtonLink href="/gallery" variant="primary" size="lg">
               Смотреть галерею
             </ButtonLink>
