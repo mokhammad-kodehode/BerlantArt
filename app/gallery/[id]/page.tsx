@@ -21,6 +21,7 @@ import {
   primaryImageUrl,
 } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
+import { purchaseAction } from "@/lib/purchase";
 import { site } from "@/lib/site";
 
 /** Как на главной и в галерее: страница готовится заранее, а не при каждом заходе. */
@@ -101,7 +102,12 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
   // В сообщение подставляется ссылка на саму работу: художница сразу видит,
   // о какой картине речь, и ей не нужно переспрашивать.
   const pageUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}/gallery/${work.id}`;
-  const message = `Здравствуйте! Интересует работа «${work.title}». ${pageUrl}`;
+  const { label: actionLabel, message } = purchaseAction({
+    title: work.title,
+    price,
+    status: work.status,
+    pageUrl,
+  });
   const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
   const mailSubject = `Работа «${work.title}»`;
   const hasMore = extraImages.length > 0 || others.length > 0;
@@ -162,7 +168,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
               target="_blank"
               rel="noopener noreferrer"
             >
-              Написать в WhatsApp
+              {actionLabel}
             </ExternalButtonLink>
           )}
 
@@ -220,6 +226,14 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             Написать на почту
           </ExternalButtonLink>
         </div>
+
+        {/* Без подсказки «Купить», открывающая мессенджер, а не корзину,
+            застала бы врасплох. */}
+        {phone && (
+          <p className="text-ink-faint mt-2.5 mb-0 text-[13px]">
+            «{actionLabel}» откроет WhatsApp с готовым сообщением
+          </p>
+        )}
 
         {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
             есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
