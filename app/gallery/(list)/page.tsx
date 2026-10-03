@@ -77,7 +77,7 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
             {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
                 отодвигал стену почти на половину экрана, а тапнуть по работе
                 и так очевидно. На десктопе места хватает. */}
-            <p className="text-ink/70 m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
+            <p className="text-ink-soft m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
               Живопись маслом и акрилом. Нажмите на работу — она откроется во весь экран.
             </p>
           </div>
@@ -94,14 +94,14 @@ export default async function GalleryPage({ searchParams }: PageProps<"/gallery"
               {filters.status || filters.category ? (
                 <>
                   <h2 className="text-ink mt-0 mb-2 text-[20px]">По этому фильтру ничего нет</h2>
-                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14px]">
+                  <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
                     Попробуйте другой статус или категорию.
                   </p>
                 </>
               ) : (
                 <>
                   <h2 className="text-ink mt-0 mb-2 text-[20px]">Работ пока нет</h2>
-                  <p className="text-ink/70 m-0 max-w-[48ch] text-[14px]">
+                  <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">
                     Картины появятся здесь, как только художница добавит их.
                   </p>
                 </>

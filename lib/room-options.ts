@@ -179,11 +179,8 @@ const wallText: Record<RoomWall, { label: string; phrase: string }> = {
   graphite: { label: "Графитовая", phrase: "на графитовой стене" },
 };
 
-const lightText: Record<RoomLight, string> = { day: "День", evening: "Вечер" };
-
 export const roomFrames: FrameModel[] = frameIds.map((id) => ({ id, ...frameModels[id] }));
 export const roomWalls = wallIds.map((id) => ({ id, label: wallText[id].label }));
-export const roomLights = lightIds.map((id) => ({ id, label: lightText[id] }));
 
 export function frameModel(id: RoomFrame): FrameModel {
   return { id, ...frameModels[id] };

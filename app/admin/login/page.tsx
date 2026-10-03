@@ -20,7 +20,7 @@ export default function LoginPage() {
       <Container>
         <div className="mx-auto w-full max-w-[380px]">
           <h1 className="mb-2 text-3xl">Вход</h1>
-          <p className="text-ink/75 mb-8 text-sm">Управление работами на сайте.</p>
+          <p className="text-ink-soft mb-8 text-sm">Управление работами на сайте.</p>
 
           <LoginForm />
         </div>

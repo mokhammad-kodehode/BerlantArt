@@ -64,12 +64,12 @@ export default async function ContactPage() {
               <h1 className="mt-0 mb-5 text-[clamp(36px,5.5vw,64px)] leading-[1.05]">
                 Заказать картину
               </h1>
-              <p className="text-ink/80 mt-0 mb-8 max-w-[44ch] text-[17px] leading-relaxed">
+              <p className="text-ink-soft mt-0 mb-8 max-w-[44ch] text-[17px] leading-relaxed">
                 Купить готовую работу, заказать картину или просто задать вопрос — напишите или
                 позвоните так, как вам удобно.
               </p>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="btn-row">
                 {whatsapp && (
                   <ExternalButtonLink
                     href={whatsapp.href}
@@ -182,7 +182,7 @@ export default async function ContactPage() {
                         <span
                           className={cn(
                             "mt-4 inline-block text-[15px] font-medium",
-                            isMain ? "text-btn-ink/85" : "text-ink/75",
+                            isMain ? "text-btn-ink/85" : "text-ink-soft",
                           )}
                         >
                           {contact.action}{" "}
@@ -214,7 +214,7 @@ export default async function ContactPage() {
                 <h2 id="form-title" className="mt-0 mb-2 text-[clamp(24px,2.6vw,30px)]">
                   Написать сообщение
                 </h2>
-                <p className="text-ink/75 mt-0 mb-7 text-[15px] leading-relaxed">
+                <p className="text-ink-soft mt-0 mb-7 text-[15px] leading-relaxed">
                   Заполните — и сообщение откроется готовым, останется только отправить.
                 </p>
                 <ContactForm whatsappPhone={whatsappPhone} email={contactEmail} />

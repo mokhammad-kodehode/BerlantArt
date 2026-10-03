@@ -106,13 +106,13 @@ export default async function AboutPage() {
             <div>
               <Tag tone="accent2">О художнице</Tag>
               <h1 className="mt-4 mb-5 text-[clamp(32px,4.5vw,52px)]">Путь, начавшийся в 54</h1>
-              <p className="text-ink/80 mt-0 mb-4 text-[16px] leading-relaxed">
+              <p className="text-ink-soft mt-0 mb-4 text-[16px] leading-relaxed">
                 В день своего рождения в 2020 году Берлант Джабраилова купила небольшой холст и
                 масляные краски. Ей исполнялось пятьдесят четыре. Художественной школы за плечами не
                 было, уроков рисования — тоже, не было даже привычки держать кисть. Она просто
                 захотела попробовать.
               </p>
-              <p className="text-ink/80 m-0 text-[16px] leading-relaxed">
+              <p className="text-ink-soft m-0 text-[16px] leading-relaxed">
                 Первая картина получилась настолько, что её не убрали в шкаф. Сегодня она у друга её
                 сына — он гордится тем, что первая работа Берлант досталась ему.
               </p>
@@ -135,7 +135,7 @@ export default async function AboutPage() {
                   <p className="font-heading text-accent m-0 text-[22px]">{milestone.label}</p>
                   <div>
                     <h3 className="mt-0 mb-1.5 text-[18px]">{milestone.title}</h3>
-                    <p className="text-ink/75 m-0 max-w-[56ch]">{milestone.text}</p>
+                    <p className="text-ink-soft m-0 max-w-[56ch]">{milestone.text}</p>
                   </div>
                 </div>
               ))}
@@ -209,11 +209,11 @@ export default async function AboutPage() {
         <Container>
           <section className="pb-14">
             <h2 className="mt-0 mb-4 text-[26px]">Что она пишет</h2>
-            <p className="text-ink/80 mt-0 mb-4 max-w-[62ch] text-[16px] leading-relaxed">
+            <p className="text-ink-soft mt-0 mb-4 max-w-[62ch] text-[16px] leading-relaxed">
               Маслом — кистью и мастихином. Её сюжеты: чеченские башни, старинная архитектура, вещи,
               за которыми стоит история. Натюрмортов она не пишет.
             </p>
-            <p className="text-ink/80 m-0 max-w-[62ch] text-[16px] leading-relaxed">
+            <p className="text-ink-soft m-0 max-w-[62ch] text-[16px] leading-relaxed">
               Отдельной мастерской у неё нет — есть комната, которая ею стала. Работает каждый день:
               идеи приходят наплывом, и тогда она пишет подолгу, не отрываясь, пока не выпустит
               начатое из рук.

@@ -8,7 +8,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { arTarget } from "@/lib/ar";
+import { cameraTarget } from "@/lib/ar";
 import {
   artworkCaption,
   artworkStatusLabel,
@@ -21,6 +21,7 @@ import {
   primaryImageUrl,
 } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
+import { purchaseAction } from "@/lib/purchase";
 import { site } from "@/lib/site";
 
 /** Как на главной и в галерее: страница готовится заранее, а не при каждом заходе. */
@@ -101,7 +102,12 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
   // В сообщение подставляется ссылка на саму работу: художница сразу видит,
   // о какой картине речь, и ей не нужно переспрашивать.
   const pageUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}/gallery/${work.id}`;
-  const message = `Здравствуйте! Интересует работа «${work.title}». ${pageUrl}`;
+  const { label: actionLabel, message } = purchaseAction({
+    title: work.title,
+    price,
+    status: work.status,
+    pageUrl,
+  });
   const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
   const mailSubject = `Работа «${work.title}»`;
   const hasMore = extraImages.length > 0 || others.length > 0;
@@ -120,7 +126,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             навигации подряд. */}
         <Link
           href="/gallery"
-          className="text-ink/70 hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
+          className="text-ink-soft hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
         >
           ← Все работы
         </Link>
@@ -137,18 +143,18 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
 
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
           {label && <Tag tone={work.status === "SOLD" ? "neutral" : "accent"}>{label}</Tag>}
-          {meta && <p className="text-ink/75 m-0 text-[14px]">{meta}</p>}
+          {meta && <p className="text-ink-soft m-0 text-[14px]">{meta}</p>}
         </div>
 
         {work.description && (
-          <p className="text-ink/85 mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
+          <p className="text-ink-soft mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
             {work.description}
           </p>
         )}
 
         {price && <p className="font-heading text-ink mt-0 mb-4 text-[24px]">{price}</p>}
 
-        <div className="flex flex-wrap gap-3">
+        <div className="btn-row">
           {/*
             Кнопка WhatsApp появляется только когда номер заполнен
             в переменных окружения. Кнопка с выдуманным телефоном хуже,
@@ -162,7 +168,7 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
               target="_blank"
               rel="noopener noreferrer"
             >
-              Написать в WhatsApp
+              {actionLabel}
             </ExternalButtonLink>
           )}
 
@@ -191,8 +197,8 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
 
           {/* Примерка через камеру телефона (AR-4): та же рама, но на своей
               стене в настоящем размере. Только у работ, которые можно
-              показать в камере честно (lib/ar.ts, arTarget). */}
-          {arTarget(work) !== null && (
+              показать в камере честно (lib/ar.ts, cameraTarget). */}
+          {cameraTarget(work) !== null && (
             <ButtonLink href={`/gallery/${work.id}/ar`} variant="soft" size="lg">
               <svg
                 viewBox="0 0 24 24"
@@ -220,6 +226,14 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
             Написать на почту
           </ExternalButtonLink>
         </div>
+
+        {/* Без подсказки «Купить», открывающая мессенджер, а не корзину,
+            застала бы врасплох. */}
+        {phone && (
+          <p className="text-ink-faint mt-2.5 mb-0 text-[13px]">
+            «{actionLabel}» откроет WhatsApp с готовым сообщением
+          </p>
+        )}
 
         {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
             есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает

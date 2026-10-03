@@ -245,7 +245,7 @@ export function ArtworkImages({
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-ink/60"
+          className="text-ink-faint"
         >
           <path d="M12 15V3.5m0 0L8 7.5m4-4 4 4" />
           <path d="M4 14.5v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3" />
@@ -260,12 +260,12 @@ export function ArtworkImages({
         </span>
 
         {uploads.length === 0 && !isDragging && (
-          <span className="text-ink/75 text-sm">или нажмите, чтобы выбрать файлы</span>
+          <span className="text-ink-soft text-sm">или нажмите, чтобы выбрать файлы</span>
         )}
       </button>
 
       {images.length === 0 && uploads.length === 0 && (
-        <p className="text-ink/75 mt-3 text-sm">
+        <p className="text-ink-soft mt-3 text-sm">
           Пока ни одной — в галерее работа покажется пустой.
         </p>
       )}
@@ -276,7 +276,7 @@ export function ArtworkImages({
             <li key={upload.id} className="text-sm">
               <div className="mb-1 flex justify-between gap-4">
                 <span className="truncate">{upload.name}</span>
-                <span className="text-ink/75 tabular-nums">
+                <span className="text-ink-soft tabular-nums">
                   {upload.isCompressing ? "Сжимаем…" : `${upload.percent}%`}
                 </span>
               </div>
@@ -348,7 +348,7 @@ function ImageRow({
     <li className="border-divider flex flex-wrap items-start gap-4 rounded-[14px] border p-3">
       <div className="bg-surface relative h-20 w-20 shrink-0 overflow-hidden rounded-[10px]">
         {image.src === undefined ? (
-          <span className="text-ink/75 flex h-full items-center justify-center text-sm">
+          <span className="text-ink-soft flex h-full items-center justify-center text-sm">
             нет адреса
           </span>
         ) : (
@@ -358,11 +358,11 @@ function ImageRow({
 
       <div className="flex min-w-[220px] flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink/75 text-sm tabular-nums">{index + 1}</span>
+          <span className="text-ink-soft text-sm tabular-nums">{index + 1}</span>
           {image.isPrimary && <span className="tag tag-outline text-sm">Главная</span>}
         </div>
 
-        <label className="text-ink/75 text-sm" htmlFor={`alt-${image.id}`}>
+        <label className="text-ink-soft text-sm" htmlFor={`alt-${image.id}`}>
           Подпись для незрячих
         </label>
         <div className="flex flex-wrap gap-2">
