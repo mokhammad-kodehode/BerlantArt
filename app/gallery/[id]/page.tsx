@@ -8,7 +8,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { arTarget } from "@/lib/ar";
+import { cameraTarget } from "@/lib/ar";
 import {
   artworkCaption,
   artworkStatusLabel,
@@ -191,8 +191,8 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
 
           {/* Примерка через камеру телефона (AR-4): та же рама, но на своей
               стене в настоящем размере. Только у работ, которые можно
-              показать в камере честно (lib/ar.ts, arTarget). */}
-          {arTarget(work) !== null && (
+              показать в камере честно (lib/ar.ts, cameraTarget). */}
+          {cameraTarget(work) !== null && (
             <ButtonLink href={`/gallery/${work.id}/ar`} variant="soft" size="lg">
               <svg
                 viewBox="0 0 24 24"

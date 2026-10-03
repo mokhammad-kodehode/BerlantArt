@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { arTarget, buildArFile } from "@/lib/ar";
+import { buildArFile, cameraTarget } from "@/lib/ar";
 import { arFiles, arFileUrl, isArFile } from "@/lib/ar-links";
 import { getArtworkById } from "@/lib/artworks";
 import { parseRoomOptions } from "@/lib/room-options";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/gallery/[id]
   if (!isArFile(file)) return notFound();
 
   const work = await getArtworkById(id);
-  const target = work === null ? null : arTarget(work);
+  const target = work === null ? null : cameraTarget(work);
   if (target === null) return notFound();
 
   const { searchParams } = request.nextUrl;

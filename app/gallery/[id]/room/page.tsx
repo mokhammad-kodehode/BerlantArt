@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ArtworkRoom, type RoomThumb } from "@/components/gallery/ArtworkRoom";
-import { arTarget } from "@/lib/ar";
+import { cameraTarget } from "@/lib/ar";
 import { getArtworkById, getArtworks, primaryImageUrl } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { parseCanvasSides, parseRoomOptions } from "@/lib/room-options";
@@ -71,7 +71,7 @@ export default async function ArtworkRoomPage({
         }}
         works={works}
         initialOptions={parseRoomOptions(rawOptions)}
-        arVersion={arTarget(work)?.version ?? null}
+        arVersion={cameraTarget(work)?.version ?? null}
         whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
         siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
       />

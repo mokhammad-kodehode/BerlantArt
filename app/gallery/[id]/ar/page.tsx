@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { ArtworkRoom } from "@/components/gallery/ArtworkRoom";
-import { arTarget } from "@/lib/ar";
+import { cameraTarget } from "@/lib/ar";
 import { roomPageUrl } from "@/lib/ar-links";
 import { getArtworkById, primaryImageUrl } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
@@ -46,7 +46,7 @@ export default async function ArtworkCameraPage({
 
   // Работу продали или сменили ей фото — по старой ссылке человек попадает
   // в обычную примерочную с той же рамой, а не на страницу с мёртвой кнопкой.
-  const target = arTarget(work);
+  const target = cameraTarget(work);
   if (target === null) redirect(roomPageUrl(work.id, options));
 
   const details = [work.technique, work.dimensions, work.year].filter(Boolean).join(" · ");
