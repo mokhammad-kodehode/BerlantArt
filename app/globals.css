@@ -8,14 +8,13 @@
 
    Отличие от макета одно и оно намеренное: шрифты. В макете Caprasimo +
    Figtree, планировались Fraunces + Work Sans — но ни у одной из этих пар
-   нет кириллицы, а сайт целиком на русском. Стоят Oranienbaum (заголовки) +
-   Golos Text (всё остальное: текст, кнопки, поля, фильтры), оба
-   кириллические по происхождению.
+   нет кириллицы, а сайт целиком на русском. Стоят Cormorant Garamond
+   (заголовки) + Manrope (всё остальное: текст, кнопки, поля, фильтры),
+   оба с полной кириллицей. Выбор заказчика 03.10.2026, см. app/layout.tsx.
 
-   У Oranienbaum одно начертание 400 и нет курсива, поэтому
-   --font-heading-weight опущен с 600 до 400: любое другое значение браузер
-   подделает утолщением, а у высококонтрастной антиквы это выглядит грязно.
-   Вес в композиции заголовки держат размером и разрядкой, а не жирностью.
+   Cormorant тонкий, поэтому --font-heading-weight — 600: на 400 заголовки
+   бледнели бы так же, как у прежнего Oranienbaum. Подключены только 500
+   и 600 — другие значения браузер подделал бы.
    ═════════════════════════════════════════════════════════════════════════ */
 
 @theme {
@@ -232,8 +231,8 @@
 :root {
   /* Насыщенность заголовочного шрифта. Вынесено сюда, а не в @theme:
      утилита из этого не нужна, значение читают только базовые правила ниже.
-     400 — единственное начертание Oranienbaum. */
-  --font-heading-weight: 400;
+     600 — Cormorant Garamond на 400 слишком тонок для заголовков. */
+  --font-heading-weight: 600;
 
   /* Шаг сетки из макета (база 4.4px). Используется внутри компонентных
      классов; утилиты Tailwind (p-4, gap-6) живут на своей штатной шкале и
@@ -488,11 +487,11 @@
 
   /* — админка —
 
-     Заголовки здесь набраны текстовым шрифтом, а не антиквой Oranienbaum,
-     как на публичных страницах: шрифт высококонтрастный и узкий, а в
+     Заголовки здесь набраны текстовым шрифтом, а не антиквой Cormorant,
+     как на публичных страницах: антиква тонкая и с мелким очком, а в
      рабочем окне заголовки мелкие и часто идут капслоком (название работы
-     попадает в заголовок как есть). Кнопки, поля и метки на интерфейсный
-     Golos Text переведены уже во всём проекте, отдельного правила им
+     попадает в заголовок как есть). Кнопки, поля и метки на текстовый
+     Manrope переведены уже во всём проекте, отдельного правила им
      здесь не нужно. */
   .admin-ui h1,
   .admin-ui h2,
@@ -2375,40 +2374,57 @@
     }
   }
 
-  /* Раздел «Вид» в панели: «День / Вечер» — две равные половины,
-     «Издали» — кнопка во всю ширину. */
-  .room-seg {
+  /* Переключатель света: солнце слева, луна справа, светлый кружок
+     уезжает под выбранный значок. role="switch" на кнопке — скринридер
+     читает «Вечерний свет, включено / выключено». */
+  .room-daynight {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
+    align-self: flex-start;
+    width: 88px;
+    height: 42px;
     padding: 4px;
-    background: rgb(255 255 255 / 0.06);
-    border-radius: 12px;
-  }
-  .room-seg label {
-    position: relative;
-    display: flex;
-    min-height: 38px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    font-size: 14px;
+    color: inherit;
     cursor: pointer;
-    border-radius: 9px;
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 999px;
   }
-  .room-seg label:has(input:checked) {
-    color: var(--label-ink);
+  .room-daynight::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 40px;
+    height: 34px;
     background: var(--room-ink);
+    border-radius: 999px;
+    transition: transform 0.25s ease;
   }
-  .room-seg label:has(input:focus-visible) {
+  .room-daynight[aria-checked="true"]::before {
+    transform: translateX(40px);
+  }
+  .room-daynight svg {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    place-self: center;
+    transition: color 0.25s ease;
+  }
+  .room-daynight[aria-checked="false"] svg:first-child,
+  .room-daynight[aria-checked="true"] svg:last-child {
+    color: var(--label-ink);
+  }
+  .room-daynight:focus-visible {
     outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
   }
-  .room-seg input {
-    position: absolute;
-    width: 0;
-    height: 0;
-    opacity: 0;
+  @media (prefers-reduced-motion: reduce) {
+    .room-daynight::before,
+    .room-daynight svg {
+      transition: none;
+    }
   }
   .room-far {
     display: flex;

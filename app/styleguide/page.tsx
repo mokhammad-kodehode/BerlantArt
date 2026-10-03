@@ -139,8 +139,8 @@ export default function StyleguidePage() {
 
           <Block title="Типографика">
             <p className="text-ink-faint mb-6 max-w-[60ch] text-[14px]">
-              Заголовки — Literata, текст — Manrope. В макете стояли Caprasimo и Figtree; заменены
-              потому, что ни один из них не имеет кириллицы.
+              Заголовки — Cormorant Garamond, текст — Manrope. В макете стояли Caprasimo и Figtree;
+              заменены потому, что ни один из них не имеет кириллицы.
             </p>
             <div className="flex flex-col gap-3">
               <h1 className="m-0">Заголовок H1 — 42px</h1>

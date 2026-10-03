@@ -26,7 +26,7 @@
 node -e "const d=require('./node_modules/next/dist/compiled/@next/font/dist/google/font-data.json'); console.log(d['Literata'].subsets)"
 ```
 
-Сейчас используются **Literata** (заголовки) и **Manrope** (текст) — обе
+Сейчас используются **Cormorant Garamond** (заголовки) и **Manrope** (текст) — обе
 с полным кириллическим набором. Обоснование замены — в
 [ARCHITECTURE.md](../../ARCHITECTURE.md), раздел «Типографика».
 

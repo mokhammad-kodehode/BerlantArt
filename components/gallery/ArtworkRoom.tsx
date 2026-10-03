@@ -15,7 +15,6 @@ import {
   frameModel,
   framedSides,
   roomFrames,
-  roomLights,
   roomMessage,
   roomQuery,
   roomWalls,
@@ -622,28 +621,21 @@ export function ArtworkRoom({
         */}
         {!isCamera && (
           <section className="room-section max-lg:hidden">
-            <h2 className="room-section-title" id="room-view-title">
-              <span className="room-section-name">Вид</span>
-              <span className="room-section-value">
-                {options.light === "evening" ? "Вечер, лампа" : "День"}
-                {isSofaShown ? " · издали" : ""}
-              </span>
-            </h2>
-            <div className="room-seg" role="radiogroup" aria-labelledby="room-view-title">
-              {roomLights.map((light) => (
-                <label key={light.id}>
-                  <input
-                    type="radio"
-                    name="room-light"
-                    value={light.id}
-                    checked={options.light === light.id}
-                    onChange={() => update({ light: light.id })}
-                  />
-                  <ViewIcon name={light.id === "day" ? "sun" : "moon"} />
-                  {light.label}
-                </label>
-              ))}
-            </div>
+            {/* Свет — переключателем с солнцем и луной, без заголовка
+                раздела: по просьбе заказчика заголовок «Вид» и две
+                кнопки с подписями были лишними, значки говорят сами. */}
+            <button
+              type="button"
+              role="switch"
+              className="room-daynight"
+              aria-checked={options.light === "evening"}
+              aria-label="Вечерний свет, лампа над картиной"
+              title={options.light === "evening" ? "Вечер, лампа" : "День"}
+              onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
+            >
+              <ViewIcon name="sun" />
+              <ViewIcon name="moon" />
+            </button>
             <button
               type="button"
               className="room-far"
