@@ -55,7 +55,7 @@ export function BrushStroke({
   delay?: number;
 }) {
   const id = useId();
-  const [texture, reveal, paints] = [`${id}-t`, `${id}-r`, `${id}-p`];
+  const [texture, reveal] = [`${id}-t`, `${id}-r`];
 
   return (
     <svg
@@ -65,14 +65,6 @@ export function BrushStroke({
       className={cn("brush-stroke", className)}
     >
       <defs>
-        {/* Три краски полосами вдоль мазка: переход сверху вниз, а полосы ворса
-            из фильтра перемешивают краски на стыках, как на настоящем
-            мастихине. Цвета — токены залов (app/globals.css, --color-stroke-*). */}
-        <linearGradient id={paints} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0.12" style={{ stopColor: "var(--color-stroke-1)" }} />
-          <stop offset="0.5" style={{ stopColor: "var(--color-stroke-2)" }} />
-          <stop offset="0.88" style={{ stopColor: "var(--color-stroke-3)" }} />
-        </linearGradient>
         {/* Область — в единицах рисунка: по умолчанию она считается от рамки
             содержимого, а та в начале анимации пуста, и фильтр обрезал бы всё. */}
         <filter
@@ -162,7 +154,7 @@ export function BrushStroke({
         </mask>
       </defs>
       <g filter={`url(#${texture})`}>
-        <g mask={`url(#${reveal})`} fill={`url(#${paints})`}>
+        <g mask={`url(#${reveal})`} fill="currentColor">
           {/* Тело мазка: 23 единицы высоты в начале, 9 — в конце */}
           <path d="M6 17C4 10 14 7 26 8C70 9 120 10 168 12C181 12.6 191 14 195 17C191 19.3 183 20.3 175 21C130 24 80 28 30 31C16 32 6 28 5 22Z" />
           {/* Сухой хвост: ворсинки, оторвавшиеся от тела */}
