@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 /**
@@ -171,7 +172,7 @@ export function ContactForm({
       <p className="field-hint m-0">
         Сообщение никуда не отправляется с сайта и нигде не хранится: откроется{" "}
         {whatsappPhone !== undefined ? "WhatsApp" : "почта"} с готовым текстом, и вы отправите его
-        сами.
+        сами. Подробнее — в <Link href="/privacy">политике конфиденциальности</Link>.
       </p>
     </form>
   );

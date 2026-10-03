@@ -14,12 +14,6 @@ export const site = {
   description: "Художница из Чеченской Республики. Живопись маслом и акрилом с 2020 года.",
   location: "Грозный, Чеченская Республика",
 
-  /**
-   * Контакты-заглушки. Реальные подставим из env на этапе 4
-   * (NEXT_PUBLIC_CONTACT_EMAIL, NEXT_PUBLIC_WHATSAPP_PHONE) — см. .env.example.
-   */
-  email: "hello@berlant-art.example",
-
   /** Аккаунт художницы в Instagram — единственный подтверждённый контакт. */
   instagram: {
     handle: "art_berlant",
