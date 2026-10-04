@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
 import { publicUrl } from "@/lib/r2";
+import type { SitemapArtwork } from "@/lib/seo";
 
 // Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
 // (проверяется линтером, architecture.md) — им нужен только тип значения,
@@ -255,6 +256,27 @@ export async function getFeatured(limit = 6): Promise<ArtworkWithImages[]> {
  */
 export async function countArtworks(): Promise<number> {
   return db.artwork.count();
+}
+
+/**
+ * Работы для карты сайта (app/sitemap.ts): адрес, дата правки и главное
+ * фото. Один запрос на все работы, только нужные поля: карта сайта
+ * открывается поисковиками часто, тащить описания и цены ей незачем.
+ */
+export async function getSitemapArtworks(): Promise<SitemapArtwork[]> {
+  const rows = await db.artwork.findMany({
+    orderBy: galleryOrder,
+    select: {
+      id: true,
+      updatedAt: true,
+      images: { orderBy: withImages.images.orderBy, take: 1, select: { url: true } },
+    },
+  });
+
+  return rows.map((row) => {
+    const stored = row.images[0]?.url;
+    return { id: row.id, updatedAt: row.updatedAt, image: stored ? imageUrl(stored) : undefined };
+  });
 }
 
 /**

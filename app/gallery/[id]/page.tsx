@@ -7,6 +7,7 @@ import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { JsonLd } from "@/components/ui/JsonLd";
 import { Tag } from "@/components/ui/Tag";
 import { cameraTarget } from "@/lib/ar";
 import {
@@ -23,6 +24,9 @@ import {
 import { contactEmail } from "@/lib/contacts";
 import { clientEnv } from "@/lib/env";
 import { purchaseAction } from "@/lib/purchase";
+import { artworkJsonLd } from "@/lib/seo";
+import { site } from "@/lib/site";
+import { siteUrl } from "@/lib/site-url";
 
 /** Как на главной и в галерее: страница готовится заранее, а не при каждом заходе. */
 export const revalidate = 300;
@@ -52,12 +56,38 @@ export async function generateMetadata({ params }: PageProps<"/gallery/[id]">): 
     return { title: "Работа не найдена" };
   }
 
+  // Описания нет пока ни у одной работы, поэтому запасной вариант собран
+  // из того, что известно наверняка. Выдумывать сюжет и историю нельзя.
+  const description =
+    work.description ?? [artworkCaption(work), "Живопись Берлант Джабраиловой."].join(" · ");
+  const image = primaryImageUrl(work);
+  const photo = work.images[0];
+
   return {
     title: work.title,
-    // Описания нет пока ни у одной работы, поэтому запасной вариант собран
-    // из того, что известно наверняка. Выдумывать сюжет и историю нельзя.
-    description:
-      work.description ?? [artworkCaption(work), "Живопись Берлант Джабраиловой."].join(" · "),
+    description,
+    alternates: { canonical: `/gallery/${work.id}` },
+    // Ссылка на работу в мессенджере показывает саму картину, а не общее
+    // фото художницы. Размер — из базы, если он есть (AR-1): с ним
+    // превью не прыгает, пока грузится.
+    openGraph: {
+      title: work.title,
+      description,
+      type: "article",
+      ...(image
+        ? {
+            images: [
+              {
+                url: image,
+                alt: work.title,
+                ...(photo?.width && photo.height
+                  ? { width: photo.width, height: photo.height }
+                  : {}),
+              },
+            ],
+          }
+        : {}),
+    },
   };
 }
 
@@ -114,6 +144,21 @@ export default async function ArtworkPage({ params }: PageProps<"/gallery/[id]">
 
   return (
     <>
+      <JsonLd
+        data={artworkJsonLd({
+          base: siteUrl(),
+          id: work.id,
+          title: work.title,
+          description: work.description,
+          technique: work.technique,
+          dimensions: work.dimensions,
+          year: work.year,
+          price: work.price,
+          status: work.status,
+          image: primaryImageUrl(work),
+          artistName: site.artist,
+        })}
+      />
       <ArtworkStage
         src={primaryImageUrl(work)}
         alt={work.title}

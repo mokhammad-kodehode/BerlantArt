@@ -1,10 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
 import { PaintingReel } from "@/components/home/PaintingReel";
 import { ButtonLink } from "@/components/ui/Button";
+import { JsonLd } from "@/components/ui/JsonLd";
 import { countArtworks, getFeatured } from "@/lib/artworks";
+import { artistJsonLd, websiteJsonLd } from "@/lib/seo";
+import { site } from "@/lib/site";
+import { siteUrl } from "@/lib/site-url";
+
+/** Заголовок и описание — из корневого layout; здесь только канонический адрес. */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 /**
  * Как часто страница перерисовывается заново, в секундах.
@@ -41,8 +51,24 @@ export default async function HomePage() {
   // без отметки «на главную», их на стене нет, но кнопка должна к ним вести.
   const hasMore = total > featured.length;
 
+  const base = siteUrl();
+
   return (
     <>
+      {/* Кто художница и что это за сайт — для расширенной выдачи Google
+          и Яндекса. Только подтверждённое: имя, регион, Instagram. */}
+      <JsonLd
+        data={[
+          artistJsonLd({
+            base,
+            name: site.artist,
+            description: site.description,
+            image: "/og/berlant.jpg",
+            sameAs: [site.instagram.url],
+          }),
+          websiteJsonLd({ base, name: site.artist }),
+        ]}
+      />
       <Hero />
 
       {/* main вокруг стены: у страницы должна быть одна главная область,

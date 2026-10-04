@@ -3,7 +3,9 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { AdminReturnBar } from "@/components/layout/AdminReturnBar";
 import { Footer } from "@/components/layout/Footer";
+import { serverEnv } from "@/lib/env";
 import { site } from "@/lib/site";
+import { siteUrl } from "@/lib/site-url";
 
 import "./globals.css";
 
@@ -40,7 +42,20 @@ const manrope = Manrope({
   display: "swap",
 });
 
+/**
+ * Метаданные по умолчанию для всех страниц.
+ *
+ * `metadataBase` — адрес сайта: от него Next строит полные ссылки на
+ * картинки превью и канонические адреса. Без него ссылка в Telegram
+ * и WhatsApp приходила без картинки.
+ *
+ * Каноническая ссылка здесь намеренно НЕ задаётся: из корня она досталась
+ * бы всем страницам, и поисковик решил бы, что весь сайт — копии главной.
+ * Её задаёт каждая страница сама.
+ */
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
+  applicationName: site.artist,
   title: {
     default: `${site.artist} — художница из Чеченской Республики`,
     template: `%s · ${site.artist}`,
@@ -49,8 +64,26 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${site.artist} — художница`,
     description: site.description,
+    siteName: site.artist,
     locale: "ru_RU",
     type: "website",
+    // 1200×630 JPEG: размер, который ждут мессенджеры и соцсети; WebP
+    // WhatsApp показывает не всегда. Страница работы подставляет картину.
+    images: [
+      {
+        url: "/og/berlant.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Берлант Джабраилова пишет мастихином в мастерской",
+      },
+    ],
+  },
+  twitter: { card: "summary_large_image" },
+  // Коды из Google Search Console и Яндекс.Вебмастера — из окружения:
+  // добавить сайт в кабинет можно без правки кода.
+  verification: {
+    google: serverEnv.GOOGLE_SITE_VERIFICATION,
+    yandex: serverEnv.YANDEX_VERIFICATION,
   },
 };
 

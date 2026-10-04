@@ -31,6 +31,21 @@ const serverSchema = z.object({
    * не пользуется.
    */
   DIRECT_URL: postgresUrl.optional(),
+
+  /**
+   * Окружение Vercel: production, preview или development. Ставит сам
+   * Vercel. Нужно, чтобы на боевом сайте не уйти в поисковики с адресом
+   * localhost (lib/site-url.ts).
+   */
+  VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
+
+  /**
+   * Коды подтверждения прав на сайт для Google Search Console и
+   * Яндекс.Вебмастера — значение content из их мета-тега. Необязательные:
+   * пока сайт не добавлен в кабинеты, тега просто нет.
+   */
+  GOOGLE_SITE_VERIFICATION: z.string().min(1).optional(),
+  YANDEX_VERIFICATION: z.string().min(1).optional(),
 });
 
 const clientSchema = z.object({

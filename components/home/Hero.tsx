@@ -3,14 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Header } from "@/components/layout/Header";
-import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { site } from "@/lib/site";
-
-// Фамилия — последнее слово имени: под ней лежит мазок.
-const nameParts = site.artist.split(" ");
-const lastName = nameParts.pop();
-const firstNames = nameParts.join(" ");
 
 /**
  * Первый экран. Снимок один — художница в мастерской, его выбрала она сама,
@@ -62,17 +56,8 @@ export function Hero() {
           </span>
           {/* На телефоне крупнее, чем по формуле десктопа: имя здесь — главное
               на экране, как название журнала на обложке. */}
-          {/* Мазок под фамилией — тот же, что под пунктом меню: шапка и первый
-              экран говорят одним языком (выбор заказчика 03.10.2026 из пяти
-              вариантов). Наносится медленнее и чуть позже меню: крупный мазок
-              за 0.9 с выглядел бы рывком, а одновременный старт с меню
-              раздваивал внимание. */}
           <h1 className="text-ink m-0 text-[clamp(44px,12.5vw,58px)] leading-[1.02] min-[900px]:text-[clamp(38px,4.6vw,68px)] min-[900px]:leading-[1.06]">
-            {firstNames}{" "}
-            <span className="relative inline-block">
-              <BrushStroke className="hero-stroke" duration={1.3} delay={0.5} />
-              <span className="relative">{lastName}</span>
-            </span>
+            {site.artist}
           </h1>
         </div>
 

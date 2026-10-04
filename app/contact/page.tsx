@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: "Контакты",
   description:
     "Как связаться с Берлант Джабраиловой: WhatsApp, телефон, Instagram. Покупка и заказ картин.",
+  alternates: { canonical: "/contact" },
 };
 
 /**
