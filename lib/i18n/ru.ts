@@ -155,12 +155,16 @@ export const ru = {
     fallbackKicker: "Работа",
     backToAll: "← Все работы",
     tryOnWall: "Примерить на стену",
-    /** Главная кнопка под картиной — WhatsApp с готовым сообщением. */
+    /** Главная кнопка под картиной: меню «WhatsApp или почта» с готовым сообщением. */
     write: "Написать художнице",
     message: (title: string, url: string) =>
       `Здравствуйте! Меня заинтересовала работа «${title}». ${url}`,
-    writeEmail: "Написать на почту",
-    whatsappHint: (action: string) => `«${action}» откроет WhatsApp с готовым сообщением`,
+    /** «Поделиться» (ShareButton): подпись, текст рядом со ссылкой, пункты меню. */
+    share: "Поделиться",
+    shareCopied: "Ссылка скопирована",
+    shareText: (title: string, artistGenitive: string) => `«${title}» — картина ${artistGenitive}`,
+    shareCopy: "Скопировать ссылку",
+    shareVk: "ВКонтакте",
     seeMore: "Смотреть дальше ↓",
     otherAngles: "Другие ракурсы",
     otherWorks: "Другие работы",

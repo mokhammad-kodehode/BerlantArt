@@ -675,6 +675,60 @@
     }
   }
 
+  /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
+     popover: закрытие по клику мимо и по Esc браузер делает сам. По
+     умолчанию popover стоит по центру экрана с рамкой — это сброшено,
+     и меню встаёт под кнопкой привязкой (anchor positioning); не хватит
+     места снизу — над ней. Ширина не меньше самой кнопки. */
+  .menu-pop {
+    inset: auto;
+    margin: 8px 0;
+    padding: 6px;
+    min-width: 220px;
+    min-width: max(220px, anchor-size(width));
+    color: var(--color-ink);
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-tile);
+    box-shadow: var(--shadow-lg);
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-block;
+  }
+  /* Браузер без привязки к кнопке: на компьютере меню по центру экрана,
+     как маленькое окно, на телефоне — листом снизу, под большой палец. */
+  @supports not (position-area: block-end) {
+    .menu-pop {
+      inset: 0;
+      margin: auto;
+    }
+    @media (max-width: 639px) {
+      .menu-pop {
+        inset: auto 12px 12px;
+        margin: 0;
+      }
+    }
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--color-ink);
+    text-align: left;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--radius-tile) - 6px);
+    cursor: pointer;
+  }
+  .menu-item:hover,
+  .menu-item:focus-visible {
+    background: var(--color-surface);
+  }
+
   /* — теги — */
   .tag {
     font-family: var(--font-body);

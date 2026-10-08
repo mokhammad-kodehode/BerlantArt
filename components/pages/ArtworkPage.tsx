@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ArtworkStage } from "@/components/gallery/ArtworkStage";
+import { ShareButton } from "@/components/gallery/ShareButton";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
+import { ContactIcon } from "@/components/ui/ContactIcon";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/ui/JsonLd";
+import { PopoverMenu } from "@/components/ui/PopoverMenu";
 import { cameraTarget } from "@/lib/ar";
 import {
   artworkCategory,
@@ -134,7 +137,10 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
   const pageUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}${localePath(lang, `/gallery/${work.id}`)}`;
   const message = t.work.message(work.title, pageUrl);
   const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
-  const mailSubject = t.work.mailSubject(work.title);
+  const whatsappHref = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : null;
+  const mailHref = contactEmail
+    ? `mailto:${contactEmail}?subject=${encodeURIComponent(t.work.mailSubject(work.title))}&body=${encodeURIComponent(message)}`
+    : null;
   const hasMore = extraImages.length > 0 || others.length > 0;
 
   return (
@@ -194,20 +200,48 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
 
         <div className="btn-row">
           {/*
-            Кнопка WhatsApp появляется только когда номер заполнен
-            в переменных окружения. Кнопка с выдуманным телефоном хуже,
-            чем её отсутствие: человек нажмёт и попадёт в пустоту.
+            «Написать художнице» — одна кнопка, а способ связи выбирается
+            в меню под ней: WhatsApp или почта (заказчик, 8.10.2026).
+            Прежде это были две кнопки и подсказка «откроет WhatsApp» —
+            в меню способ назван прямо, подсказка больше не нужна.
+
+            Пункт появляется, только когда номер или почта заполнены
+            в переменных окружения: кнопка с выдуманным адресом хуже,
+            чем её отсутствие. Способ один — меню незачем, кнопка ведёт
+            сразу туда.
           */}
-          {phone && (
+          {whatsappHref && mailHref ? (
+            <PopoverMenu variant="primary" label={t.work.write}>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="menu-item"
+              >
+                <ContactIcon id="whatsapp" className="size-5" />
+                WhatsApp
+              </a>
+              <a href={mailHref} className="menu-item">
+                <ContactIcon id="email" className="size-5" />
+                {t.contacts.email}
+              </a>
+            </PopoverMenu>
+          ) : whatsappHref ? (
             <ExternalButtonLink
               variant="primary"
               size="lg"
-              href={`https://wa.me/${phone}?text=${encodeURIComponent(message)}`}
+              href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
             >
               {t.work.write}
             </ExternalButtonLink>
+          ) : (
+            mailHref && (
+              <ExternalButtonLink variant="primary" size="lg" href={mailHref}>
+                {t.work.write}
+              </ExternalButtonLink>
+            )
           )}
 
           {/*
@@ -271,28 +305,8 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
             </>
           )}
 
-          {/* Приглушённая вместо `secondary`: она берёт цвет от текста темы
-              и потому читается в любом зале. Только с настоящей почтой из
-              окружения: прежде кнопка вела на заглушку из lib/site.ts,
-              hello@berlant-art.example, — письмо ушло бы в пустоту. */}
-          {contactEmail && (
-            <ExternalButtonLink
-              variant={phone ? "soft" : "primary"}
-              size="lg"
-              href={`mailto:${contactEmail}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(message)}`}
-            >
-              {t.work.writeEmail}
-            </ExternalButtonLink>
-          )}
+          <ShareButton url={pageUrl} title={work.title} />
         </div>
-
-        {/* Без подсказки кнопка, открывающая мессенджер, а не форму на сайте,
-            застала бы врасплох. */}
-        {phone && (
-          <p className="text-ink-faint mt-2.5 mb-0 text-[13px]">
-            {t.work.whatsappHint(t.work.write)}
-          </p>
-        )}
 
         {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
             есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
