@@ -102,6 +102,11 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
 
   const extraImages = work.images.slice(1);
 
+  // Пропорции главного фото: по ним на телефоне и планшете строится блок
+  // картины (ArtworkStage). Размер в базе есть не у всех старых записей.
+  const photo = work.images[0];
+  const aspect = photo?.width && photo.height ? photo.width / photo.height : undefined;
+
   // Незаполненное поле исчезает целиком, а не превращается в прочерк:
   // врать о габаритах картины нельзя, даже когда она не продаётся.
   // Категории здесь нет намеренно — она уже стоит надстрочником над
@@ -152,6 +157,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
       <ArtworkStage
         lang={lang}
         src={primaryImageUrl(work)}
+        aspect={aspect}
         alt={artworkSeo(work, lang).imageAlt}
         title={work.title}
         priority

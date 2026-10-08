@@ -1,10 +1,11 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { ArtworkLink } from "@/lib/artworks";
+import { cn } from "@/lib/cn";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /**
@@ -49,6 +50,7 @@ import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 export function ArtworkStage({
   lang,
   src,
+  aspect,
   alt,
   title,
   priority,
@@ -58,6 +60,12 @@ export function ArtworkStage({
 }: {
   lang: Locale;
   src?: string;
+  /**
+   * Пропорции фотографии, ширина к высоте, — из базы (Image.width/height).
+   * По ним на телефоне и планшете строится блок картины. Нет размеров —
+   * блок прежний, по остатку высоты экрана.
+   */
+  aspect?: number;
   /** Подпись картинки для поиска и скринридера: «Село» — картина маслом … */
   alt: string;
   /** Название работы — для кнопки «Открыть «…» во весь экран». */
@@ -68,6 +76,8 @@ export function ArtworkStage({
   children: ReactNode;
 }) {
   const t = getDictionary(lang).work;
+  const artBoxStyle: (CSSProperties & { "--art-ratio": number }) | undefined =
+    aspect === undefined ? undefined : { "--art-ratio": aspect };
   const stageArt = (
     <ArtworkImage
       src={src}
@@ -142,13 +152,32 @@ export function ArtworkStage({
         «почти белый» (globals.css). Без него картина упиралась в нижний
         край окна и читалась обрезанной. В остальных залах холст стоит как
         стоял — тёмный зал заказчик просил не трогать.
+
+        Ниже 1024px блок картины строится по пропорциям фото: во всю ширину,
+        но не выше экрана без шапки — картина целиком на первом экране.
+        Прежде он брал остаток высоты после подписи, не меньше 46vh, и про
+        ширину не знал: на планшете 768×1024 квадратная картина занимала
+        507px — 66% ширины, а в окне пониже и того меньше (заказчик,
+        8.10.2026). Без размеров фото в базе — прежний способ.
       */}
-        <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]">
+        <div
+          className={cn(
+            "stage-art-area relative flex flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]",
+            aspect === undefined ? "min-h-[46vh]" : "max-lg:justify-center lg:min-h-[46vh]",
+          )}
+        >
           {/*
           Нажатие на картину открывает её на весь экран (ArtworkViewer).
           Без фотографии открывать нечего — заглушка остаётся как есть.
         */}
-          <div className="relative flex-1">
+          <div
+            style={artBoxStyle}
+            className={cn(
+              "relative flex-1",
+              aspect !== undefined &&
+                "max-lg:aspect-(--art-ratio) max-lg:max-h-[calc(100svh-120px)] max-lg:flex-none",
+            )}
+          >
             {src ? (
               <ArtworkViewer src={src} title={title} prev={prev} next={next}>
                 {stageArt}

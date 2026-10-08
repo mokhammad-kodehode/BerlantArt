@@ -523,21 +523,24 @@
   .viewer::backdrop {
     background: var(--color-neutral-900);
   }
-  /* Стрелки просмотра. На телефоне — справа в нижней полосе рядом
-     с названием: картина там во всю ширину, и стрелки по бокам легли бы
-     на холст (та же причина, что у .stage-nav). На десктопе — по краям
-     экрана, посередине высоты, в поле рядом с картиной. */
-  .viewer-nav {
+  /* Фокус при открытии стоит на самом окне (ArtworkViewer, showViewer).
+     Его обводка — рамка вокруг всего экрана — ничего не сообщает, а Tab
+     уводит фокус на стрелки и крестик, и у них обводка обычная. */
+  .viewer:focus-visible {
+    outline: none;
+  }
+  /* Стрелки и крестик просмотра — одного вида: полупрозрачный круг
+     с тонкой светлой обводкой. Обводка держит круг видимым целиком и на
+     тёмном поле, и над светлой картиной: без неё у крестика был виден
+     только край, лёгший на холст, — полукруг (заказчик, 8.10.2026). */
+  .viewer-nav,
+  .viewer-close {
     position: absolute;
-    bottom: 18px;
     z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-    line-height: 1;
+    padding: 0;
     color: var(--color-neutral-100);
     text-decoration: none;
     background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent);
@@ -546,8 +549,28 @@
     cursor: pointer;
     transition: background-color 0.18s;
   }
-  .viewer-nav:hover {
+  .viewer-nav:hover,
+  .viewer-close:hover {
     background: color-mix(in srgb, var(--color-neutral-100) 16%, transparent);
+  }
+  /* Крестик — 48px с рисованным значком 22px. Прежде это был символ «×»
+     шрифтом: на экране около 10px, заказчик его не разглядел. */
+  .viewer-close {
+    top: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+  /* Стрелки просмотра. На телефоне — парой по центру под картиной: она
+     там во всю ширину, и стрелки по бокам легли бы на холст (та же
+     причина, что у .stage-nav). На десктопе — по краям
+     экрана, посередине высоты, в поле рядом с картиной. */
+  .viewer-nav {
+    bottom: 18px;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    line-height: 1;
   }
   @media (min-width: 1024px) {
     .viewer-nav {

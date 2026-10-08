@@ -14,6 +14,21 @@ import { localePath } from "@/lib/i18n/config";
 const VIEW_HASH = "#view";
 
 /**
+ * Открывает окно с фокусом на нём самом, а не на первой ссылке внутри.
+ *
+ * Без этого браузер ставит фокус на первое, что можно нажать, — стрелку
+ * «←», и на телефоне она открывалась с обводкой фокуса, будто выбрана
+ * (заказчик, 8.10.2026). Атрибутом `autofocus` у окна это не решить:
+ * React его в разметку не пишет и сам фокусирует только поля и кнопки.
+ * Фокус на окне — и рекомендуемый для просмотра вариант: скринридер
+ * зачитывает название картины, а Tab ведёт к стрелкам как прежде.
+ */
+function showViewer(dialog: HTMLDialogElement): void {
+  dialog.showModal();
+  dialog.focus();
+}
+
+/**
  * Просмотр картины: нажатие на холст открывает его на весь экран, на тёмном
  * фоне — только живопись, название внизу и стрелки по бокам, как в просмотре
  * у Netflix. По просьбе заказчика.
@@ -100,7 +115,7 @@ export function ArtworkViewer({
   // обычный: он срабатывает до отрисовки, и страница работы не мелькает
   // между двумя картинами.
   useLayoutEffect(() => {
-    if (window.location.hash === VIEW_HASH) dialogRef.current?.showModal();
+    if (window.location.hash === VIEW_HASH && dialogRef.current) showViewer(dialogRef.current);
   }, []);
 
   // Стрелки клавиатуры листают, пока открыт просмотр.
@@ -117,7 +132,7 @@ export function ArtworkViewer({
   }, [prev, next, router]);
 
   function open(): void {
-    dialogRef.current?.showModal();
+    if (dialogRef.current) showViewer(dialogRef.current);
     // replaceState, а не новая запись в истории: иначе «назад» после
     // закрытия просмотра вело бы на эту же страницу.
     history.replaceState(history.state, "", VIEW_HASH);
@@ -181,6 +196,8 @@ export function ArtworkViewer({
       <dialog
         ref={dialogRef}
         aria-label={title}
+        // -1: фокус на окно ставит showViewer, а в порядок Tab оно не входит.
+        tabIndex={-1}
         onClick={handleDialogClick}
         // Esc закрывает окно сам, без нашего клика, — адрес чистим здесь.
         onClose={clearViewHash}
@@ -188,20 +205,31 @@ export function ArtworkViewer({
       >
         {/* Поле вокруг картины: холст, упёртый в край экрана, читается
             обрезанным, даже когда виден целиком. Снизу поле шире — там
-            название, и оно не должно ложиться на живопись. */}
-        <div className="absolute inset-x-3 top-3 bottom-20 lg:inset-x-24 lg:top-8 lg:bottom-24">
+            название, а на телефоне под ним ещё и стрелки, и ни то ни
+            другое не должно ложиться на живопись. Сверху на телефоне и
+            планшете — место под крестик (16px + 48px): картина там во всю
+            ширину и иначе доходила до верха, а крестик ложился на её угол.
+            На десктопе картину и так отделяет боковое поле в 96px. */}
+        <div className="absolute inset-x-3 top-18 bottom-28 lg:inset-x-24 lg:top-8 lg:bottom-24">
           <Image src={src} alt={title} fill sizes="100vw" className="object-contain" />
         </div>
 
-        <p className="font-heading absolute inset-x-0 bottom-0 m-0 truncate pr-[128px] pb-6 pl-5 text-[clamp(22px,3vw,36px)] leading-tight text-neutral-100 lg:px-24 lg:pb-8">
+        {/* На телефоне название по центру, над стрелками; нижний отступ —
+            место под них (.viewer-nav: 18px от низа и 44px высоты). */}
+        <p className="font-heading absolute inset-x-0 bottom-0 m-0 truncate px-5 pb-[74px] text-center text-[clamp(22px,3vw,36px)] leading-tight text-neutral-100 lg:px-24 lg:pb-8 lg:text-left">
           {title}
         </p>
 
+        {/* Стрелки на телефоне — парой по центру под картиной, в зоне
+            большого пальца. Прежде стояли в правом углу рядом с названием
+            и выглядели сдвинутыми (заказчик, 8.10.2026). По бокам на
+            середине высоты, как на десктопе, им на телефоне места нет:
+            картина там во всю ширину, и стрелки легли бы на холст. */}
         {prev && (
           <Link
             href={`${localePath(lang, `/gallery/${prev.id}`)}${VIEW_HASH}`}
             aria-label={t.prev(prev.title)}
-            className="viewer-nav right-[68px] lg:right-auto lg:left-6"
+            className="viewer-nav left-[calc(50%-52px)] lg:left-6"
           >
             ←
           </Link>
@@ -210,7 +238,7 @@ export function ArtworkViewer({
           <Link
             href={`${localePath(lang, `/gallery/${next.id}`)}${VIEW_HASH}`}
             aria-label={t.next(next.title)}
-            className="viewer-nav right-4 lg:right-6"
+            className="viewer-nav left-[calc(50%+8px)] lg:right-6 lg:left-auto"
           >
             →
           </Link>
@@ -218,12 +246,19 @@ export function ArtworkViewer({
 
         {/* Отдельная кнопка — для клавиатуры и скринридера: клик по фону
             им недоступен. Esc закрывает окно и без неё. */}
-        <button
-          type="button"
-          aria-label={t.closeViewer}
-          className="absolute top-4 right-4 z-[2] flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-neutral-900/60 text-[22px] leading-none text-neutral-100"
-        >
-          ×
+        <button type="button" aria-label={t.closeViewer} className="viewer-close">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+          >
+            <path d="M5 5l14 14M19 5 5 19" />
+          </svg>
         </button>
       </dialog>
     </>
