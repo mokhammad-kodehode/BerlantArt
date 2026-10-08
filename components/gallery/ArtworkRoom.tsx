@@ -386,17 +386,27 @@ export function ArtworkRoom({
     arCamera.launch(arCamera.detect());
   }
 
-  // Переход между режимами с той же рамой. Из примерочной — только если
-  // работу можно показать в камере.
-  const otherMode = isCamera
-    ? {
-        href: roomPageUrl(work.id, options, lang),
-        label: t.withoutCamera,
-        icon: "painting" as const,
-      }
-    : camera === null
+  // Режимы с той же рамой: камера и стена. Переключатель есть, только если
+  // работу можно показать в камере, — иначе режим один.
+  const modes =
+    camera === null
       ? null
-      : { href: arPageUrl(work.id, options, lang), label: t.viaCamera, icon: "camera" as const };
+      : [
+          {
+            id: "camera",
+            href: arPageUrl(work.id, options, lang),
+            label: t.modeCamera,
+            icon: "camera" as const,
+            isCurrent: isCamera,
+          },
+          {
+            id: "wall",
+            href: roomPageUrl(work.id, options, lang),
+            label: t.modeWall,
+            icon: "frame" as const,
+            isCurrent: !isCamera,
+          },
+        ];
 
   // Упрощение рамы в камере (решение 5): резьбы и лепнины там нет.
   const isCarvedFrame = options.frame === "classic" || options.frame === "baroque";
@@ -417,9 +427,10 @@ export function ArtworkRoom({
       data-has-size={sides !== null}
       data-panel={isPanelOpen ? "open" : "closed"}
       data-tool={tool ?? undefined}
+      data-modes={modes !== null || undefined}
       aria-label={t.label(work.title)}
     >
-      <div className="room-bar flex items-center justify-between gap-3 px-[clamp(12px,4vw,48px)] pt-4 md:pt-6 lg:pr-[calc(var(--panel-w)+24px)]">
+      <div className="room-bar flex flex-wrap items-center justify-between gap-3 px-[clamp(12px,4vw,48px)] pt-4 md:pt-6 lg:pr-[calc(var(--panel-w)+24px)]">
         {/* На телефоне — только стрелка: строка узкая, а подпись у ссылки
             остаётся для скринридера. */}
         <Link
@@ -437,18 +448,31 @@ export function ArtworkRoom({
           {sides !== null && <span className="block text-[12px] opacity-75">{orient(sides)}</span>}
         </p>
 
-        <div className="flex gap-2">
-          {otherMode !== null && (
-            <Link
-              href={otherMode.href}
-              className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
-              aria-label={otherMode.label}
-            >
-              <ViewIcon name={otherMode.icon} />
-              <span className="max-lg:hidden">{otherMode.label}</span>
-            </Link>
-          )}
+        {/*
+          Переключатель режимов — крупно и с подписями: со страницы работы
+          ведёт одна кнопка, и второй режим можно найти только здесь.
+          Прежде это был значок в 40px, на телефоне его не замечали.
+          На телефоне — отдельной строкой во всю ширину (order-last
+          и flex-wrap у строки): в одну строку с названием он не влезает.
+        */}
+        {modes !== null && (
+          <nav className="room-modes" aria-label={t.modes}>
+            {modes.map((mode) => (
+              <Link
+                key={mode.id}
+                href={mode.href}
+                className="room-mode"
+                aria-current={mode.isCurrent ? "page" : undefined}
+                replace
+              >
+                <ViewIcon name={mode.icon} />
+                {mode.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
+        <div className="flex gap-2">
           {isCamera && camera !== null && (
             <button
               type="button"

@@ -2,11 +2,13 @@ import Link from "next/link";
 
 import { Header } from "@/components/layout/Header";
 import { Container } from "@/components/ui/Container";
-import { contactList } from "@/lib/contacts";
+import { contactEmail, contactList } from "@/lib/contacts";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /**
- * Политика конфиденциальности (решение заказчика 3 октября 2026).
+ * Политика конфиденциальности — политика обработки персональных данных
+ * по 152-ФЗ (ст. 18.1): оператор, данные, цели и основания, сроки,
+ * передача за границу, права человека и срок ответа.
  *
  * Текст описывает то, как сайт устроен на самом деле, а не типовой шаблон:
  * сервер не получает и не хранит ничего из того, что пишет посетитель
@@ -14,16 +16,25 @@ import { getDictionary, localePath, type Locale } from "@/lib/i18n";
  * аналитики и рекламных куки нет, шрифты отдаются с нашего домена.
  * Поменялось устройство — например, появилась Яндекс Метрика или форма
  * с отправкой на сервер, — текст обязан поменяться вместе с ним, и тогда
- * понадобятся согласие на обработку данных и уведомление о куки.
+ * понадобятся согласие на обработку данных (отдельным документом, с 1
+ * сентября 2025) и уведомление о куки.
  *
- * Обязательства художницы (для чего используются сообщения, кому не
- * передаются) записаны с её слов через заказчика; юридическую формулировку
- * стоит показать юристу.
+ * Оператор — частное лицо (8.10.2026): у художницы пока нет ни ИП, ни
+ * самозанятости. Появится статус — дописать его и ИНН в `privacy.operator`.
+ * Почта для запросов — та же, что на сайте (NEXT_PUBLIC_CONTACT_EMAIL):
+ * сменится в окружении — сменится и здесь. Текст стоит показать юристу.
  */
 export function PrivacyPage({ lang }: { lang: Locale }) {
   const t = getDictionary(lang);
   const p = t.privacy;
   const contacts = contactList(t.contacts).filter((contact) => contact.id !== "phone");
+
+  // Метки в тексте словаря: {operator}, {city}, {email}.
+  const fill = (text: string) =>
+    text
+      .replaceAll("{operator}", p.operator)
+      .replaceAll("{city}", p.city)
+      .replaceAll("{email}", contactEmail ?? p.noEmail);
 
   return (
     <>
@@ -39,51 +50,50 @@ export function PrivacyPage({ lang }: { lang: Locale }) {
             <p className="text-ink-faint mt-0 mb-10 text-[14px]">{p.revised}</p>
 
             <div className="legal">
-              <h2>{p.shortTitle}</h2>
-              <p>{p.short}</p>
+              {p.sections.map((section) => (
+                <section key={section.title} className="contents">
+                  <h2>{section.title}</h2>
+                  {section.paragraphs.map((text) => (
+                    <p key={text}>{fill(text)}</p>
+                  ))}
 
-              <h2>{p.whoTitle}</h2>
-              <p>{p.who(t.site.artist, t.site.location)}</p>
-              <ul>
-                {contacts.map((contact) => (
-                  <li key={contact.id}>
-                    {contact.label}:{" "}
-                    <a
-                      href={contact.href}
-                      {...(contact.isExternal
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
-                    >
-                      {contact.value}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+                  {section.withContacts && (
+                    <ul>
+                      {contacts.map((contact) => (
+                        <li key={contact.id}>
+                          {contact.label}:{" "}
+                          <a
+                            href={contact.href}
+                            {...(contact.isExternal
+                              ? { target: "_blank", rel: "noopener noreferrer" }
+                              : {})}
+                          >
+                            {contact.value}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
-              <h2>{p.receivesTitle}</h2>
-              {p.receives.map((text) => (
-                <p key={text}>{text}</p>
+                  {section.list && (
+                    <ul>
+                      {section.list.map((item) => (
+                        <li key={item}>{fill(item)}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {section.after?.map((text) => (
+                    <p key={text}>{fill(text)}</p>
+                  ))}
+
+                  {section.contactLink && (
+                    <p>
+                      <Link href={localePath(lang, "/contact")}>{section.contactLink}</Link>
+                    </p>
+                  )}
+                </section>
               ))}
-
-              <h2>{p.cookiesTitle}</h2>
-              {p.cookies.map((text) => (
-                <p key={text}>{text}</p>
-              ))}
-
-              <h2>{p.logsTitle}</h2>
-              <p>{p.logs}</p>
-
-              <h2>{p.imagesTitle}</h2>
-              <p>{p.images}</p>
-
-              <h2>{p.pricesTitle}</h2>
-              <p>{p.prices}</p>
-
-              <h2>{p.changesTitle}</h2>
-              <p>
-                {p.changes}
-                <Link href={localePath(lang, "/contact")}>{p.changesLink}</Link>.
-              </p>
             </div>
           </article>
         </Container>

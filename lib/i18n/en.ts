@@ -140,7 +140,6 @@ export const en: Dictionary = {
     fallbackKicker: "Painting",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
-    viaCamera: "With your camera",
     writeEmail: "Send an email",
     whatsappHint: (action) => `“${action}” opens WhatsApp with a ready message`,
     seeMore: "See more ↓",
@@ -298,37 +297,120 @@ export const en: Dictionary = {
   privacy: {
     title: "Privacy policy",
     metaDescription:
-      "What data Berlant Dzhabrailova's website collects and stores: none — the form and buttons only open WhatsApp or email with a ready message.",
+      "How personal data is handled on Berlant Dzhabrailova's website: the site collects nothing; data appears only when you write to the artist. Your rights and time limits.",
     kicker: "Documents",
-    revised: "Version of 3 October 2026",
-    shortTitle: "In brief",
-    short:
-      "The website does not collect or store your data. The form on the Contact page and the Buy and Message buttons send nothing to our server: they open WhatsApp or your email app with a ready text, and you decide yourself whether to send it.",
-    whoTitle: "Who is responsible for the website",
-    who: (artist, location) =>
-      `${artist}, artist, ${location}. Questions about data can be asked in the same places as questions about the paintings:`,
-    receivesTitle: "What the artist receives when you write to her",
-    receives: [
-      "Only what you send yourself: your name, the phone number or email address you write from, and the text of your message. This information is needed to reply to you and to arrange the purchase or commission of a painting. It is not passed on to third parties and is not used for mailings.",
-      "Correspondence takes place in WhatsApp, Instagram or by email, and the rules of those services apply to it.",
+    revised: "Version of 8 October 2026",
+    operator: "Dzhabrailova Berlant Shakhidovna",
+    city: "Grozny, Chechen Republic",
+    noEmail: "any of the contacts below",
+    sections: [
+      {
+        title: "In brief",
+        paragraphs: [
+          "The website does not collect or store your data. The form on the Contact page and the Buy and Message buttons send nothing to the website's server: they open WhatsApp or your email app with a ready text, and you decide yourself whether to send it. The artist receives your data only when you write to her.",
+        ],
+      },
+      {
+        title: "1. General provisions",
+        paragraphs: [
+          "This policy describes how the personal data of visitors to www.berlant-art.com and of people who write to the artist is processed, in accordance with Russian Federal Law No. 152-FZ of 27 July 2006 “On Personal Data”. The policy is publicly available so that you can read it before you write.",
+        ],
+      },
+      {
+        title: "2. Who processes the data",
+        paragraphs: [
+          "The personal data operator is {operator}, a private individual, {city}.",
+          "Questions and requests about personal data are accepted by email at {email}. Other ways to get in touch:",
+        ],
+        withContacts: true,
+      },
+      {
+        title: "3. What data is processed",
+        paragraphs: ["Only what you provide yourself when you write to the artist:"],
+        list: [
+          "the name you give;",
+          "the phone number, email address or account name you write from;",
+          "the text of your message and the details in it — for example, which painting interests you.",
+        ],
+        after: [
+          "Special categories of personal data and biometric data are not processed. Children's data is not knowingly collected.",
+          "Vercel, the hosting provider the website runs on, automatically records technical information about requests — IP address, browser type, time of access. This is needed to run and protect the website and is stored by Vercel under its own rules; the artist does not access it.",
+        ],
+      },
+      {
+        title: "4. Purposes and legal grounds",
+        paragraphs: [
+          "Data from messages is used to reply to you, to arrange the purchase of a finished painting or the commission of a new one, and to carry out the arrangement: agree on payment and hand over the painting.",
+          "The legal ground is the conclusion and performance of a contract that you initiate or are a party to (Art. 6(1)(5) of Law No. 152-FZ). No separate consent is required for this: you start the correspondence yourself.",
+          "Hosting logs are processed to run and protect the website (Art. 6(1)(7) of Law No. 152-FZ).",
+        ],
+      },
+      {
+        title: "5. What happens to the data",
+        paragraphs: [
+          "The data is collected (when you write), recorded, stored, used to reply and to make the arrangement, and deleted. Processing is automated — through the messenger and email — within the correspondence you started.",
+          "The data is not passed on to third parties, not sold, and not used for mailings or advertising. No decisions are made based solely on automated processing.",
+        ],
+      },
+      {
+        title: "6. Transfer of data abroad",
+        paragraphs: [
+          "Correspondence takes place through the service you choose yourself: WhatsApp, Instagram or email. WhatsApp and Instagram are foreign services whose servers are located outside Russia, and their rules apply to the correspondence. By choosing a way to get in touch, you also choose the service through which your data is transferred.",
+        ],
+      },
+      {
+        title: "7. How long the data is kept",
+        paragraphs: [
+          "For as long as the correspondence and the arrangement last, and after that for no more than three years from the last message — in case you come back with a question about a painting you bought. The correspondence is then deleted.",
+          "At your request, the data is deleted sooner, unless keeping it is required by law — for example, to confirm a payment.",
+        ],
+      },
+      {
+        title: "8. Your rights",
+        paragraphs: ["You have the right to:"],
+        list: [
+          "find out which of your data is processed, why, and for how long it is kept;",
+          "ask for your data to be corrected, blocked or deleted if it is incomplete, out of date or no longer needed for its purpose;",
+          "withdraw consent, if processing was based on it;",
+          "appeal against the operator's actions to Roskomnadzor (rkn.gov.ru) or in court.",
+        ],
+        after: [
+          "To exercise a right, write to {email}. You will receive a reply within 10 working days of the request; this may be extended by another 5 working days with an explanation.",
+        ],
+      },
+      {
+        title: "9. How the data is protected",
+        paragraphs: [
+          "Only the artist has access to the correspondence. The phone and the mailbox that receive messages are password-protected; data from the correspondence is not transferred to other systems.",
+        ],
+      },
+      {
+        title: "10. Cookies and browser storage",
+        paragraphs: [
+          "The website has no advertising or analytics cookies and does not track visitors. One setting is saved in your browser — the room you chose, light or dark — and it never leaves your device. A login cookie is set only for the artist, when she signs in to the website's admin panel.",
+          "Fonts and images are loaded from the website's own address, without requests to Google or other companies' services.",
+        ],
+      },
+      {
+        title: "11. Images of the works",
+        paragraphs: [
+          "All rights to the paintings and their images belong to the artist. They may not be copied or used without the artist's permission. If you would like to publish a work, write and you will get a reply.",
+        ],
+      },
+      {
+        title: "12. Prices and purchase",
+        paragraphs: [
+          "Information about works and prices on the website is for reference only and does not constitute a public offer. Terms of purchase — price, payment and delivery — are agreed in correspondence with the artist.",
+        ],
+      },
+      {
+        title: "13. Changes",
+        paragraphs: [
+          "If the way the website works changes, this policy will change too; the version date is shown at the top of the page.",
+        ],
+        contactLink: "Back to contact",
+      },
     ],
-    cookiesTitle: "Cookies and browser storage",
-    cookies: [
-      "The website has no advertising or analytics cookies and does not track visitors. One setting is saved in your browser — the room you chose, light or dark — and it never leaves your device. A login cookie is set only for the artist, when she signs in to the website's admin panel.",
-      "Fonts and images are loaded from the website's own address, without requests to Google or other companies' services.",
-    ],
-    logsTitle: "Technical logs",
-    logs: "The website is hosted by Vercel. Like any hosting provider, it automatically records technical information about requests — IP address, browser type, time of access. This is needed to run and protect the website and is stored by Vercel under its own rules.",
-    imagesTitle: "Images of the works",
-    images:
-      "All rights to the paintings and their images belong to the artist. They may not be copied or used without the artist's permission. If you would like to publish a work, write and you will get a reply.",
-    pricesTitle: "Prices and purchase",
-    prices:
-      "Information about works and prices on the website is for reference only and does not constitute a public offer. Terms of purchase — price, payment and delivery — are agreed in correspondence with the artist.",
-    changesTitle: "Changes",
-    changes:
-      "If the way the website works changes, this text will change too; the version date is shown at the top of the page. Back to ",
-    changesLink: "contact",
   },
 
   room: {
@@ -341,8 +423,9 @@ export const en: Dictionary = {
     canvasSize: (size) => `Canvas ${size}`,
     framedSize: (size) => `framed ${size}`,
     noSize: "The painting's size isn't specified, so it can't be shown next to the sofa",
-    withoutCamera: "Without camera",
-    viaCamera: "With your camera",
+    modes: "Fitting mode",
+    modeCamera: "Camera",
+    modeWall: "On the wall",
     label: (title) => `Try on a wall: “${title}”`,
     back: "Back to work",
     howItWorks: "How it works",
