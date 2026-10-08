@@ -8,15 +8,12 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { Tag } from "@/components/ui/Tag";
 import { cameraTarget } from "@/lib/ar";
 import {
   artworkCategory,
   artworkDimensions,
   artworkSeo,
-  artworkStatusLabel,
   artworkTechnique,
-  formatPrice,
   getArtworkById,
   getArtworkNeighbours,
   getOtherArtworks,
@@ -27,7 +24,6 @@ import { contactEmail } from "@/lib/contacts";
 import { clientEnv } from "@/lib/env";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 import { pageAlternates } from "@/lib/page-metadata";
-import { purchaseAction } from "@/lib/purchase";
 import { artworkJsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
 
@@ -104,12 +100,10 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
 
   if (!work) notFound();
 
-  const label = artworkStatusLabel(work.status, lang);
-  const price = formatPrice(work.price, lang);
   const extraImages = work.images.slice(1);
 
   // Незаполненное поле исчезает целиком, а не превращается в прочерк:
-  // страница работы — карточка товара, врать в ней о габаритах нельзя.
+  // врать о габаритах картины нельзя, даже когда она не продаётся.
   // Категории здесь нет намеренно — она уже стоит надстрочником над
   // названием, и в строке получалось «Холст, масло · Архитектурный мотив»
   // при надстрочнике «АРХИТЕКТУРНЫЙ МОТИВ».
@@ -125,16 +119,15 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
   // 4 октября 2026), и в английской версии русский абзац был бы чужим.
   const description = lang === "ru" ? work.description : null;
 
+  // Цены, статуса и кнопки «Купить» нет: продажа на сайте выключена до
+  // платного тарифа Vercel и оплаты через интернет (ARCHITECTURE.md,
+  // «Продажа выключена»). О покупке человек и художница договариваются
+  // в переписке, поэтому сообщение одно для всех работ — без цены.
+  //
   // В сообщение подставляется ссылка на саму работу: художница сразу видит,
   // о какой картине речь, и ей не нужно переспрашивать.
   const pageUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}${localePath(lang, `/gallery/${work.id}`)}`;
-  const { label: actionLabel, message } = purchaseAction({
-    title: work.title,
-    price,
-    status: work.status,
-    pageUrl,
-    lang,
-  });
+  const message = t.work.message(work.title, pageUrl);
   const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
   const mailSubject = t.work.mailSubject(work.title);
   const hasMore = extraImages.length > 0 || others.length > 0;
@@ -152,8 +145,6 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           technique: artworkTechnique(work.technique, lang),
           dimensions: work.dimensions,
           year: work.year,
-          price: work.price,
-          status: work.status,
           image: primaryImageUrl(work),
           artistName: t.site.artist,
         })}
@@ -187,18 +178,13 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
             залах тень снимается (класс stage-title в globals.css). */}
         <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,5vw,64px)]">{work.title}</h1>
 
-        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-          {label && <Tag tone={work.status === "SOLD" ? "neutral" : "accent"}>{label}</Tag>}
-          {meta && <p className="text-ink-soft m-0 text-[14px]">{meta}</p>}
-        </div>
+        {meta && <p className="text-ink-soft mt-0 mb-4 text-[14px]">{meta}</p>}
 
         {description && (
           <p className="text-ink-soft mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
             {description}
           </p>
         )}
-
-        {price && <p className="font-heading text-ink mt-0 mb-4 text-[24px]">{price}</p>}
 
         <div className="btn-row">
           {/*
@@ -214,7 +200,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {actionLabel}
+              {t.work.write}
             </ExternalButtonLink>
           )}
 
@@ -294,11 +280,11 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           )}
         </div>
 
-        {/* Без подсказки «Купить», открывающая мессенджер, а не корзину,
+        {/* Без подсказки кнопка, открывающая мессенджер, а не форму на сайте,
             застала бы врасплох. */}
         {phone && (
           <p className="text-ink-faint mt-2.5 mb-0 text-[13px]">
-            {t.work.whatsappHint(actionLabel)}
+            {t.work.whatsappHint(t.work.write)}
           </p>
         )}
 

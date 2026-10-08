@@ -4,7 +4,8 @@ import { absoluteUrl, artworkJsonLd, serializeJsonLd, sitemapEntries } from "@/l
 
 /**
  * Карта сайта и разметка для поисковиков ломаются незаметно: страница
- * выглядит как прежде, а Google молча не видит новую работу или цену.
+ * выглядит как прежде, а Google молча не видит новую работу — или видит
+ * цену, которой на странице нет.
  * Поэтому проверяем то, что уходит поисковику, а не разметку страницы.
  */
 const base = "https://www.berlant-art.com";
@@ -19,8 +20,6 @@ const work = {
   technique: "Холст, масло",
   dimensions: "40 × 40 см",
   year: 2026,
-  price: 5000,
-  status: "AVAILABLE" as const,
   image: "/artworks/selo.jpg",
   artistName: "Берлант Джабраилова",
 };
@@ -76,16 +75,14 @@ describe("sitemapEntries", () => {
 });
 
 describe("artworkJsonLd", () => {
-  it("описывает картину с ценой и наличием", () => {
+  it("описывает картину без предложения о продаже", () => {
     const data = artworkJsonLd(work);
 
     expect(data["@type"]).toBe("VisualArtwork");
     expect(data.url).toBe("https://www.berlant-art.com/gallery/w1");
-    expect(data.offers).toMatchObject({
-      price: 5000,
-      priceCurrency: "RUB",
-      availability: "https://schema.org/InStock",
-    });
+    // Продажа на сайте выключена (ARCHITECTURE.md): цены и наличия
+    // в разметке нет, иначе Google показал бы их в выдаче.
+    expect(data).not.toHaveProperty("offers");
   });
 
   it("английская версия ведёт на английский адрес и помечена языком", () => {
@@ -96,21 +93,14 @@ describe("artworkJsonLd", () => {
     expect(data.artform).toBe("Painting");
   });
 
-  it("проданная — SoldOut, а не «в наличии»", () => {
-    const data = artworkJsonLd({ ...work, status: "SOLD" });
-    expect(data.offers).toMatchObject({ availability: "https://schema.org/SoldOut" });
-  });
-
-  it("не выдумывает: без цены нет предложения, пустые поля не пишутся вовсе", () => {
+  it("не выдумывает: пустые поля не пишутся вовсе", () => {
     const data = artworkJsonLd({
       ...work,
-      price: null,
       year: null,
       dimensions: null,
       image: undefined,
     });
 
-    expect(data).not.toHaveProperty("offers");
     expect(data).not.toHaveProperty("dateCreated");
     expect(data).not.toHaveProperty("size");
     expect(data).not.toHaveProperty("image");

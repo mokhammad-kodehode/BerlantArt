@@ -43,7 +43,7 @@ export const en: Dictionary = {
     location: "Grozny, Chechen Republic",
     defaultTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
     metaDescription:
-      "Chechen artist from Grozny painting the mountains, ancient towers and villages of Chechnya in oils and with a palette knife. Original paintings for sale or commission.",
+      "Chechen artist from Grozny painting the mountains, ancient towers and villages of Chechnya in oils and with a palette knife. Picked up a brush at 53, with no art school.",
     ogTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
     artistGenitive: "Berlant Dzhabrailova",
     ogImageAlt: "Berlant Dzhabrailova painting with a palette knife in her studio",
@@ -57,7 +57,7 @@ export const en: Dictionary = {
     gallery: "Gallery",
     about: "About",
     contact: "Contact",
-    cta: "Commission a painting",
+    cta: "Contact the artist",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     theme: "Switch room: light or dark",
@@ -96,26 +96,17 @@ export const en: Dictionary = {
 
   gallery: {
     title: "Works",
-    metaTitle: "Original oil paintings for sale",
+    metaTitle: "Oil paintings — gallery of works",
     metaDescription:
-      "Original oil paintings by Chechen artist Berlant Dzhabrailova: mountains, towers, villages and rivers of Chechnya. Price and availability on every painting.",
+      "Oil paintings by Chechen artist Berlant Dzhabrailova: mountains, towers, villages and rivers of Chechnya. Open any work full screen or try it on a wall.",
     kicker: "Gallery",
     lead: "Oil painting. Tap a work to open it full screen.",
     emptyFilteredTitle: "Nothing matches this filter",
-    emptyFilteredText: "Try another status or category.",
+    emptyFilteredText: "Try another category.",
     emptyTitle: "No works yet",
     emptyText: "Paintings will appear here as soon as the artist adds them.",
-    filterStatus: "Filter by status",
     filterCategory: "Filter by category",
-    statusAll: "All",
-    statusAvailable: "Available",
-    statusSold: "Sold",
     categoryAll: "All categories",
-  },
-
-  status: {
-    RESERVED: "Reserved",
-    SOLD: "Sold",
   },
 
   categories: {
@@ -140,6 +131,8 @@ export const en: Dictionary = {
     fallbackKicker: "Painting",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
+    write: "Message the artist",
+    message: (title, url) => `Hello! I'm interested in the painting “${title}”. ${url}`,
     writeEmail: "Send an email",
     whatsappHint: (action) => `“${action}” opens WhatsApp with a ready message`,
     seeMore: "See more ↓",
@@ -161,21 +154,7 @@ export const en: Dictionary = {
     workTitle: (title, kind, size) => (size ? `${title} — ${kind}, ${size}` : `${title} — ${kind}`),
     workDescription: (title, details) => (details ? `“${title}”: ${details}.` : `“${title}”.`),
     byArtist: (artist) => `By Chechen artist ${artist}.`,
-    price: (price) => `Price ${price}.`,
-    status: { AVAILABLE: "Available.", RESERVED: "Reserved.", SOLD: "Sold." },
     imageAlt: (title, kind, artistGenitive) => `“${title}” — ${kind} by ${artistGenitive}`,
-  },
-
-  purchase: {
-    soldLabel: "Message on WhatsApp",
-    soldMessage: (title, url) => `Hello! I'm interested in the painting “${title}”. ${url}`,
-    reservedLabel: "Ask about it",
-    reservedMessage: (title, url) => `Hello! Is the painting “${title}” still reserved? ${url}`,
-    noPriceLabel: "Ask the price",
-    noPriceMessage: (title, url) => `Hello! How much is the painting “${title}”? ${url}`,
-    buyLabel: "Buy",
-    buyMessage: (title, price, url) =>
-      `Hello! I would like to buy the painting “${title}” for ${price}. ${url}`,
   },
 
   contacts: {
@@ -190,12 +169,12 @@ export const en: Dictionary = {
 
   contactPage: {
     title: "Contact",
-    metaTitle: "Buy or commission a painting",
+    metaTitle: "Contact the artist",
     metaDescription:
-      "Buy an original or commission a painting from Chechen artist Berlant Dzhabrailova. WhatsApp, phone, Instagram. Grozny, Chechen Republic.",
+      "Write to Chechen artist Berlant Dzhabrailova: WhatsApp, phone, Instagram. Questions about the paintings go straight to the artist. Grozny, Chechen Republic.",
     kicker: "Contact",
-    heading: "Commission a painting",
-    lead: "Buy a finished work, commission a painting or just ask a question — write or call in whatever way suits you.",
+    heading: "Write to the artist",
+    lead: "Ask about a painting, tell her which work you liked or simply share your impression — write or call in whatever way suits you.",
     whatsapp: "Message on WhatsApp",
     photoAlt: "Berlant Dzhabrailova at her easel",
     ways: "Ways to get in touch",
@@ -206,8 +185,8 @@ export const en: Dictionary = {
 
   contactForm: {
     topics: [
-      { label: "Buying", value: "Buying a work" },
-      { label: "Commission", value: "Commissioning a painting" },
+      { label: "Painting", value: "About a painting" },
+      { label: "Feedback", value: "Feedback on the works" },
       { label: "Other", value: "Other" },
     ],
     nameRequired: "Please tell us how to address you.",
@@ -217,7 +196,7 @@ export const en: Dictionary = {
     name: "Your name",
     topic: "Topic",
     message: "Message",
-    placeholder: "Which work you liked, what size you need, by when",
+    placeholder: "Which work you liked and what you'd like to know about it",
     sendWhatsapp: "Send via WhatsApp",
     sendEmail: "Send by email",
     privacyBefore: (channel) =>
@@ -307,7 +286,7 @@ export const en: Dictionary = {
       {
         title: "In brief",
         paragraphs: [
-          "The website does not collect or store your data. The form on the Contact page and the Buy and Message buttons send nothing to the website's server: they open WhatsApp or your email app with a ready text, and you decide yourself whether to send it. The artist receives your data only when you write to her.",
+          "The website does not collect or store your data. The form on the Contact page and the “Message the artist” and “Send an email” buttons send nothing to the website's server: they open WhatsApp or your email app with a ready text, and you decide yourself whether to send it. The artist receives your data only when you write to her.",
         ],
       },
       {
@@ -340,7 +319,7 @@ export const en: Dictionary = {
       {
         title: "4. Purposes and legal grounds",
         paragraphs: [
-          "Data from messages is used to reply to you, to arrange the purchase of a finished painting or the commission of a new one, and to carry out the arrangement: agree on payment and hand over the painting.",
+          "Data from messages is used to reply to you and, if you and the artist agree on something, to carry out that arrangement.",
           "The legal ground is the conclusion and performance of a contract that you initiate or are a party to (Art. 6(1)(5) of Law No. 152-FZ). No separate consent is required for this: you start the correspondence yourself.",
           "Hosting logs are processed to run and protect the website (Art. 6(1)(7) of Law No. 152-FZ).",
         ],
@@ -361,8 +340,8 @@ export const en: Dictionary = {
       {
         title: "7. How long the data is kept",
         paragraphs: [
-          "For as long as the correspondence and the arrangement last, and after that for no more than three years from the last message — in case you come back with a question about a painting you bought. The correspondence is then deleted.",
-          "At your request, the data is deleted sooner, unless keeping it is required by law — for example, to confirm a payment.",
+          "For as long as the correspondence and the arrangement last, and after that for no more than three years from the last message — in case you come back to the conversation. The correspondence is then deleted.",
+          "At your request, the data is deleted sooner, unless keeping it is required by law.",
         ],
       },
       {
@@ -398,13 +377,7 @@ export const en: Dictionary = {
         ],
       },
       {
-        title: "12. Prices and purchase",
-        paragraphs: [
-          "Information about works and prices on the website is for reference only and does not constitute a public offer. Terms of purchase — price, payment and delivery — are agreed in correspondence with the artist.",
-        ],
-      },
-      {
-        title: "13. Changes",
+        title: "12. Changes",
         paragraphs: [
           "If the way the website works changes, this policy will change too; the version date is shown at the top of the page.",
         ],

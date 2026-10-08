@@ -81,17 +81,16 @@ export type ArtworkSeo = { title: string; description: string; imageAlt: string 
 /**
  * Заголовок, описание и подпись картинки для выдачи — из того, что заполнено
  * в админке. Пустое поле не попадает в текст: нет размера — нет и размера
- * в заголовке, нет цены — нет цены (.ai/rules/content.md).
+ * в заголовке (.ai/rules/content.md).
  *
  * «Картина маслом» — только если в технике есть масло: у художницы техника
  * всегда одна, но если когда-нибудь появится другая, заголовок не соврёт.
- * Статус — словом: проданная картина не получит «В наличии».
+ * Цены и статуса в тексте нет: продажа на сайте выключена (ARCHITECTURE.md,
+ * «Продажа выключена»), и поисковик не должен показывать цену, которой нет
+ * на странице.
  */
 export function artworkSeo(
-  work: Pick<
-    ArtworkWithImages,
-    "title" | "description" | "technique" | "dimensions" | "year" | "price" | "status"
-  >,
+  work: Pick<ArtworkWithImages, "title" | "description" | "technique" | "dimensions" | "year">,
   lang: Locale = "ru",
 ): ArtworkSeo {
   const t = getDictionary(lang);
@@ -99,7 +98,6 @@ export function artworkSeo(
   const kind = isOil ? t.seo.oilPainting : t.seo.painting;
   const size = artworkDimensions(work.dimensions, lang);
   const technique = artworkTechnique(work.technique, lang);
-  const price = formatPrice(work.price, lang);
 
   // После двоеточия — со строчной: «Картина «Село»: холст, масло, 40 × 40 см».
   const details = [technique, size, work.year]
@@ -110,8 +108,6 @@ export function artworkSeo(
   const description = [
     t.seo.workDescription(work.title, details),
     t.seo.byArtist(t.site.artist),
-    price === null ? null : t.seo.price(price),
-    t.seo.status[work.status],
     // Описание из админки — только по-русски (решение заказчика), поэтому
     // в английском тексте его нет.
     lang === "ru" ? work.description : null,
@@ -130,18 +126,6 @@ export function artworkSeo(
 export function artworkCategory(category: string | null, lang: Locale = "ru"): string | null {
   if (category === null) return null;
   return translateValue(getDictionary(lang).categories, category);
-}
-
-/**
- * Подпись статуса словом. У доступной работы метки нет вовсе: подписывать
- * нормальное состояние незачем, метка нужна там, где картину уже не купить.
- *
- * Словом, а не только цветом, — требование доступности: серая карточка сама
- * по себе ничего не сообщает человеку, который не различает оттенки.
- */
-export function artworkStatusLabel(status: ArtworkStatus, lang: Locale = "ru"): string | null {
-  if (status === "AVAILABLE") return null;
-  return getDictionary(lang).status[status];
 }
 
 /**

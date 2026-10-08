@@ -205,7 +205,13 @@ export function ArtworkForm({
         </div>
 
         <div className="field">
-          <label htmlFor="price">Цена, ₽</label>
+          {/* Пометка внутри подписи, а не отдельной строкой: так её прочтёт
+              и скринридер вместе с названием поля. Цена и статус хранятся,
+              но посетителю не видны — продажа на сайте выключена
+              (ARCHITECTURE.md, «Продажа выключена»). */}
+          <label htmlFor="price">
+            Цена, ₽ <span className="text-ink-faint font-normal">— на сайте не видна</span>
+          </label>
           <input {...field("price")} type="text" inputMode="numeric" autoComplete="off" />
           {fieldError("price")}
         </div>
@@ -215,7 +221,9 @@ export function ArtworkForm({
 
       <div className="grid items-start gap-5 sm:grid-cols-2">
         <div className="field">
-          <label htmlFor="status">Статус</label>
+          <label htmlFor="status">
+            Статус <span className="text-ink-faint font-normal">— на сайте не виден</span>
+          </label>
           <select
             {...fieldProps("status")}
             key={`status-${values.status}`}

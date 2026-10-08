@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 
-import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
 import { localeMeta, localePath, locales, type Locale } from "@/lib/i18n/config";
 
 /**
@@ -141,17 +140,13 @@ export function websiteJsonLd({
   };
 }
 
-/** Статус работы в терминах schema.org/ItemAvailability. */
-const availability: Record<ArtworkStatus, string> = {
-  AVAILABLE: "https://schema.org/InStock",
-  RESERVED: "https://schema.org/LimitedAvailability",
-  SOLD: "https://schema.org/SoldOut",
-};
-
 /**
- * Картина — schema.org/VisualArtwork, с предложением о продаже, если
- * цена указана. По ним Google и Яндекс могут показать в выдаче цену
- * и наличие.
+ * Картина — schema.org/VisualArtwork.
+ *
+ * Предложения о продаже (`offers`: цена и наличие) нет: продажа на сайте
+ * выключена (ARCHITECTURE.md, «Продажа выключена»), и цена в выдаче Google
+ * при её отсутствии на странице — это и обещание, которого сайт не даёт,
+ * и нарушение правил разметки: данные должны совпадать с видимым текстом.
  *
  * Поля без значения не пишутся вовсе, а не пишутся пустыми: пустая строка
  * в разметке — это утверждение «год: ничего», а правило проекта —
@@ -169,8 +164,6 @@ export function artworkJsonLd({
   technique,
   dimensions,
   year,
-  price,
-  status,
   image,
   artistName,
 }: {
@@ -184,8 +177,6 @@ export function artworkJsonLd({
   technique: string | null;
   dimensions: string | null;
   year: number | null;
-  price: number | null;
-  status: ArtworkStatus;
   image?: string;
   artistName: string;
 }): JsonLd {
@@ -205,17 +196,6 @@ export function artworkJsonLd({
     ...(year ? { dateCreated: String(year) } : {}),
     ...(image ? { image: absoluteUrl(image, base) } : {}),
     creator: { "@type": "Person", "@id": absoluteUrl("/#artist", base), name: artistName },
-    ...(price !== null
-      ? {
-          offers: {
-            "@type": "Offer",
-            url,
-            price,
-            priceCurrency: "RUB",
-            availability: availability[status],
-          },
-        }
-      : {}),
   };
 }
 

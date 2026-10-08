@@ -9,17 +9,15 @@ import { getDictionary, type Locale } from "@/lib/i18n";
  * Разбор параметров адреса — единственное место, где чужому вводу можно
  * верить только после проверки ([architecture.md](../../../.ai/rules/architecture.md)).
  *
- * `status` проверяется строго: это перечисление в Prisma, и значение вне
- * трёх вариантов уронило бы запрос ошибкой типа, а не просто вернуло пусто.
- * `.catch(undefined)` откатывает мусор к «без фильтра» молча — так адрес
- * с опечаткой не превращается в 500-ю.
- *
  * `category` — обычная строка в схеме ([data.md](../../../.ai/rules/data.md)):
  * несуществующее значение просто даёт пустую выборку в базе, отдельной
- * проверки не требует.
+ * проверки не требует. `.catch(undefined)` откатывает мусор к «без фильтра»
+ * молча — так адрес с опечаткой не превращается в 500-ю.
+ *
+ * Фильтра по статусу нет: продажа на сайте выключена (ARCHITECTURE.md,
+ * «Продажа выключена»). `?status=` из старых ссылок не читается вовсе.
  */
 const filtersSchema = z.object({
-  status: z.enum(["AVAILABLE", "RESERVED", "SOLD"]).optional().catch(undefined),
   category: z.string().min(1).optional().catch(undefined),
 });
 
@@ -50,13 +48,12 @@ export async function GalleryPage({
 }) {
   const t = getDictionary(lang).gallery;
   const rawParams = await searchParams;
-  // Next отдаёт string[] для повторённого параметра (?status=A&status=B) —
+  // Next отдаёт string[] для повторённого параметра (?category=A&category=B) —
   // берём первое значение, а не роняем страницу и не гадаем, какое верно.
   const first = (value: string | string[] | undefined): string | undefined =>
     Array.isArray(value) ? value[0] : value;
 
   const filters = filtersSchema.parse({
-    status: first(rawParams.status),
     category: first(rawParams.category),
   });
 
@@ -86,9 +83,9 @@ export async function GalleryPage({
         <div className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,64px)] pb-8">
           <div className="panel-dashed w-full max-w-[560px] p-10">
             {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
-                  иначе фильтр по «Проданные» на пустой выборке выглядел бы
-                  так, будто сайт вообще без картин. */}
-            {filters.status || filters.category ? (
+                  иначе пустая категория выглядела бы так, будто сайт вообще
+                  без картин. */}
+            {filters.category ? (
               <>
                 <h2 className="text-ink mt-0 mb-2 text-[20px]">{t.emptyFilteredTitle}</h2>
                 <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">{t.emptyFilteredText}</p>
