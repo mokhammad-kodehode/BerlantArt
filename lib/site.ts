@@ -7,8 +7,11 @@
  */
 
 export const site = {
+  /**
+   * Имя, девиз, описание и город по-русски — для админки и manifest.
+   * Публичные страницы берут их из словаря своего языка (lib/i18n).
+   */
   artist: "Берлант Джабраилова",
-  /** Девиз. Выведен в hero под именем и повторён в подвале. */
   slogan: "У искусства нет цели!",
   description: "Художница из Чеченской Республики. Живопись маслом с 2020 года.",
   location: "Грозный, Чеченская Республика",
@@ -20,9 +23,10 @@ export const site = {
   },
 } as const;
 
+/** Пункт навигации: адрес (русский, без приставки) и ключ подписи в словаре. */
 export type NavItem = {
   href: string;
-  label: string;
+  key: "home" | "gallery" | "about" | "contact" | "cta";
 };
 
 /**
@@ -31,24 +35,18 @@ export type NavItem = {
  * В макете пунктов больше — есть ещё «Выставки», «Магазин», «Блог» и
  * «Пресса». В нашем плане (ROADMAP.md) этих разделов пока нет, а ссылки на
  * несуществующие страницы дали бы 404, поэтому здесь только согласованные
- * маршруты. Разделы из макета — открытый вопрос к обсуждению.
+ * маршруты. Подписи — в словарях (lib/i18n), адрес на нужном языке
+ * собирает localePath.
  */
 export const navItems: NavItem[] = [
-  { href: "/", label: "Главная" },
-  { href: "/gallery", label: "Галерея" },
-  { href: "/about", label: "О художнице" },
-  { href: "/contact", label: "Контакты" },
+  { href: "/", key: "home" },
+  { href: "/gallery", key: "gallery" },
+  { href: "/about", key: "about" },
+  { href: "/contact", key: "contact" },
 ];
 
 /** Кнопка-призыв в правом углу шапки. */
-export const navCta: NavItem = {
-  href: "/contact",
-  label: "Заказать картину",
-};
+export const navCta: NavItem = { href: "/contact", key: "cta" };
 
 /** Колонка «Разделы» в подвале. */
-export const footerSections: NavItem[] = [
-  { href: "/gallery", label: "Галерея" },
-  { href: "/about", label: "О художнице" },
-  { href: "/contact", label: "Контакты" },
-];
+export const footerSections: NavItem[] = navItems.slice(1);

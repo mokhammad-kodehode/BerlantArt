@@ -1,5 +1,6 @@
 import { clientEnv } from "@/lib/env";
 import { site } from "@/lib/site";
+import type { Dictionary } from "@/lib/i18n";
 
 /**
  * Способы связи, которые действительно настроены.
@@ -55,7 +56,7 @@ export function whatsappLink(phone: string, message?: string): string {
 }
 
 /** Все настроенные способы связи — в порядке, в котором их показываем. */
-export function contactList(): Contact[] {
+export function contactList(t: Dictionary["contacts"]): Contact[] {
   const contacts: Contact[] = [];
 
   if (whatsappPhone !== undefined) {
@@ -64,7 +65,7 @@ export function contactList(): Contact[] {
       label: "WhatsApp",
       value: formatPhone(whatsappPhone),
       href: whatsappLink(whatsappPhone),
-      action: "Написать",
+      action: t.write,
       isExternal: true,
     });
 
@@ -72,10 +73,10 @@ export function contactList(): Contact[] {
     // Отдельной переменной нет, чтобы номера не разошлись при смене.
     contacts.push({
       id: "phone",
-      label: "Телефон",
+      label: t.phone,
       value: formatPhone(whatsappPhone),
       href: `tel:+${whatsappPhone}`,
-      action: "Позвонить",
+      action: t.call,
       isExternal: false,
     });
   }
@@ -86,7 +87,7 @@ export function contactList(): Contact[] {
       label: "Telegram",
       value: `@${clientEnv.NEXT_PUBLIC_TELEGRAM}`,
       href: `https://t.me/${clientEnv.NEXT_PUBLIC_TELEGRAM}`,
-      action: "Написать",
+      action: t.write,
       isExternal: true,
     });
   }
@@ -96,7 +97,7 @@ export function contactList(): Contact[] {
     label: "Instagram",
     value: `@${site.instagram.handle}`,
     href: site.instagram.url,
-    action: "Смотреть работы",
+    action: t.seeWorks,
     isExternal: true,
   });
 
@@ -106,7 +107,7 @@ export function contactList(): Contact[] {
       label: "Facebook",
       value: clientEnv.NEXT_PUBLIC_FACEBOOK,
       href: `https://www.facebook.com/${clientEnv.NEXT_PUBLIC_FACEBOOK}`,
-      action: "Открыть страницу",
+      action: t.openPage,
       isExternal: true,
     });
   }
@@ -114,10 +115,10 @@ export function contactList(): Contact[] {
   if (contactEmail !== undefined) {
     contacts.push({
       id: "email",
-      label: "Почта",
+      label: t.email,
       value: contactEmail,
       href: `mailto:${contactEmail}`,
-      action: "Написать письмо",
+      action: t.writeEmail,
       isExternal: false,
     });
   }

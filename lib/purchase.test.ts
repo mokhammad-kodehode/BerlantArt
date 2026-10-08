@@ -28,6 +28,13 @@ describe("purchaseAction", () => {
     expect(purchaseAction({ ...base, status: "RESERVED" }).label).toBe("Спросить о картине");
   });
 
+  it("в английской версии пишет по-английски", () => {
+    const action = purchaseAction({ ...base, price: "₽5,000", lang: "en" });
+    expect(action.label).toBe("Buy");
+    expect(action.message).toContain("I would like to buy");
+    expect(action.message).toContain("₽5,000");
+  });
+
   it("у проданной не предлагает купить, даже если цена осталась", () => {
     const action = purchaseAction({ ...base, status: "SOLD" });
     expect(action.label).not.toBe("Купить");

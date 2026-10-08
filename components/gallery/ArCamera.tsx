@@ -3,6 +3,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 
 import { noCameraHash, quickLookUrl, sceneViewerUrl } from "@/lib/ar-links";
+import { useDictionary } from "@/lib/i18n/client";
 
 /** Сообщение, которым Safari передаёт нажатие на кнопку плашки в Quick Look. */
 const quickLookTap = "_apple_ar_quicklook_button_tapped";
@@ -45,17 +46,16 @@ export function useArCamera(
   // Ссылка rel="ar" живёт в разметке постоянно (ArQuickLookLink), а не
   // создаётся на лету: нажатие на плашку Safari присылает событием именно
   // на неё, и с iOS 16 до оторванной от страницы ссылки оно не доходит.
+  const t = useDictionary().ar;
   const linkRef = useRef<HTMLAnchorElement>(null);
   const contactUrl = model?.contactUrl;
 
   // Android без ARCore возвращает на страницу с меткой в адресе.
   useEffect(() => {
     if (window.location.hash !== noCameraHash) return;
-    onNotice(
-      "На этом телефоне примерка через камеру не работает: ему нужны сервисы Google Play для AR.",
-    );
+    onNotice(t.noArcore);
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
-  }, [onNotice]);
+  }, [onNotice, t.noArcore]);
 
   useEffect(() => {
     const link = linkRef.current;
@@ -88,11 +88,11 @@ export function useArCamera(
     if (model === null) return;
 
     if (platform === "desktop") {
-      onNotice("Камера есть только на телефоне: откройте эту страницу на iPhone или Android.");
+      onNotice(t.desktop);
       return;
     }
     if (platform === "ios-in-app") {
-      onNotice("Камера открывается только в Safari: нажмите «…» и «Открыть в браузере».");
+      onNotice(t.inApp);
       return;
     }
 
@@ -107,7 +107,7 @@ export function useArCamera(
         banner:
           model.contactUrl === undefined
             ? undefined
-            : { title: model.title, subtitle: model.subtitle, action: "Написать о картине" },
+            : { title: model.title, subtitle: model.subtitle, action: t.action },
       });
       link.click();
       return;

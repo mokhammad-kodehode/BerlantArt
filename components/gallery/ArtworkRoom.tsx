@@ -22,7 +22,8 @@ import {
   type CanvasSides,
   type RoomOptions,
 } from "@/lib/room-options";
-import { site } from "@/lib/site";
+import { useDictionary, useLocale } from "@/lib/i18n/client";
+import { localePath } from "@/lib/i18n/config";
 
 /** Пауза между появлением картины в темноте и щелчком выключателя. */
 const SWITCH_DELAY_MS = 700;
@@ -39,10 +40,11 @@ const DECODE_WAIT_MS = 1500;
  */
 type RoomTool = "painting" | "frame" | "wall";
 
-const roomTools: { id: RoomTool; label: string; icon: IconName }[] = [
-  { id: "painting", label: "Картина", icon: "painting" },
-  { id: "frame", label: "Рама", icon: "frame" },
-  { id: "wall", label: "Стена", icon: "wall" },
+/** Подписи инструментов — в словаре (room.tabs), здесь только порядок и значки. */
+const roomTools: { id: RoomTool; icon: IconName }[] = [
+  { id: "painting", icon: "painting" },
+  { id: "frame", icon: "frame" },
+  { id: "wall", icon: "wall" },
 ];
 
 type IconName =
@@ -198,6 +200,10 @@ export function ArtworkRoom({
   siteUrl: string;
 }) {
   const isCamera = variant === "camera";
+  const dictionary = useDictionary();
+  const t = dictionary.room;
+  const tSite = dictionary.site;
+  const lang = useLocale();
   const pathname = usePathname();
   // В камере вечера и дивана нет: пришедшие в адресе, они бы только
   // затемнили картину в превью.
@@ -286,12 +292,16 @@ export function ArtworkRoom({
 
   const model = frameModel(options.frame);
   const finish = frameFinish(options.finish);
-  const wallLabel = roomWalls.find((wall) => wall.id === options.wall)?.label ?? "";
+  const modelLabel = t.frames[options.frame].label;
+  const finishLabel = t.finishes[options.finish];
+  const wallLabel = t.walls[options.wall].label;
 
   // Размеры для итога: холст и, если есть рама, — вместе с ней. Сколько
   // картина займёт на стене, покупатель и прикидывает, выбирая место.
   const orient = (value: CanvasSides) =>
-    isLandscape ? `${value.long} × ${value.short} см` : `${value.short} × ${value.long} см`;
+    isLandscape
+      ? `${value.long} × ${value.short} ${t.cm}`
+      : `${value.short} × ${value.long} ${t.cm}`;
   const framed = sides === null ? null : framedSides(sides, options.frame);
 
   // Стабильная ссылка на функцию: кнопка камеры зовёт её из эффекта.
@@ -307,7 +317,7 @@ export function ArtworkRoom({
   // честно нельзя, и кнопка говорит об этом словами.
   function toggleFarView() {
     if (sides === null) {
-      showHint("Размер картины не указан — показать её рядом с диваном нельзя");
+      showHint(t.noSize);
       return;
     }
     update({ hasSofa: !options.hasSofa });
@@ -317,8 +327,20 @@ export function ArtworkRoom({
 
   const query = roomQuery(options);
   const message = isCamera
-    ? roomMessage(work.title, options, `${siteUrl}${arPageUrl(work.id, options)}`, "camera")
-    : roomMessage(work.title, options, `${siteUrl}/gallery/${work.id}/room${query}`);
+    ? roomMessage(
+        work.title,
+        options,
+        `${siteUrl}${arPageUrl(work.id, options, lang)}`,
+        "camera",
+        lang,
+      )
+    : roomMessage(
+        work.title,
+        options,
+        `${siteUrl}${roomPageUrl(work.id, options, lang)}`,
+        "room",
+        lang,
+      );
 
   const whatsappUrl = whatsappPhone
     ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
@@ -335,8 +357,8 @@ export function ArtworkRoom({
           glbUrl: arFileUrl(work.id, "model.glb", arVersion, options),
           title: work.title,
           subtitle: [
-            sides === null ? null : `Холст ${orient(sides)}`,
-            framed === null || options.frame === "none" ? null : `в раме ${orient(framed)}`,
+            sides === null ? null : t.canvasSize(orient(sides)),
+            framed === null || options.frame === "none" ? null : t.framedSize(orient(framed)),
           ]
             .filter(Boolean)
             .join(" · "),
@@ -367,10 +389,14 @@ export function ArtworkRoom({
   // Переход между режимами с той же рамой. Из примерочной — только если
   // работу можно показать в камере.
   const otherMode = isCamera
-    ? { href: roomPageUrl(work.id, options), label: "Без камеры", icon: "painting" as const }
+    ? {
+        href: roomPageUrl(work.id, options, lang),
+        label: t.withoutCamera,
+        icon: "painting" as const,
+      }
     : camera === null
       ? null
-      : { href: arPageUrl(work.id, options), label: "Через камеру", icon: "camera" as const };
+      : { href: arPageUrl(work.id, options, lang), label: t.viaCamera, icon: "camera" as const };
 
   // Упрощение рамы в камере (решение 5): резьбы и лепнины там нет.
   const isCarvedFrame = options.frame === "classic" || options.frame === "baroque";
@@ -391,18 +417,18 @@ export function ArtworkRoom({
       data-has-size={sides !== null}
       data-panel={isPanelOpen ? "open" : "closed"}
       data-tool={tool ?? undefined}
-      aria-label={`Примерочная: «${work.title}»`}
+      aria-label={t.label(work.title)}
     >
       <div className="room-bar flex items-center justify-between gap-3 px-[clamp(12px,4vw,48px)] pt-4 md:pt-6 lg:pr-[calc(var(--panel-w)+24px)]">
         {/* На телефоне — только стрелка: строка узкая, а подпись у ссылки
             остаётся для скринридера. */}
         <Link
-          href={`/gallery/${work.id}`}
+          href={localePath(lang, `/gallery/${work.id}`)}
           className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
-          aria-label="К работе"
+          aria-label={t.back}
         >
           <span aria-hidden="true">←</span>
-          <span className="max-lg:hidden">К работе</span>
+          <span className="max-lg:hidden">{t.back}</span>
         </Link>
 
         {/* Название и размер — на телефоне вместо таблички на стене. */}
@@ -427,12 +453,12 @@ export function ArtworkRoom({
             <button
               type="button"
               className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
-              aria-label="Как это работает"
+              aria-label={t.howItWorks}
               aria-haspopup="dialog"
               onClick={() => setIsGuideOpen(true)}
             >
               <ViewIcon name="help" />
-              <span className="max-lg:hidden">Как это работает</span>
+              <span className="max-lg:hidden">{t.howItWorks}</span>
             </button>
           )}
 
@@ -445,7 +471,7 @@ export function ArtworkRoom({
               aria-controls="room-strip"
               onClick={() => setIsStripOpen((value) => !value)}
             >
-              Другая картина
+              {t.otherPainting}
             </button>
           )}
 
@@ -454,7 +480,7 @@ export function ArtworkRoom({
             className="room-pill w-10 justify-center px-0 lg:hidden"
             aria-expanded={isInfoOpen}
             aria-controls="room-info"
-            aria-label="О картине"
+            aria-label={t.about}
             onClick={() => setIsInfoOpen((value) => !value)}
           >
             <ViewIcon name="info" />
@@ -468,7 +494,7 @@ export function ArtworkRoom({
               target="_blank"
               rel="noopener noreferrer"
               className="room-pill w-10 justify-center px-0 text-[15px] lg:hidden"
-              aria-label="Написать о картине в WhatsApp"
+              aria-label={t.writeWhatsapp}
             >
               <ContactIcon id="whatsapp" className="size-[18px]" />
             </a>
@@ -477,25 +503,25 @@ export function ArtworkRoom({
       </div>
 
       {isInfoOpen && (
-        <div id="room-info" className="room-info" role="dialog" aria-label="О картине">
+        <div id="room-info" className="room-info" role="dialog" aria-label={t.about}>
           <button
             type="button"
             className="room-info-close"
-            aria-label="Закрыть"
+            aria-label={t.close}
             onClick={() => setIsInfoOpen(false)}
           >
             <ViewIcon name="close" />
           </button>
           <p className="room-info-title">{work.title}</p>
-          <p className="m-0 text-[14px]">{site.artist}</p>
+          <p className="m-0 text-[14px]">{tSite.artist}</p>
           {work.details && <p className="mt-1 mb-0 text-[13px] opacity-75">{work.details}</p>}
           {sides !== null && (
             <dl className="room-sizes mt-3">
-              <dt>Холст</dt>
+              <dt>{t.canvas}</dt>
               <dd>{orient(sides)}</dd>
               {framed !== null && options.frame !== "none" && (
                 <>
-                  <dt>В раме</dt>
+                  <dt>{t.framed}</dt>
                   <dd>{orient(framed)}</dd>
                 </>
               )}
@@ -563,7 +589,7 @@ export function ArtworkRoom({
               {work.title}
             </p>
             <p className="mt-1 mb-0 text-[11px] min-[1100px]:mt-1.5 min-[1100px]:text-[13px]">
-              {site.artist}
+              {tSite.artist}
             </p>
             {work.details && (
               <p className="mt-0.5 mb-0 text-[11px] opacity-80 min-[1100px]:text-[12px]">
@@ -588,17 +614,17 @@ export function ArtworkRoom({
           onClick={() => setIsPanelOpen(true)}
         >
           <ViewIcon name="settings" />
-          Настройки
+          {t.settings}
         </button>
       )}
 
       {(isStripOpen || tool === "painting") && (
         <div className="room-strip-wrap">
-          <ul id="room-strip" className="room-strip" aria-label="Другие работы">
+          <ul id="room-strip" className="room-strip" aria-label={t.otherWorks}>
             {works.map((item) => (
               <li key={item.id}>
                 <Link
-                  href={`/gallery/${item.id}/room${query}`}
+                  href={`${localePath(lang, `/gallery/${item.id}/room`)}${query}`}
                   aria-current={item.id === work.id ? "page" : undefined}
                   className="room-thumb"
                   title={item.title}
@@ -620,7 +646,7 @@ export function ArtworkRoom({
       <aside
         id="room-panel"
         className="room-panel"
-        aria-label="Настройки примерочной"
+        aria-label={t.settingsLabel}
         // Убранная панель недоступна и для клавиатуры: inert не пускает
         // в неё фокус, иначе Tab уводил бы в невидимые кнопки.
         inert={!isPanelOpen}
@@ -630,15 +656,15 @@ export function ArtworkRoom({
           className="room-panel-close"
           aria-controls="room-panel"
           aria-expanded={isPanelOpen}
-          aria-label="Скрыть настройки"
-          title="Скрыть настройки"
+          aria-label={t.hideSettings}
+          title={t.hideSettings}
           onClick={() => setIsPanelOpen(false)}
         >
           <ViewIcon name="collapse" />
         </button>
 
         <header className="room-panel-head">
-          <p className="room-kicker">{isCamera ? "Примерка через камеру" : "Примерочная"}</p>
+          <p className="room-kicker">{isCamera ? t.kickerCamera : t.kicker}</p>
           <h1 className="room-panel-title">{work.title}</h1>
         </header>
 
@@ -659,8 +685,8 @@ export function ArtworkRoom({
               role="switch"
               className="room-daynight"
               aria-checked={options.light === "evening"}
-              aria-label="Вечерний свет, лампа над картиной"
-              title={options.light === "evening" ? "Вечер, лампа" : "День"}
+              aria-label={t.eveningLabel}
+              title={options.light === "evening" ? t.eveningTitle : t.dayTitle}
               onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
             >
               <ViewIcon name="sun" />
@@ -673,27 +699,23 @@ export function ArtworkRoom({
               onClick={toggleFarView}
             >
               <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
-              {isSofaShown ? "Вернуться к картине" : "Посмотреть издали, рядом с диваном"}
+              {isSofaShown ? t.backToPainting : t.viewFromAfar}
             </button>
           </section>
         )}
 
         <section className="room-section" data-active={tool === "frame"}>
           <h2 className="room-section-title" id="room-frame-title">
-            <span className="room-section-name">Рама</span>
+            <span className="room-section-name">{t.frame}</span>
             <span className="room-section-value">
               {options.frame === "none"
-                ? model.label
-                : `${model.label}, ${model.widthCm} см · ${finish.label}`}
+                ? modelLabel
+                : t.frameSummary(modelLabel, model.widthCm, finishLabel)}
             </span>
           </h2>
           <div className="room-models" role="radiogroup" aria-labelledby="room-frame-title">
             {roomFrames.map((frame) => (
-              <label
-                key={frame.id}
-                className="room-model"
-                title={frame.id === "none" ? frame.note : `${frame.note}`}
-              >
+              <label key={frame.id} className="room-model" title={t.frames[frame.id].note}>
                 <input
                   type="radio"
                   name="room-frame"
@@ -707,9 +729,9 @@ export function ArtworkRoom({
                   data-frame={frame.id}
                   data-finish={finishFor(frame.id, options.finish)}
                 />
-                <span className="room-model-name">{frame.label}</span>
+                <span className="room-model-name">{t.frames[frame.id].label}</span>
                 <span className="room-model-meta">
-                  {frame.widthCm === 0 ? "холст" : `${frame.widthCm} см`}
+                  {frame.widthCm === 0 ? t.canvasOnly : t.frameWidth(frame.widthCm)}
                 </span>
               </label>
             ))}
@@ -721,15 +743,14 @@ export function ArtworkRoom({
           {model.finishes.length > 0 && (
             <div className="room-finishes">
               <p className="room-subtitle" id="room-finish-title">
-                Цвет рамы
+                {t.frameColor}
               </p>
               <div className="room-swatches" role="radiogroup" aria-labelledby="room-finish-title">
                 {model.finishes.map((id) => {
-                  const item = frameFinish(id);
                   return (
                     <label
                       key={id}
-                      title={item.label}
+                      title={t.finishes[id]}
                       className="room-swatch room-swatch-finish"
                       data-finish={id}
                     >
@@ -737,7 +758,7 @@ export function ArtworkRoom({
                         type="radio"
                         name="room-finish"
                         value={id}
-                        aria-label={item.label}
+                        aria-label={t.finishes[id]}
                         checked={options.finish === id}
                         onChange={() => update({ finish: id })}
                       />
@@ -750,24 +771,20 @@ export function ArtworkRoom({
 
           {/* В разделе рамы, а не у кнопки: на телефоне низ панели скрыт,
               а раздел рамы открывается и там. */}
-          {isCamera && isCarvedFrame && (
-            <p className="room-note mt-3">
-              Резьбы на раме в камере не будет — только форма и цвет.
-            </p>
-          )}
+          {isCamera && isCarvedFrame && <p className="room-note mt-3">{t.noCarving}</p>}
         </section>
 
         {!isCamera && (
           <section className="room-section" data-active={tool === "wall"}>
             <h2 className="room-section-title" id="room-wall-title">
-              <span className="room-section-name">Стена</span>
+              <span className="room-section-name">{t.wall}</span>
               <span className="room-section-value">{wallLabel}</span>
             </h2>
             <div className="room-swatches" role="radiogroup" aria-labelledby="room-wall-title">
               {roomWalls.map((wall) => (
                 <label
                   key={wall.id}
-                  title={wall.label}
+                  title={t.walls[wall.id].label}
                   className="room-swatch"
                   style={{ background: `var(--wall-${wall.id})` }}
                 >
@@ -775,7 +792,7 @@ export function ArtworkRoom({
                     type="radio"
                     name="room-wall"
                     value={wall.id}
-                    aria-label={wall.label}
+                    aria-label={t.walls[wall.id].label}
                     checked={options.wall === wall.id}
                     onChange={() => update({ wall: wall.id })}
                   />
@@ -788,11 +805,11 @@ export function ArtworkRoom({
         <footer className="room-summary">
           {sides !== null && (
             <dl className="room-sizes">
-              <dt>Холст</dt>
+              <dt>{t.canvas}</dt>
               <dd>{orient(sides)}</dd>
               {framed !== null && options.frame !== "none" && (
                 <>
-                  <dt>В раме</dt>
+                  <dt>{t.framed}</dt>
                   <dd>{orient(framed)}</dd>
                 </>
               )}
@@ -803,12 +820,9 @@ export function ArtworkRoom({
             <>
               <button type="button" className="room-cta" onClick={requestCamera}>
                 <ViewIcon name="camera" className="size-5" />
-                Открыть камеру
+                {t.openCamera}
               </button>
-              <p className="room-note">
-                Картина встанет на вашу стену в настоящем размере — перед камерой покажем, как
-                навести телефон.
-              </p>
+              <p className="room-note">{t.cameraLead}</p>
             </>
           )}
 
@@ -821,7 +835,7 @@ export function ArtworkRoom({
               data-secondary={isCamera || undefined}
             >
               <ContactIcon id="whatsapp" className="size-5" />
-              Написать о картине
+              {t.write}
             </a>
           )}
         </footer>
@@ -833,7 +847,7 @@ export function ArtworkRoom({
         и наезжали на табличку, а «Настройки» — на «Ближе» (найдено на
         iPhone 15).
       */}
-      <nav className="room-toolbar" aria-label="Примерочная">
+      <nav className="room-toolbar" aria-label={t.toolbar}>
         {/* В камере из инструментов остаётся только рама — стена и свет там настоящие. */}
         {roomTools
           .filter((item) => !isCamera || item.id === "frame")
@@ -846,14 +860,14 @@ export function ArtworkRoom({
               onClick={() => toggleTool(item.id)}
             >
               <ViewIcon name={item.icon} className="size-[22px]" />
-              {item.label}
+              {t.tabs[item.id]}
             </button>
           ))}
 
         {isCamera && camera !== null && (
           <button type="button" className="room-tool" onClick={requestCamera}>
             <ViewIcon name="camera" className="size-[22px]" />
-            Открыть камеру
+            {t.openCamera}
           </button>
         )}
 
@@ -863,27 +877,25 @@ export function ArtworkRoom({
               type="button"
               className="room-tool"
               aria-pressed={options.light === "evening"}
-              aria-label={
-                options.light === "evening" ? "Вечер, включить день" : "День, включить вечер"
-              }
+              aria-label={options.light === "evening" ? t.eveningToDay : t.dayToEvening}
               onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
             >
               <ViewIcon
                 name={options.light === "evening" ? "moon" : "sun"}
                 className="size-[22px]"
               />
-              {options.light === "evening" ? "Вечер" : "День"}
+              {options.light === "evening" ? t.evening : t.day}
             </button>
 
             <button
               type="button"
               className="room-tool"
               aria-pressed={isSofaShown}
-              aria-label={isSofaShown ? "Ближе к картине" : "Посмотреть издали, с диваном 210 см"}
+              aria-label={isSofaShown ? t.closer : t.afar}
               onClick={toggleFarView}
             >
               <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} className="size-[22px]" />
-              {isSofaShown ? "Ближе" : "Издали"}
+              {isSofaShown ? t.closerShort : t.afarShort}
             </button>
           </>
         )}
@@ -893,7 +905,7 @@ export function ArtworkRoom({
           Подпись видна, только когда диван в кадре: без дивана она ни к чему. */}
       {isSofaShown && (
         <p className="room-credit">
-          Диван — 3D-модель, создана в{" "}
+          {t.sofaCredit}{" "}
           <a href="https://www.meshy.ai" target="_blank" rel="noopener noreferrer">
             Meshy
           </a>{" "}

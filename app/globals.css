@@ -334,6 +334,29 @@
      ничего не сдвигает по экрану, а проявляется на месте меньше чем за секунду. Эта
      настройка — против сдвигов, параллакса и масштабирования; у заказчика
      в Windows выключены «Эффекты анимации», и мазок не рисовался вовсе. */
+  /* Переключатель языка в шапке: короткий код EN / RU, тонкой таблеткой —
+     той же рамкой, что у тумблера темы, чтобы они читались одной группой
+     настроек, а не ещё одним пунктом меню. */
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--color-ink);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+    border-radius: var(--radius-pill);
+    transition: border-color 0.18s ease;
+  }
+  .lang-switch:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+
   .nav-link {
     position: relative;
     display: inline-block;

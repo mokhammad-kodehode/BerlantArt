@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { useDictionary } from "@/lib/i18n/client";
 
 /**
  * Переключатель зала: почти белый (по умолчанию) и тёмный — тумблер
@@ -55,12 +56,14 @@ function currentHall(): Hall {
 }
 
 export function ThemeSwitch({ className }: { className?: string }) {
+  const t = useDictionary();
+
   return (
     <button
       type="button"
       onClick={() => applyHall(currentHall() === "dark" ? "paper" : "dark")}
-      aria-label="Сменить зал: светлый или тёмный"
-      title="Светлый или тёмный зал"
+      aria-label={t.nav.theme}
+      title={t.nav.themeTitle}
       className={cn("hall-toggle", className)}
     >
       <span className="hall-toggle-thumb" aria-hidden="true" />

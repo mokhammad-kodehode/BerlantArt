@@ -3,6 +3,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
+import { getDictionary, translateValue, type Locale } from "@/lib/i18n";
 import { publicUrl } from "@/lib/r2";
 import type { SitemapArtwork } from "@/lib/seo";
 
@@ -50,8 +51,34 @@ export type ArtworkWithImages = Prisma.ArtworkGetPayload<{ include: typeof withI
  * работы, и в подписи не должно появиться ни «undefined», ни висящей точки:
  * карточка работы — карточка товара, врать в ней о габаритах нельзя.
  */
-export function artworkCaption(work: Pick<ArtworkWithImages, "technique" | "dimensions">): string {
-  return [work.technique, work.dimensions].filter(Boolean).join(" · ");
+export function artworkCaption(
+  work: Pick<ArtworkWithImages, "technique" | "dimensions">,
+  lang: Locale = "ru",
+): string {
+  return [artworkTechnique(work.technique, lang), artworkDimensions(work.dimensions, lang)]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Техника на языке страницы: «Холст, масло» → «Oil on canvas». */
+export function artworkTechnique(technique: string | null, lang: Locale = "ru"): string | null {
+  if (technique === null) return null;
+  return translateValue(getDictionary(lang).techniques, technique);
+}
+
+/**
+ * Размер на языке страницы. В базе он строкой «40 × 40 см»: для английской
+ * версии меняется только единица, числа остаются как ввела художница.
+ */
+export function artworkDimensions(dimensions: string | null, lang: Locale = "ru"): string | null {
+  if (dimensions === null) return null;
+  return lang === "ru" ? dimensions : dimensions.replace(/\s*см\.?\s*$/i, " cm");
+}
+
+/** Категория на языке страницы; не из утверждённого списка — как есть. */
+export function artworkCategory(category: string | null, lang: Locale = "ru"): string | null {
+  if (category === null) return null;
+  return translateValue(getDictionary(lang).categories, category);
 }
 
 /**
@@ -61,27 +88,32 @@ export function artworkCaption(work: Pick<ArtworkWithImages, "technique" | "dime
  * Словом, а не только цветом, — требование доступности: серая карточка сама
  * по себе ничего не сообщает человеку, который не различает оттенки.
  */
-const statusLabels: Record<ArtworkStatus, string | null> = {
-  AVAILABLE: null,
-  RESERVED: "Забронирована",
-  SOLD: "Продана",
-};
-
-/** Метка статуса для витрины или `null`, если работу можно купить. */
-export function artworkStatusLabel(status: ArtworkStatus): string | null {
-  return statusLabels[status];
+export function artworkStatusLabel(status: ArtworkStatus, lang: Locale = "ru"): string | null {
+  if (status === "AVAILABLE") return null;
+  return getDictionary(lang).status[status];
 }
 
 /**
  * Цена в рублях без копеек: «45 000 ₽». Разряды отбивает Intl, а не мы —
  * он же ставит неразрывный пробел, чтобы число не переносилось по строке.
  */
-const priceFormat = new Intl.NumberFormat("ru-RU", {
-  style: "currency",
-  currency: "RUB",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+const priceFormats: Record<Locale, Intl.NumberFormat> = {
+  ru: new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }),
+  // В рублях и в английской версии — решение заказчика от 4 октября 2026:
+  // курс устаревает, а цена у художницы одна. Формат английский: «₽5,000».
+  en: new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "RUB",
+    currencyDisplay: "narrowSymbol",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }),
+};
 
 /**
  * Цена для показа или `null`, если она не заполнена.
@@ -90,9 +122,9 @@ const priceFormat = new Intl.NumberFormat("ru-RU", {
  * цену `0`. Правило «пустое поле не показываем» не должно втихую
  * превратиться в «дешёвое поле не показываем».
  */
-export function formatPrice(price: number | null): string | null {
+export function formatPrice(price: number | null, lang: Locale = "ru"): string | null {
   if (price === null) return null;
-  return priceFormat.format(price);
+  return priceFormats[lang].format(price);
 }
 
 /**

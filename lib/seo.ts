@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
+import { localeMeta, localePath, locales, type Locale } from "@/lib/i18n/config";
 
 /**
  * Всё, что сайт сообщает поисковикам: карта сайта, структурированные
@@ -10,9 +11,8 @@ import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
  * проверить тестом без базы и без переменных окружения (lib/seo.test.ts).
  * Адрес берёт вызывающая сторона — `siteUrl()` из lib/site-url.ts.
  *
- * Английская версия сайта в плане (ROADMAP.md, этап «Английская версия»):
- * тогда к каждой записи добавятся `alternates.languages` с hreflang,
- * форма данных под это уже подходит.
+ * Языков два (lib/i18n/config.ts): у каждой страницы в карте сайта —
+ * адрес на каждом языке и перекрёстные ссылки hreflang между ними.
  */
 
 /** Страницы без данных из базы, в порядке важности для поиска. */
@@ -37,27 +37,44 @@ export function absoluteUrl(path: string, base: string): string {
   return new URL(path, base).href;
 }
 
+/** Адреса страницы на всех языках — для hreflang в карте сайта. */
+function languageAlternates(path: string, base: string): Record<string, string> {
+  return {
+    ...Object.fromEntries(locales.map((lang) => [lang, absoluteUrl(localePath(lang, path), base)])),
+    "x-default": absoluteUrl(localePath("ru", path), base),
+  };
+}
+
 /**
- * Карта сайта: статические страницы и все работы.
+ * Карта сайта: статические страницы и все работы, каждая — на каждом языке.
  *
  * У работы — дата её последней правки и главное фото: по `images` Google
  * находит картины в поиске по картинкам, а для сайта художницы это едва
  * ли не главный путь, которым приходят посетители.
+ *
+ * У каждой записи — ссылки на все языковые версии (hreflang): без них
+ * Google может счесть русскую и английскую страницы копиями.
  */
 export function sitemapEntries(base: string, works: SitemapArtwork[]): MetadataRoute.Sitemap {
-  const pages: MetadataRoute.Sitemap = staticPages.map((page) => ({
-    url: absoluteUrl(page.path, base),
-    changeFrequency: page.changeFrequency,
-    priority: page.priority,
-  }));
+  const pages = staticPages.flatMap((page) =>
+    locales.map((lang) => ({
+      url: absoluteUrl(localePath(lang, page.path), base),
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+      alternates: { languages: languageAlternates(page.path, base) },
+    })),
+  );
 
-  const artworks: MetadataRoute.Sitemap = works.map((work) => ({
-    url: absoluteUrl(`/gallery/${work.id}`, base),
-    lastModified: work.updatedAt,
-    changeFrequency: "monthly",
-    priority: 0.8,
-    ...(work.image ? { images: [absoluteUrl(work.image, base)] } : {}),
-  }));
+  const artworks = works.flatMap((work) =>
+    locales.map((lang) => ({
+      url: absoluteUrl(localePath(lang, `/gallery/${work.id}`), base),
+      lastModified: work.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+      alternates: { languages: languageAlternates(`/gallery/${work.id}`, base) },
+      ...(work.image ? { images: [absoluteUrl(work.image, base)] } : {}),
+    })),
+  );
 
   return [...pages, ...artworks];
 }
@@ -67,18 +84,25 @@ export type JsonLd = Record<string, unknown>;
 
 /**
  * Художница — schema.org/Person. Только подтверждённое: имя, что она
- * художница, регион (Чеченская Республика) и Instagram.
+ * художница, регион (Чеченская Республика) и Instagram. Подписи — на языке
+ * страницы, идентификатор `@id` один на оба языка: это один человек.
  */
 export function artistJsonLd({
   base,
+  lang,
   name,
   description,
+  jobTitle,
+  region,
   image,
   sameAs,
 }: {
   base: string;
+  lang: Locale;
   name: string;
   description: string;
+  jobTitle: string;
+  region: string;
   image: string;
   sameAs: string[];
 }): JsonLd {
@@ -88,27 +112,31 @@ export function artistJsonLd({
     "@id": absoluteUrl("/#artist", base),
     name,
     description,
-    jobTitle: "Художница",
-    url: absoluteUrl("/", base),
+    jobTitle,
+    url: absoluteUrl(localePath(lang, "/"), base),
     image: absoluteUrl(image, base),
-    address: {
-      "@type": "PostalAddress",
-      addressRegion: "Чеченская Республика",
-      addressCountry: "RU",
-    },
+    address: { "@type": "PostalAddress", addressRegion: region, addressCountry: "RU" },
     sameAs,
   };
 }
 
-/** Сайт — schema.org/WebSite: название в выдаче и язык. */
-export function websiteJsonLd({ base, name }: { base: string; name: string }): JsonLd {
+/** Сайт — schema.org/WebSite: название в выдаче и язык этой версии. */
+export function websiteJsonLd({
+  base,
+  lang,
+  name,
+}: {
+  base: string;
+  lang: Locale;
+  name: string;
+}): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": absoluteUrl("/#website", base),
+    "@id": absoluteUrl(`${localePath(lang, "/")}#website`, base),
     name,
-    url: absoluteUrl("/", base),
-    inLanguage: "ru",
+    url: absoluteUrl(localePath(lang, "/"), base),
+    inLanguage: localeMeta[lang].htmlLang,
     publisher: { "@id": absoluteUrl("/#artist", base) },
   };
 }
@@ -133,6 +161,8 @@ const availability: Record<ArtworkStatus, string> = {
  */
 export function artworkJsonLd({
   base,
+  lang,
+  artform,
   id,
   title,
   description,
@@ -145,6 +175,9 @@ export function artworkJsonLd({
   artistName,
 }: {
   base: string;
+  lang: Locale;
+  /** «Живопись» / «Painting» — на языке страницы. */
+  artform: string;
   id: string;
   title: string;
   description: string | null;
@@ -156,7 +189,7 @@ export function artworkJsonLd({
   image?: string;
   artistName: string;
 }): JsonLd {
-  const url = absoluteUrl(`/gallery/${id}`, base);
+  const url = absoluteUrl(localePath(lang, `/gallery/${id}`), base);
 
   return {
     "@context": "https://schema.org",
@@ -164,7 +197,8 @@ export function artworkJsonLd({
     "@id": `${url}#artwork`,
     name: title,
     url,
-    artform: "Живопись",
+    inLanguage: localeMeta[lang].htmlLang,
+    artform,
     ...(description ? { description } : {}),
     ...(technique ? { artMedium: technique } : {}),
     ...(dimensions ? { size: dimensions } : {}),

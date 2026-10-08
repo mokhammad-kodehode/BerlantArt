@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 
+import { useDictionary } from "@/lib/i18n/client";
+
 /**
  * Подготовка к камере (AR-4, TICKETS-ar.md): три шага с картинками
  * перед тем, как телефон откроет камеру.
@@ -39,25 +41,10 @@ export function rememberArGuide(): void {
   }
 }
 
-type Step = { title: string; text: string; picture: "stand" | "sweep" | "drag" };
+type Step = { picture: "stand" | "sweep" | "drag" };
 
-const steps: Step[] = [
-  {
-    title: "Встаньте напротив стены",
-    text: "В полутора-двух метрах, при хорошем свете. Телефон держите ровно, на уровне глаз.",
-    picture: "stand",
-  },
-  {
-    title: "Медленно ведите телефоном",
-    text: "Вправо и влево вдоль стены. Пока картина полупрозрачная, телефон ищет стену — станет плотной, когда найдёт.",
-    picture: "sweep",
-  },
-  {
-    title: "Передвиньте пальцем",
-    text: "Проведите по картине, чтобы выбрать место. Размер не меняется — он настоящий.",
-    picture: "drag",
-  },
-];
+/** Схемы к шагам по порядку; заголовки и тексты шагов — в словаре (ar.steps). */
+const pictures: Step["picture"][] = ["stand", "sweep", "drag"];
 
 /** Схемы к шагам — линией, цвет от текста, как значки примерочной. */
 function StepPicture({ name }: { name: Step["picture"] }) {
@@ -153,6 +140,7 @@ export function ArGuide({
   onStart: () => void;
   onClose: () => void;
 }) {
+  const t = useDictionary().ar;
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -180,7 +168,7 @@ export function ArGuide({
             <Image src={photo} alt="" fill sizes="56px" className="object-cover" />
           </div>
           <div className="min-w-0">
-            <p className="ar-guide-kicker">Примерка через камеру</p>
+            <p className="ar-guide-kicker">{t.kicker}</p>
             <h2 id="ar-guide-title" className="ar-guide-title">
               {title}
             </h2>
@@ -189,9 +177,9 @@ export function ArGuide({
         </div>
 
         <ol className="ar-guide-steps">
-          {steps.map((step, index) => (
-            <li key={step.picture} className="ar-guide-step">
-              <StepPicture name={step.picture} />
+          {t.steps.map((step, index) => (
+            <li key={pictures[index]} className="ar-guide-step">
+              <StepPicture name={pictures[index]} />
               <div>
                 <p className="ar-guide-step-title">
                   <span className="ar-guide-step-number">{index + 1}</span>
@@ -203,17 +191,14 @@ export function ArGuide({
           ))}
         </ol>
 
-        <p className="ar-guide-tip">
-          Однотонную стену телефон находит дольше — захватите в кадр выключатель, угол или край
-          мебели.
-        </p>
+        <p className="ar-guide-tip">{t.plainWall}</p>
 
         <div className="ar-guide-actions">
           <button type="button" className="room-cta" onClick={onStart}>
-            Понятно, открыть камеру
+            {t.open}
           </button>
           <button type="button" className="room-cta" data-secondary onClick={onClose}>
-            Закрыть
+            {t.close}
           </button>
         </div>
       </div>

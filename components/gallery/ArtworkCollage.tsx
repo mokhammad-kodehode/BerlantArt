@@ -2,6 +2,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import type { ArtworkWithImages } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 import { collageLayout } from "@/lib/collage";
+import type { Locale } from "@/lib/i18n";
 
 /**
  * Стена-коллаж: работы разного размера, плотно и без дыр.
@@ -29,9 +30,11 @@ import { collageLayout } from "@/lib/collage";
  */
 export function ArtworkCollage({
   works,
+  lang,
   className,
 }: {
   works: ArtworkWithImages[];
+  lang: Locale;
   className?: string;
 }) {
   // Порядок берётся из раскладки, а не из `works`: крупные работы могли
@@ -48,6 +51,7 @@ export function ArtworkCollage({
           <ArtworkTile
             key={tile.item.id}
             work={tile.item}
+            lang={lang}
             className={tile.className}
             sizes={tile.sizes}
           />

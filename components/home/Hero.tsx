@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { Header } from "@/components/layout/Header";
 import { ButtonLink } from "@/components/ui/Button";
-import { site } from "@/lib/site";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /**
  * Первый экран. Снимок один — художница в мастерской, его выбрала она сама,
@@ -34,7 +34,9 @@ import { site } from "@/lib/site";
  * ВРЕМЕННО: кадр сгенерирован нейросетью, а не снят. Заменить настоящей
  * фотографией — docs/tekst-o-hudozhnitse.md, раздел 6.
  */
-export function Hero() {
+export function Hero({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang);
+
   return (
     <section className="bg-bg flex min-h-svh flex-col">
       {/* stage, а не solid: шапка прозрачная и не липкая — на первом экране
@@ -52,12 +54,12 @@ export function Hero() {
       <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
         <div className="px-[clamp(20px,5vw,64px)] pt-6 pb-6 [grid-area:title] min-[900px]:py-0">
           <span className="text-accent mb-3.5 block text-[14px] font-semibold tracking-[0.1em] uppercase">
-            Портфолио
+            {t.hero.kicker}
           </span>
           {/* На телефоне крупнее, чем по формуле десктопа: имя здесь — главное
               на экране, как название журнала на обложке. */}
           <h1 className="text-ink m-0 text-[clamp(44px,12.5vw,58px)] leading-[1.02] min-[900px]:text-[clamp(38px,4.6vw,68px)] min-[900px]:leading-[1.06]">
-            {site.artist}
+            {t.site.artist}
           </h1>
         </div>
 
@@ -73,7 +75,7 @@ export function Hero() {
         <div className="relative min-h-[260px] [grid-area:photo]">
           <Image
             src="/about/berlant-v-masterskoy.webp"
-            alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней; рядом палитра и тюбики масляных красок"
+            alt={t.hero.photoAlt}
             fill
             preload
             sizes="(min-width: 900px) 59vw, 100vw"
@@ -86,7 +88,7 @@ export function Hero() {
               Oranienbaum, у которого курсива не было. У Cormorant курсив
               есть и подключён: перейти на него — решение заказчика. */}
           <p className="font-heading text-accent m-0 text-[clamp(19px,2.2vw,28px)] tracking-[0.06em]">
-            {site.slogan}
+            {t.site.slogan}
           </p>
 
           {/*
@@ -96,21 +98,20 @@ export function Hero() {
             На телефоне скрыт — см. описание компонента.
           */}
           <p className="text-ink-soft m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
-            Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
-            единого урока рисования, — и с тех пор пишет каждый день.
+            {t.hero.story}
           </p>
 
           {/* Главное действие одно — галерея. «О художнице» — ссылка, а не
               вторая кнопка: две кнопки рядом спорили за внимание. */}
           <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <ButtonLink href="/gallery" variant="primary" size="lg">
-              Смотреть галерею
+            <ButtonLink href={localePath(lang, "/gallery")} variant="primary" size="lg">
+              {t.hero.toGallery}
             </ButtonLink>
             <Link
-              href="/about"
+              href={localePath(lang, "/about")}
               className="group text-ink decoration-ink/35 hover:decoration-ink text-base font-medium underline underline-offset-[6px] transition-colors"
             >
-              О художнице{" "}
+              {t.hero.toAbout}{" "}
               {/* Стрелка уезжает вправо при наведении и фокусе — подсказка
                   «туда», а не украшение. inline-block — иначе transform на
                   строчном элементе не работает. */}

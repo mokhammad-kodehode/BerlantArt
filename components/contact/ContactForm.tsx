@@ -3,16 +3,15 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
+import { useDictionary, useLocale } from "@/lib/i18n/client";
+import { localePath } from "@/lib/i18n/config";
+
 /**
  * Темы обращения — те же три, что в макете. На переключателе короткое
  * слово: полные названия на телефоне 375px переносились на две строки,
  * и «таблетка» разъезжалась до 65px в высоту. В сообщение уходит полное.
+ * Сами темы — в словаре (contactForm.topics), на языке страницы.
  */
-const topics = [
-  { label: "Покупка", value: "Покупка работы" },
-  { label: "Заказ", value: "Заказ картины" },
-  { label: "Другое", value: "Другое" },
-];
 
 type Errors = { name?: string; message?: string };
 
@@ -40,6 +39,9 @@ export function ContactForm({
   whatsappPhone?: string;
   email?: string;
 }) {
+  const t = useDictionary().contactForm;
+  const lang = useLocale();
+  const topics = t.topics;
   const [errors, setErrors] = useState<Errors>({});
 
   /** Проверяет поля и собирает текст. Незаполненное — null и ошибки на экране. */
@@ -50,8 +52,8 @@ export function ContactForm({
     const message = String(data.get("message") ?? "").trim();
 
     const found: Errors = {};
-    if (name === "") found.name = "Напишите, как к вам обращаться.";
-    if (message === "") found.message = "Напишите, что вас интересует.";
+    if (name === "") found.name = t.nameRequired;
+    if (message === "") found.message = t.messageRequired;
     setErrors(found);
 
     // Фокус на первое незаполненное поле: без этого на телефоне ошибка
@@ -67,8 +69,8 @@ export function ContactForm({
     }
 
     return {
-      text: `Здравствуйте! Меня зовут ${name}.\nТема: ${topic}.\n\n${message}`,
-      subject: `${topic} — сообщение с сайта`,
+      text: t.text(name, topic, message),
+      subject: t.subject(topic),
     };
   }
 
@@ -99,7 +101,7 @@ export function ContactForm({
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="field">
-        <label htmlFor="contact-name">Как к вам обращаться</label>
+        <label htmlFor="contact-name">{t.name}</label>
         <input
           id="contact-name"
           name="name"
@@ -121,7 +123,7 @@ export function ContactForm({
         {/* legend, а не label: подпись относится к группе переключателей,
             и скринридер зачитает её перед каждым вариантом. */}
         <legend className="text-ink mb-1.5 p-0 font-[family-name:var(--font-body)] text-[14px] font-medium">
-          Тема
+          {t.topic}
         </legend>
         <div className="seg flex w-full">
           {topics.map((topic, index) => (
@@ -134,13 +136,13 @@ export function ContactForm({
       </fieldset>
 
       <div className="field">
-        <label htmlFor="contact-message">Сообщение</label>
+        <label htmlFor="contact-message">{t.message}</label>
         <textarea
           id="contact-message"
           name="message"
           rows={5}
           className="input"
-          placeholder="Какая работа понравилась, какой размер нужен, к какому сроку"
+          placeholder={t.placeholder}
           aria-invalid={errors.message !== undefined}
           aria-describedby={errors.message !== undefined ? "contact-message-error" : undefined}
           onInput={() => errors.message && setErrors({ ...errors, message: undefined })}
@@ -155,7 +157,7 @@ export function ContactForm({
       <div className="flex flex-wrap gap-3">
         {whatsappPhone !== undefined && (
           <button type="submit" value="whatsapp" className="btn btn-primary">
-            Отправить в WhatsApp
+            {t.sendWhatsapp}
           </button>
         )}
         {email !== undefined && (
@@ -164,15 +166,14 @@ export function ContactForm({
             value="email"
             className={whatsappPhone === undefined ? "btn btn-primary" : "btn btn-secondary"}
           >
-            Отправить письмом
+            {t.sendEmail}
           </button>
         )}
       </div>
 
       <p className="field-hint m-0">
-        Сообщение никуда не отправляется с сайта и нигде не хранится: откроется{" "}
-        {whatsappPhone !== undefined ? "WhatsApp" : "почта"} с готовым текстом, и вы отправите его
-        сами. Подробнее — в <Link href="/privacy">политике конфиденциальности</Link>.
+        {t.privacyBefore(whatsappPhone !== undefined ? "WhatsApp" : t.channelMail)}
+        <Link href={localePath(lang, "/privacy")}>{t.privacyLink}</Link>.
       </p>
     </form>
   );

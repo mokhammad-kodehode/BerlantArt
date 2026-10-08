@@ -1,3 +1,4 @@
+import { localePath, type Locale } from "@/lib/i18n/config";
 import { defaultRoomOptions, roomQuery, type RoomOptions } from "@/lib/room-options";
 
 /**
@@ -36,13 +37,13 @@ export function arFileUrl(
 }
 
 /** Страница примерки через камеру с той же рамой. Умолчания в адрес не пишутся, как в примерочной. */
-export function arPageUrl(workId: string, options: ArOptions): string {
-  return `/gallery/${workId}/ar${roomQuery({ ...defaultRoomOptions, ...options })}`;
+export function arPageUrl(workId: string, options: ArOptions, lang: Locale = "ru"): string {
+  return `${localePath(lang, `/gallery/${workId}/ar`)}${roomQuery({ ...defaultRoomOptions, ...options })}`;
 }
 
 /** Примерочная без камеры с той же рамой. */
-export function roomPageUrl(workId: string, options: ArOptions): string {
-  return `/gallery/${workId}/room${roomQuery({ ...defaultRoomOptions, ...options })}`;
+export function roomPageUrl(workId: string, options: ArOptions, lang: Locale = "ru"): string {
+  return `${localePath(lang, `/gallery/${workId}/room`)}${roomQuery({ ...defaultRoomOptions, ...options })}`;
 }
 
 /** Метка в адресе, с которой Android возвращает на страницу, если Scene Viewer недоступен. */

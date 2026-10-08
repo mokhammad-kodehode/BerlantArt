@@ -11,6 +11,8 @@ const base = "https://www.berlant-art.com";
 
 const work = {
   base,
+  lang: "ru" as const,
+  artform: "Живопись",
   id: "w1",
   title: "Село",
   description: null,
@@ -45,6 +47,18 @@ describe("sitemapEntries", () => {
     expect(urls).toContain("https://www.berlant-art.com/gallery/w2");
   });
 
+  it("у каждой страницы есть английская версия со ссылками hreflang на обе", () => {
+    expect(urls).toContain("https://www.berlant-art.com/en");
+    expect(urls).toContain("https://www.berlant-art.com/en/gallery/w1");
+
+    const ruWork = entries.find((entry) => entry.url === "https://www.berlant-art.com/gallery/w1");
+    expect(ruWork?.alternates?.languages).toEqual({
+      ru: "https://www.berlant-art.com/gallery/w1",
+      en: "https://www.berlant-art.com/en/gallery/w1",
+      "x-default": "https://www.berlant-art.com/gallery/w1",
+    });
+  });
+
   it("не пускает служебные страницы", () => {
     for (const url of urls) {
       expect(url).not.toMatch(/\/(admin|styleguide)|\/room$|\/ar$/);
@@ -52,8 +66,8 @@ describe("sitemapEntries", () => {
   });
 
   it("отдаёт фото работы для поиска по картинкам, а без фото — ничего", () => {
-    const withPhoto = entries.find((entry) => entry.url.endsWith("/w1"));
-    const withoutPhoto = entries.find((entry) => entry.url.endsWith("/w2"));
+    const withPhoto = entries.find((entry) => entry.url.endsWith("/gallery/w1"));
+    const withoutPhoto = entries.find((entry) => entry.url.endsWith("/gallery/w2"));
 
     expect(withPhoto?.images).toEqual(["https://www.berlant-art.com/artworks/selo.jpg"]);
     expect(withoutPhoto).not.toHaveProperty("images");
@@ -72,6 +86,14 @@ describe("artworkJsonLd", () => {
       priceCurrency: "RUB",
       availability: "https://schema.org/InStock",
     });
+  });
+
+  it("английская версия ведёт на английский адрес и помечена языком", () => {
+    const data = artworkJsonLd({ ...work, lang: "en", artform: "Painting" });
+
+    expect(data.url).toBe("https://www.berlant-art.com/en/gallery/w1");
+    expect(data.inLanguage).toBe("en");
+    expect(data.artform).toBe("Painting");
   });
 
   it("проданная — SoldOut, а не «в наличии»", () => {

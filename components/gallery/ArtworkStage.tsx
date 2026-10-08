@@ -5,6 +5,7 @@ import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { ArtworkLink } from "@/lib/artworks";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /**
  * Показ одной работы во весь экран.
@@ -46,6 +47,7 @@ import type { ArtworkLink } from "@/lib/artworks";
  * вправо, в зону большого пальца.
  */
 export function ArtworkStage({
+  lang,
   src,
   alt,
   priority,
@@ -53,6 +55,7 @@ export function ArtworkStage({
   prev,
   next,
 }: {
+  lang: Locale;
   src?: string;
   alt: string;
   priority?: boolean;
@@ -60,6 +63,7 @@ export function ArtworkStage({
   next?: ArtworkLink | null;
   children: ReactNode;
 }) {
+  const t = getDictionary(lang).work;
   const stageArt = (
     <ArtworkImage
       src={src}
@@ -161,7 +165,7 @@ export function ArtworkStage({
         иначе скринридер прочитал бы «ссылка, стрелка влево».
       */}
         <nav
-          aria-label="Навигация по работам"
+          aria-label={t.navLabel}
           className="relative z-[2] flex items-center justify-between gap-2.5 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:absolute lg:inset-0 lg:p-0"
         >
           {/*
@@ -174,10 +178,10 @@ export function ArtworkStage({
           накладкой во весь экран, и ссылка осталась в подписи внизу слева.
         */}
           <Link
-            href="/gallery"
+            href={localePath(lang, "/gallery")}
             className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
           >
-            ← Все работы
+            {t.backToAll}
           </Link>
 
           {/* lg:contents убирает обёртку на десктопе, и стрелки снова
@@ -185,9 +189,9 @@ export function ArtworkStage({
           <div className="flex gap-2.5 lg:contents">
             {prev && (
               <Link
-                href={`/gallery/${prev.id}`}
+                href={localePath(lang, `/gallery/${prev.id}`)}
                 rel="prev"
-                aria-label={`Предыдущая работа: «${prev.title}»`}
+                aria-label={t.prev(prev.title)}
                 className="stage-nav lg:left-[calc(36%-58px)]"
               >
                 ←
@@ -196,9 +200,9 @@ export function ArtworkStage({
 
             {next && (
               <Link
-                href={`/gallery/${next.id}`}
+                href={localePath(lang, `/gallery/${next.id}`)}
                 rel="next"
-                aria-label={`Следующая работа: «${next.title}»`}
+                aria-label={t.next(next.title)}
                 className="stage-nav lg:right-[17px]"
               >
                 →

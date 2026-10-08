@@ -1,0 +1,411 @@
+import type { Dictionary } from "@/lib/i18n/ru";
+
+/**
+ * Английский словарь. Форма — та же, что у русского (тип `Dictionary`):
+ * забытая строка не даст собрать сайт.
+ *
+ * Имя латиницей — «Berlant Dzhabrailova», по стандартной транслитерации.
+ * ТРЕБУЕТ ПОДТВЕРЖДЕНИЯ: если в загранпаспорте художницы другое написание
+ * (например, Jabrailova), поменять здесь, в `site.artist`.
+ *
+ * Названия картин не переводятся — решение заказчика от 4 октября 2026:
+ * английских полей в админке нет, название остаётся именем собственным.
+ * Переводятся только категории и техника — словарём ниже.
+ */
+export const en: Dictionary = {
+  site: {
+    artist: "Berlant Dzhabrailova",
+    slogan: "Art has no purpose!",
+    description: "Artist from the Chechen Republic. Oil painting since 2020.",
+    location: "Grozny, Chechen Republic",
+    defaultTitle: "Berlant Dzhabrailova — artist from the Chechen Republic",
+    ogTitle: "Berlant Dzhabrailova — artist",
+    ogImageAlt: "Berlant Dzhabrailova painting with a palette knife in her studio",
+    jobTitle: "Artist",
+    region: "Chechen Republic",
+    artform: "Painting",
+  },
+
+  nav: {
+    home: "Home",
+    gallery: "Gallery",
+    about: "About",
+    contact: "Contact",
+    cta: "Commission a painting",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    theme: "Switch room: light or dark",
+    themeTitle: "Light or dark room",
+    language: "Language",
+    switchTo: "Русский",
+    switchToLabel: "Перейти на русский",
+  },
+
+  footer: {
+    sections: "Sections",
+    contacts: "Contact",
+    write: "Get in touch →",
+    rights: (year, artist) => `© ${year} ${artist}. All rights to the images belong to the artist.`,
+    privacy: "Privacy policy",
+  },
+
+  hero: {
+    kicker: "Portfolio",
+    photoAlt:
+      "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
+    story:
+      "Painting in oils since 2020. She picked up a brush at 54, with no art school and not a single drawing lesson — and has painted every day since.",
+    toGallery: "View gallery",
+    toAbout: "About the artist",
+  },
+
+  home: {
+    wallKicker: "From the studio",
+    wallTitle: "Works",
+    allGallery: "Full gallery →",
+    empty: "Works for the home page haven't been chosen yet. All paintings are in the gallery.",
+    seeAll: "See the full gallery →",
+  },
+
+  gallery: {
+    title: "Works",
+    metaDescription:
+      "Oil paintings by Berlant Dzhabrailova: mountains, towers and villages of the Chechen Republic. Every painting is a hand-painted original.",
+    kicker: "Gallery",
+    lead: "Oil painting. Tap a work to open it full screen.",
+    emptyFilteredTitle: "Nothing matches this filter",
+    emptyFilteredText: "Try another status or category.",
+    emptyTitle: "No works yet",
+    emptyText: "Paintings will appear here as soon as the artist adds them.",
+    filterStatus: "Filter by status",
+    filterCategory: "Filter by category",
+    statusAll: "All",
+    statusAvailable: "Available",
+    statusSold: "Sold",
+    categoryAll: "All categories",
+  },
+
+  status: {
+    RESERVED: "Reserved",
+    SOLD: "Sold",
+  },
+
+  categories: {
+    Горы: "Mountains",
+    Башни: "Towers",
+    "Поле и дорога": "Fields and roads",
+    "Деревья и лес": "Trees and forest",
+    Село: "Village",
+    "Река и мост": "Rivers and bridges",
+    Цветы: "Flowers",
+    "Старая архитектура": "Old architecture",
+    Натюрморт: "Still life",
+    Другое: "Other",
+  },
+
+  techniques: {
+    "Холст, масло": "Oil on canvas",
+  },
+
+  work: {
+    notFound: "Work not found",
+    fallbackDescription: "Painting by Berlant Dzhabrailova.",
+    fallbackKicker: "Painting",
+    backToAll: "← All works",
+    tryOnWall: "Try it on a wall",
+    viaCamera: "With your camera",
+    writeEmail: "Send an email",
+    whatsappHint: (action) => `“${action}” opens WhatsApp with a ready message`,
+    seeMore: "See more ↓",
+    otherAngles: "Other views",
+    otherWorks: "Other works",
+    allGallery: "Full gallery →",
+    mailSubject: (title) => `Painting “${title}”`,
+    navLabel: "Browse works",
+    prev: (title) => `Previous work: “${title}”`,
+    next: (title) => `Next work: “${title}”`,
+    openFullscreen: (title) => `Open “${title}” full screen`,
+    fullscreen: "Full screen",
+    closeViewer: "Close viewer",
+  },
+
+  purchase: {
+    soldLabel: "Message on WhatsApp",
+    soldMessage: (title, url) => `Hello! I'm interested in the painting “${title}”. ${url}`,
+    reservedLabel: "Ask about it",
+    reservedMessage: (title, url) => `Hello! Is the painting “${title}” still reserved? ${url}`,
+    noPriceLabel: "Ask the price",
+    noPriceMessage: (title, url) => `Hello! How much is the painting “${title}”? ${url}`,
+    buyLabel: "Buy",
+    buyMessage: (title, price, url) =>
+      `Hello! I would like to buy the painting “${title}” for ${price}. ${url}`,
+  },
+
+  contacts: {
+    phone: "Phone",
+    email: "Email",
+    write: "Message",
+    call: "Call",
+    seeWorks: "See works",
+    openPage: "Open page",
+    writeEmail: "Send an email",
+  },
+
+  contactPage: {
+    title: "Contact",
+    metaDescription:
+      "How to reach Berlant Dzhabrailova: WhatsApp, phone, Instagram. Buying and commissioning paintings.",
+    kicker: "Contact",
+    heading: "Commission a painting",
+    lead: "Buy a finished work, commission a painting or just ask a question — write or call in whatever way suits you.",
+    whatsapp: "Message on WhatsApp",
+    photoAlt: "Berlant Dzhabrailova at her easel",
+    ways: "Ways to get in touch",
+    formTitle: "Send a message",
+    formLead: "Fill it in and the message opens ready to go — all that's left is to send it.",
+    studio: "Studio",
+  },
+
+  contactForm: {
+    topics: [
+      { label: "Buying", value: "Buying a work" },
+      { label: "Commission", value: "Commissioning a painting" },
+      { label: "Other", value: "Other" },
+    ],
+    nameRequired: "Please tell us how to address you.",
+    messageRequired: "Please tell us what you're interested in.",
+    text: (name, topic, message) => `Hello! My name is ${name}.\nTopic: ${topic}.\n\n${message}`,
+    subject: (topic) => `${topic} — message from the website`,
+    name: "Your name",
+    topic: "Topic",
+    message: "Message",
+    placeholder: "Which work you liked, what size you need, by when",
+    sendWhatsapp: "Send via WhatsApp",
+    sendEmail: "Send by email",
+    privacyBefore: (channel) =>
+      `The message is not sent or stored by the website: ${channel} opens with the text ready, and you send it yourself. More in the `,
+    privacyLink: "privacy policy",
+    channelMail: "your email app",
+  },
+
+  notFound: {
+    title: "Page not found",
+    code: "Error 404",
+    heading: "This page doesn't exist",
+    text: "There may be a typo in the address — or the work the link led to is no longer on display.",
+    toGallery: "See works",
+    toHome: "Home page",
+  },
+
+  error: {
+    heading: "The page didn't open",
+    text: "Something went wrong on our side. Trying again usually helps — the data may not have responded in time.",
+    retry: "Try again",
+    toHome: "Home page",
+    code: "Error code:",
+  },
+
+  about: {
+    title: "About the artist",
+    metaDescription:
+      "Berlant Dzhabrailova picked up a brush at 54, on her birthday, and paints in oils every day. The story of an artist from the Chechen Republic.",
+    portraitAlt:
+      "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; books and finished mountain landscapes behind her",
+    tag: "About the artist",
+    heading: "A path that began at 54",
+    intro: [
+      "On her birthday in 2020, Berlant Dzhabrailova bought a small canvas and a set of oil paints. She was turning fifty-four. She had no art school behind her, no drawing lessons — not even the habit of holding a brush. She simply wanted to try.",
+      "The first painting turned out well enough not to be put away in a cupboard. Today it belongs to a friend of her son's, who is proud that Berlant's first work went to him.",
+    ],
+    pathTitle: "Her path",
+    milestones: [
+      {
+        label: "Before 2020",
+        title: "A different life",
+        text: "She comes from the village of Goyty. After the war she lived in Turkey, then in Moscow, and only in 2013 returned to the Chechen Republic — her home has been in Grozny ever since. All her earlier life she was an entrepreneur, and neither she nor her family ever thought about painting.",
+      },
+      {
+        label: "2020",
+        title: "The first canvas",
+        text: "She bought a canvas and paints on her birthday — and began painting every day. Seeing her first works, her family asked her not to stop.",
+      },
+      {
+        label: "Today",
+        title: "A style of her own",
+        text: "With no training and no experience, Berlant has found her place among the artists of the Chechen Republic. Seven years ago nobody would have believed it — neither she herself nor those who knew her.",
+      },
+    ],
+    giftTitle: "A gift she didn't know she had",
+    gift: [
+      "In 2017 she lost her husband, and those years were hard. Three years passed between the loss and the first canvas. Paint came where words fell short: what she had lived through and left unsaid began to settle on the canvas as colour.",
+      "Berlant herself explains it simply: all her life she saw the world in her own way — telling shades apart where others see a single colour, and composing what she saw into pictures in her head. She just didn't know it was a gift, or that it could be put on canvas. That is why it worked straight away, without any school: it was her hand that had to learn — her eye had been ready for a long time.",
+    ],
+    studioAlt:
+      "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
+    subjectsTitle: "What she paints",
+    subjects: [
+      "In oils — with a brush and a palette knife. Her subjects: Chechen towers, old architecture, things with a story behind them. She doesn't paint still lifes.",
+      "She has no separate studio — there is a room that became one. She works every day: ideas come in waves, and then she paints for hours on end, not stopping until she lets go of what she has begun.",
+    ],
+    motto:
+      "Berlant heard this phrase in a film — and recognised herself in it. She sets herself no goal: she doesn't paint for exhibitions, sales or recognition. She paints because it brings her fulfilment.",
+    quote: (slogan) => `“${slogan}”`,
+    latestTitle: "Latest works",
+    seeAll: "See all works",
+  },
+
+  // Перевод русской политики, без новых утверждений. Показать юристу.
+  privacy: {
+    title: "Privacy policy",
+    metaDescription:
+      "What data Berlant Dzhabrailova's website collects and stores: none — the form and buttons only open WhatsApp or email with a ready message.",
+    kicker: "Documents",
+    revised: "Version of 3 October 2026",
+    shortTitle: "In brief",
+    short:
+      "The website does not collect or store your data. The form on the Contact page and the Buy and Message buttons send nothing to our server: they open WhatsApp or your email app with a ready text, and you decide yourself whether to send it.",
+    whoTitle: "Who is responsible for the website",
+    who: (artist, location) =>
+      `${artist}, artist, ${location}. Questions about data can be asked in the same places as questions about the paintings:`,
+    receivesTitle: "What the artist receives when you write to her",
+    receives: [
+      "Only what you send yourself: your name, the phone number or email address you write from, and the text of your message. This information is needed to reply to you and to arrange the purchase or commission of a painting. It is not passed on to third parties and is not used for mailings.",
+      "Correspondence takes place in WhatsApp, Instagram or by email, and the rules of those services apply to it.",
+    ],
+    cookiesTitle: "Cookies and browser storage",
+    cookies: [
+      "The website has no advertising or analytics cookies and does not track visitors. One setting is saved in your browser — the room you chose, light or dark — and it never leaves your device. A login cookie is set only for the artist, when she signs in to the website's admin panel.",
+      "Fonts and images are loaded from the website's own address, without requests to Google or other companies' services.",
+    ],
+    logsTitle: "Technical logs",
+    logs: "The website is hosted by Vercel. Like any hosting provider, it automatically records technical information about requests — IP address, browser type, time of access. This is needed to run and protect the website and is stored by Vercel under its own rules.",
+    imagesTitle: "Images of the works",
+    images:
+      "All rights to the paintings and their images belong to the artist. They may not be copied or used without the artist's permission. If you would like to publish a work, write and you will get a reply.",
+    pricesTitle: "Prices and purchase",
+    prices:
+      "Information about works and prices on the website is for reference only and does not constitute a public offer. Terms of purchase — price, payment and delivery — are agreed in correspondence with the artist.",
+    changesTitle: "Changes",
+    changes:
+      "If the way the website works changes, this text will change too; the version date is shown at the top of the page. Back to ",
+    changesLink: "contact",
+  },
+
+  room: {
+    title: (title) => `Try on a wall: “${title}”`,
+    cameraTitle: (title) => `With your camera: “${title}”`,
+    tabs: { painting: "Painting", frame: "Frame", wall: "Wall" },
+    cm: "cm",
+    canvas: "Canvas",
+    framed: "Framed",
+    canvasSize: (size) => `Canvas ${size}`,
+    framedSize: (size) => `framed ${size}`,
+    noSize: "The painting's size isn't specified, so it can't be shown next to the sofa",
+    withoutCamera: "Without camera",
+    viaCamera: "With your camera",
+    label: (title) => `Try on a wall: “${title}”`,
+    back: "Back to work",
+    howItWorks: "How it works",
+    otherPainting: "Another painting",
+    about: "About the painting",
+    writeWhatsapp: "Message about this painting on WhatsApp",
+    close: "Close",
+    settings: "Settings",
+    otherWorks: "Other works",
+    settingsLabel: "Room settings",
+    hideSettings: "Hide settings",
+    kickerCamera: "Try with your camera",
+    kicker: "Try on a wall",
+    eveningLabel: "Evening light, lamp above the painting",
+    eveningTitle: "Evening, lamp",
+    dayTitle: "Day",
+    backToPainting: "Back to the painting",
+    viewFromAfar: "View from afar, next to a sofa",
+    frame: "Frame",
+    frameSummary: (label, width, finish) => `${label}, ${width} cm · ${finish}`,
+    canvasOnly: "canvas",
+    frameWidth: (width) => `${width} cm`,
+    frameColor: "Frame colour",
+    noCarving: "The camera view won't show carving on the frame — only its shape and colour.",
+    wall: "Wall",
+    openCamera: "Open camera",
+    cameraLead:
+      "The painting will appear on your wall at its real size — before the camera opens, we'll show you how to point your phone.",
+    write: "Message about this painting",
+    toolbar: "Try on a wall",
+    eveningToDay: "Evening, switch to day",
+    dayToEvening: "Day, switch to evening",
+    evening: "Evening",
+    day: "Day",
+    closer: "Closer to the painting",
+    afar: "View from afar, with a 210 cm sofa",
+    closerShort: "Closer",
+    afarShort: "Afar",
+    sofaCredit: "Sofa — 3D model made with",
+    frames: {
+      none: { label: "No frame", note: "canvas on a stretcher" },
+      thin: { label: "Slim", note: "aluminium, smooth" },
+      floater: { label: "Floater", note: "wood, box frame with a gap" },
+      modern: { label: "Modern", note: "wood, bead by the canvas" },
+      reverse: { label: "Reverse profile", note: "wood, rising toward the canvas" },
+      classic: { label: "Classic moulding", note: "wood, carved band" },
+      baroque: { label: "Baroque", note: "wood with ornament, two carved bands" },
+    },
+    finishes: {
+      gold: "Gold",
+      "old-gold": "Antique gold",
+      silver: "Silver",
+      bronze: "Bronze",
+      "oak-light": "Light oak",
+      oak: "Oak",
+      walnut: "Walnut",
+      wenge: "Wenge",
+      cherry: "Cherry",
+      white: "White",
+      black: "Black",
+      graphite: "Graphite",
+      navy: "Navy",
+      burgundy: "Burgundy",
+      olive: "Olive",
+    },
+    walls: {
+      white: { label: "White", phrase: "on a white wall" },
+      beige: { label: "Beige", phrase: "on a beige wall" },
+      grey: { label: "Grey", phrase: "on a grey wall" },
+      olive: { label: "Olive", phrase: "on an olive wall" },
+      terracotta: { label: "Terracotta", phrase: "on a terracotta wall" },
+      graphite: { label: "Graphite", phrase: "on a graphite wall" },
+    },
+    messageNoFrame: "without a frame",
+    messageFramed: (frame, finish) => `in the “${frame}” frame, ${finish.toLowerCase()}`,
+    messageCamera: "on my own wall, with the camera",
+    message: (title, framing, where, url) =>
+      `Hello! I'm interested in the painting “${title}”. I'm looking at it ${framing}, ${where}. ${url}`,
+  },
+
+  ar: {
+    steps: [
+      {
+        title: "Stand facing the wall",
+        text: "One and a half to two metres away, in good light. Hold the phone level, at eye height.",
+      },
+      {
+        title: "Move the phone slowly",
+        text: "Left and right along the wall. While the painting is see-through, the phone is looking for the wall — it turns solid once it finds it.",
+      },
+      {
+        title: "Move it with your finger",
+        text: "Drag the painting to choose its place. The size doesn't change — it's real.",
+      },
+    ],
+    kicker: "Try with your camera",
+    plainWall:
+      "A plain wall takes longer to find — include a switch, a corner or the edge of furniture in the frame.",
+    open: "Got it, open camera",
+    close: "Close",
+    noArcore: "Camera try-on doesn't work on this phone: it needs Google Play Services for AR.",
+    desktop: "The camera works only on a phone: open this page on an iPhone or Android.",
+    inApp: "The camera opens only in Safari: tap “…” and “Open in browser”.",
+    action: "Message about this painting",
+  },
+};

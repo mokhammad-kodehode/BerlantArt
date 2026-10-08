@@ -4,18 +4,21 @@
 
 ```
 app/                    маршруты App Router
-  layout.tsx            шрифты, метаданные, подвал
-  page.tsx              главная
+  (ru)/                 русская версия, адреса без приставки; админка и витрина — только здесь
+  (en)/en/              английская версия, тонкие обёртки над components/pages
+  global-not-found.tsx  404 для адресов, не совпавших ни с одним маршрутом
   globals.css           дизайн-система: токены и компонентные классы
   styleguide/           витрина дизайн-системы (закрыта от индексации)
 components/
   ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch, BrushStroke
-  layout/               Header, Footer
+  layout/               Header, Footer, RootDocument (общий <html> для обоих языков)
+  pages/                тела публичных страниц с параметром lang — одно на оба языка
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, ArtworkCollage, ArtworkStage, ArtworkViewer,
                         ArtworkRoom и PictureLamp (примерочная), ArCamera и ArGuide (камера)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
+  i18n/                 языки, адреса (localePath), словари ru и en
   demo-artworks.ts      временные данные (уйдут на этапе 3)
   env.ts                валидация переменных окружения
   cn.ts                 склейка классов

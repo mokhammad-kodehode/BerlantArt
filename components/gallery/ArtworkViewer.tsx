@@ -7,6 +7,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 
 import type { ArtworkLink } from "@/lib/artworks";
+import { useDictionary, useLocale } from "@/lib/i18n/client";
+import { localePath } from "@/lib/i18n/config";
 
 /** Пометка в адресе: страница работы, открытая с ней, сразу показывает просмотр. */
 const VIEW_HASH = "#view";
@@ -49,6 +51,8 @@ export function ArtworkViewer({
   /** То, что показано на странице: по нажатию на него окно и открывается. */
   children: ReactNode;
 }) {
+  const t = useDictionary().work;
+  const lang = useLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
@@ -142,7 +146,7 @@ export function ArtworkViewer({
         ref={triggerRef}
         type="button"
         onClick={open}
-        aria-label={`Открыть «${title}» во весь экран`}
+        aria-label={t.openFullscreen(title)}
         style={paintedBox ?? undefined}
         className="group absolute inset-0 block cursor-zoom-in border-0 bg-transparent p-0"
       >
@@ -170,7 +174,7 @@ export function ArtworkViewer({
           >
             <path d="M10 2.5h3.5V6M6 13.5H2.5V10M13.5 2.5 9 7M2.5 13.5 7 9" />
           </svg>
-          <span className="hidden pr-0.5 [@media(hover:hover)]:inline">Во весь экран</span>
+          <span className="hidden pr-0.5 [@media(hover:hover)]:inline">{t.fullscreen}</span>
         </span>
       </button>
 
@@ -195,8 +199,8 @@ export function ArtworkViewer({
 
         {prev && (
           <Link
-            href={`/gallery/${prev.id}${VIEW_HASH}`}
-            aria-label={`Предыдущая работа: «${prev.title}»`}
+            href={`${localePath(lang, `/gallery/${prev.id}`)}${VIEW_HASH}`}
+            aria-label={t.prev(prev.title)}
             className="viewer-nav right-[68px] lg:right-auto lg:left-6"
           >
             ←
@@ -204,8 +208,8 @@ export function ArtworkViewer({
         )}
         {next && (
           <Link
-            href={`/gallery/${next.id}${VIEW_HASH}`}
-            aria-label={`Следующая работа: «${next.title}»`}
+            href={`${localePath(lang, `/gallery/${next.id}`)}${VIEW_HASH}`}
+            aria-label={t.next(next.title)}
             className="viewer-nav right-4 lg:right-6"
           >
             →
@@ -216,7 +220,7 @@ export function ArtworkViewer({
             им недоступен. Esc закрывает окно и без неё. */}
         <button
           type="button"
-          aria-label="Закрыть просмотр"
+          aria-label={t.closeViewer}
           className="absolute top-4 right-4 z-[2] flex size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-neutral-900/60 text-[22px] leading-none text-neutral-100"
         >
           ×

@@ -12,6 +12,15 @@ import { clientEnv } from "./lib/env";
 const r2PublicUrl = clientEnv.NEXT_PUBLIC_R2_PUBLIC_URL;
 
 const nextConfig: NextConfig = {
+  experimental: {
+    /**
+     * Корневых layout два — русский и английский (app/(ru), app/(en)/en),
+     * и для адреса, не совпавшего ни с одним маршрутом, собрать 404 не из
+     * чего. Эту страницу даёт app/global-not-found.tsx (документация Next,
+     * not-found.md → global-not-found). Флаг экспериментальный.
+     */
+    globalNotFound: true,
+  },
   images: {
     /**
      * next/image не отдаёт картинки с чужого домена, пока тот не разрешён

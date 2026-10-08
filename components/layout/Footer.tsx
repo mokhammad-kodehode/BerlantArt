@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ContactIcon } from "@/components/ui/ContactIcon";
 import { Container } from "@/components/ui/Container";
 import { contactList } from "@/lib/contacts";
-import { footerSections, site } from "@/lib/site";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import { footerSections } from "@/lib/site";
 
 /**
  * Подвал одинаков на всех страницах, поэтому подключён в корневом layout.
@@ -12,35 +13,37 @@ import { footerSections, site } from "@/lib/site";
  * Прежний mt-4 оставлял полосу фона между подвалом и блоком во весь экран —
  * видео в конце главной, стеной галереи.
  */
-export function Footer() {
+export function Footer({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang);
+
   return (
     <footer className="bg-wall text-ink">
       <Container className="flex flex-wrap justify-between gap-10 pt-14 pb-10">
         <div className="max-w-[32ch]">
-          <div className="font-heading mb-2 text-xl">{site.artist}</div>
-          <p className="text-ink-faint m-0 text-[14px] leading-relaxed">{site.description}</p>
-          <p className="font-heading text-accent mt-4 mb-0 text-[16px]">{site.slogan}</p>
+          <div className="font-heading mb-2 text-xl">{t.site.artist}</div>
+          <p className="text-ink-faint m-0 text-[14px] leading-relaxed">{t.site.description}</p>
+          <p className="font-heading text-accent mt-4 mb-0 text-[16px]">{t.site.slogan}</p>
         </div>
 
         <div className="flex flex-wrap gap-14">
           <div className="flex flex-col gap-2.5 text-sm">
             <span className="text-accent mb-0.5 text-[12px] tracking-[0.08em] uppercase">
-              Разделы
+              {t.footer.sections}
             </span>
             {footerSections.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={localePath(lang, item.href)}
                 className="text-accent no-underline hover:underline"
               >
-                {item.label}
+                {t.nav[item.key]}
               </Link>
             ))}
           </div>
 
           <div className="flex flex-col gap-2.5 text-sm">
             <span className="text-accent mb-0.5 text-[12px] tracking-[0.08em] uppercase">
-              Контакты
+              {t.footer.contacts}
             </span>
             {/* Только настроенные контакты (lib/contacts.ts). Прежде здесь
                 стояла почта-заглушка hello@berlant-art.example — выдуманный
@@ -48,7 +51,7 @@ export function Footer() {
                 Телефона здесь нет: это тот же номер, что у WhatsApp строкой
                 выше, и в узкой колонке он читался бы как повтор. Позвонить
                 можно со страницы контактов. */}
-            {contactList()
+            {contactList(t.contacts)
               .filter((contact) => contact.id !== "phone")
               .map((contact) => (
                 <a
@@ -64,9 +67,12 @@ export function Footer() {
                   </span>
                 </a>
               ))}
-            <span className="text-ink-faint">{site.location}</span>
-            <Link href="/contact" className="text-accent no-underline hover:underline">
-              Написать →
+            <span className="text-ink-faint">{t.site.location}</span>
+            <Link
+              href={localePath(lang, "/contact")}
+              className="text-accent no-underline hover:underline"
+            >
+              {t.footer.write}
             </Link>
           </div>
         </div>
@@ -76,10 +82,13 @@ export function Footer() {
           видят на каждой странице, а копируют картины обычно отсюда же. */}
       <Container className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pb-8">
         <p className="text-ink-faint m-0 text-xs">
-          © {new Date().getFullYear()} {site.artist}. Права на изображения работ принадлежат автору.
+          {t.footer.rights(new Date().getFullYear(), t.site.artist)}
         </p>
-        <Link href="/privacy" className="text-ink-faint hover:text-ink text-xs underline">
-          Политика конфиденциальности
+        <Link
+          href={localePath(lang, "/privacy")}
+          className="text-ink-faint hover:text-ink text-xs underline"
+        >
+          {t.footer.privacy}
         </Link>
       </Container>
     </footer>

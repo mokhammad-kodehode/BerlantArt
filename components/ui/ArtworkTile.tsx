@@ -9,6 +9,7 @@ import {
   type ArtworkWithImages,
 } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
+import { localePath, type Locale } from "@/lib/i18n";
 
 /**
  * Плитка работы: репродукция, название и метка статуса, вся целиком —
@@ -21,16 +22,18 @@ import { cn } from "@/lib/cn";
  */
 export function ArtworkTile({
   work,
+  lang,
   className,
   sizes = "(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 285px",
 }: {
   work: ArtworkWithImages;
+  lang: Locale;
   className?: string;
   /** Реальная ширина отрисовки плитки — без неё браузер качает самый крупный вариант. */
   sizes?: string;
 }) {
-  const label = artworkStatusLabel(work.status);
-  const caption = artworkCaption(work);
+  const label = artworkStatusLabel(work.status, lang);
+  const caption = artworkCaption(work, lang);
 
   return (
     <li className={cn("wall-tile list-none", className)}>
@@ -43,7 +46,7 @@ export function ArtworkTile({
         невидимым, чего требования доступности не допускают.
       */}
       <Link
-        href={`/gallery/${work.id}`}
+        href={localePath(lang, `/gallery/${work.id}`)}
         className="absolute inset-0 block focus-visible:outline-offset-[-3px]"
       >
         <ArtworkImage src={primaryImageUrl(work)} alt={work.title} sizes={sizes} />

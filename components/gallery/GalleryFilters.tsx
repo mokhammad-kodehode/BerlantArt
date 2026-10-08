@@ -1,5 +1,6 @@
 import { ButtonLink } from "@/components/ui/Button";
-import type { ArtworkStatus } from "@/lib/artworks";
+import { artworkCategory, type ArtworkStatus } from "@/lib/artworks";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /** Разобранные и проверенные параметры адреса — то, что реально ушло в запрос. */
 export type GalleryFilters = {
@@ -7,11 +8,12 @@ export type GalleryFilters = {
   category?: string;
 };
 
-const statusOptions: Array<{ value: ArtworkStatus | undefined; label: string }> = [
-  { value: undefined, label: "Все" },
-  { value: "AVAILABLE", label: "Доступные" },
-  { value: "SOLD", label: "Проданные" },
-];
+/** Кнопки статуса: значение в адресе и ключ подписи в словаре. */
+const statusOptions = [
+  { value: undefined, key: "statusAll" },
+  { value: "AVAILABLE", key: "statusAvailable" },
+  { value: "SOLD", key: "statusSold" },
+] as const satisfies ReadonlyArray<{ value: ArtworkStatus | undefined; key: string }>;
 
 /**
  * Собирает адрес `/gallery` с текущими фильтрами и одной применённой правкой.
@@ -21,14 +23,19 @@ const statusOptions: Array<{ value: ArtworkStatus | undefined; label: string }> 
  * убирает параметр из адреса — так «Все» выглядит как `/gallery`, а не
  * как `/gallery?status=`.
  */
-function galleryHref(current: GalleryFilters, override: Partial<GalleryFilters>): string {
+function galleryHref(
+  lang: Locale,
+  current: GalleryFilters,
+  override: Partial<GalleryFilters>,
+): string {
   const merged = { ...current, ...override };
   const params = new URLSearchParams();
   if (merged.status) params.set("status", merged.status);
   if (merged.category) params.set("category", merged.category);
 
   const query = params.toString();
-  return query ? `/gallery?${query}` : "/gallery";
+  const path = localePath(lang, "/gallery");
+  return query ? `${path}?${query}` : path;
 }
 
 /**
@@ -61,29 +68,29 @@ function galleryHref(current: GalleryFilters, override: Partial<GalleryFilters>)
  * рано.
  */
 export function GalleryFilters({
+  lang,
   current,
   categories,
 }: {
+  lang: Locale;
   current: GalleryFilters;
   categories: string[];
 }) {
+  const t = getDictionary(lang).gallery;
+
   return (
     <div className="filter-rail mb-2 flex gap-2.5 overflow-x-auto pb-1 md:flex-col md:gap-3 md:overflow-visible md:pb-0">
-      <div
-        className="flex flex-none gap-2.5 md:flex-wrap"
-        role="group"
-        aria-label="Фильтр по статусу"
-      >
+      <div className="flex flex-none gap-2.5 md:flex-wrap" role="group" aria-label={t.filterStatus}>
         {statusOptions.map((option) => {
           const active = current.status === option.value;
           return (
             <ButtonLink
-              key={option.label}
-              href={galleryHref(current, { status: option.value })}
+              key={option.key}
+              href={galleryHref(lang, current, { status: option.value })}
               variant={active ? "primary" : "soft"}
               aria-current={active ? "page" : undefined}
             >
-              {option.label}
+              {t[option.key]}
             </ButtonLink>
           );
         })}
@@ -99,25 +106,25 @@ export function GalleryFilters({
           <div
             className="flex flex-none gap-2.5 md:flex-wrap"
             role="group"
-            aria-label="Фильтр по категории"
+            aria-label={t.filterCategory}
           >
             <ButtonLink
-              href={galleryHref(current, { category: undefined })}
+              href={galleryHref(lang, current, { category: undefined })}
               variant={!current.category ? "primary" : "soft"}
               aria-current={!current.category ? "page" : undefined}
             >
-              Все категории
+              {t.categoryAll}
             </ButtonLink>
             {categories.map((category) => {
               const active = current.category === category;
               return (
                 <ButtonLink
                   key={category}
-                  href={galleryHref(current, { category })}
+                  href={galleryHref(lang, current, { category })}
                   variant={active ? "primary" : "soft"}
                   aria-current={active ? "page" : undefined}
                 >
-                  {category}
+                  {artworkCategory(category, lang)}
                 </ButtonLink>
               );
             })}
