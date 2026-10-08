@@ -50,6 +50,7 @@ export function ArtworkStage({
   lang,
   src,
   alt,
+  title,
   priority,
   children,
   prev,
@@ -57,7 +58,10 @@ export function ArtworkStage({
 }: {
   lang: Locale;
   src?: string;
+  /** Подпись картинки для поиска и скринридера: «Село» — картина маслом … */
   alt: string;
+  /** Название работы — для кнопки «Открыть «…» во весь экран». */
+  title: string;
   priority?: boolean;
   prev?: ArtworkLink | null;
   next?: ArtworkLink | null;
@@ -146,7 +150,7 @@ export function ArtworkStage({
         */}
           <div className="relative flex-1">
             {src ? (
-              <ArtworkViewer src={src} title={alt} prev={prev} next={next}>
+              <ArtworkViewer src={src} title={title} prev={prev} next={next}>
                 {stageArt}
               </ArtworkViewer>
             ) : (

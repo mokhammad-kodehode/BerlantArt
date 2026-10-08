@@ -7,7 +7,7 @@ import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ExternalButtonLink } from "@/components/ui/Button";
 import { ContactIcon } from "@/components/ui/ContactIcon";
 import { Container } from "@/components/ui/Container";
-import { getFeatured, primaryImageUrl } from "@/lib/artworks";
+import { artworkSeo, getFeatured, primaryImageUrl } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 import { contactEmail, contactList, whatsappPhone } from "@/lib/contacts";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
@@ -106,7 +106,7 @@ export async function ContactPage({ lang }: { lang: Locale }) {
                 >
                   <ArtworkImage
                     src={primaryImageUrl(pinned)}
-                    alt={pinned.title}
+                    alt={artworkSeo(pinned, lang).imageAlt}
                     sizes="(min-width: 900px) 200px, 42vw"
                   />
                 </Link>

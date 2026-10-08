@@ -7,7 +7,7 @@ import { pageAlternates } from "@/lib/page-metadata";
 const t = getDictionary("ru").contactPage;
 
 export const metadata: Metadata = {
-  title: t.title,
+  title: t.metaTitle,
   description: t.metaDescription,
   alternates: pageAlternates("ru", "/contact"),
 };

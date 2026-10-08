@@ -23,10 +23,10 @@ export function rootMetadata(lang: Locale): Metadata {
     metadataBase: new URL(siteUrl()),
     applicationName: t.artist,
     title: { default: t.defaultTitle, template: `%s · ${t.artist}` },
-    description: t.description,
+    description: t.metaDescription,
     openGraph: {
       title: t.ogTitle,
-      description: t.description,
+      description: t.metaDescription,
       siteName: t.artist,
       locale: localeMeta[lang].ogLocale,
       alternateLocale: other.map((locale) => localeMeta[locale].ogLocale),

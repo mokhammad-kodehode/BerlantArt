@@ -4,6 +4,7 @@ import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { Tag } from "@/components/ui/Tag";
 import {
   artworkCaption,
+  artworkSeo,
   artworkStatusLabel,
   primaryImageUrl,
   type ArtworkWithImages,
@@ -49,7 +50,11 @@ export function ArtworkTile({
         href={localePath(lang, `/gallery/${work.id}`)}
         className="absolute inset-0 block focus-visible:outline-offset-[-3px]"
       >
-        <ArtworkImage src={primaryImageUrl(work)} alt={work.title} sizes={sizes} />
+        <ArtworkImage
+          src={primaryImageUrl(work)}
+          alt={artworkSeo(work, lang).imageAlt}
+          sizes={sizes}
+        />
 
         {label && (
           <Tag

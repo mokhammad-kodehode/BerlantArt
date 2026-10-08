@@ -12,14 +12,40 @@ import type { Dictionary } from "@/lib/i18n/ru";
  * английских полей в админке нет, название остаётся именем собственным.
  * Переводятся только категории и техника — словарём ниже.
  */
+const enOrdinals = [
+  "first",
+  "second",
+  "third",
+  "fourth",
+  "fifth",
+  "sixth",
+  "seventh",
+  "eighth",
+  "ninth",
+  "tenth",
+  "eleventh",
+  "twelfth",
+  "thirteenth",
+  "fourteenth",
+  "fifteenth",
+  "sixteenth",
+  "seventeenth",
+  "eighteenth",
+  "nineteenth",
+  "twentieth",
+];
+
 export const en: Dictionary = {
   site: {
     artist: "Berlant Dzhabrailova",
     slogan: "Art has no purpose!",
     description: "Artist from the Chechen Republic. Oil painting since 2020.",
     location: "Grozny, Chechen Republic",
-    defaultTitle: "Berlant Dzhabrailova — artist from the Chechen Republic",
-    ogTitle: "Berlant Dzhabrailova — artist",
+    defaultTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
+    metaDescription:
+      "Chechen artist from Grozny painting the mountains, ancient towers and villages of Chechnya in oils and with a palette knife. Original paintings for sale or commission.",
+    ogTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
+    artistGenitive: "Berlant Dzhabrailova",
     ogImageAlt: "Berlant Dzhabrailova painting with a palette knife in her studio",
     jobTitle: "Artist",
     region: "Chechen Republic",
@@ -53,8 +79,9 @@ export const en: Dictionary = {
     kicker: "Portfolio",
     photoAlt:
       "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
-    story:
-      "Painting in oils since 2020. She picked up a brush at 54, with no art school and not a single drawing lesson — and has painted every day since.",
+    story: (year) =>
+      `Chechen artist from Grozny. She picked up a brush in 2020, at 53, with no art school and not a single drawing lesson. She paints in oils every day — now in her ${year} year.`,
+    yearOrdinal: (n) => enOrdinals[n - 1] ?? `${n}th`,
     toGallery: "View gallery",
     toAbout: "About the artist",
   },
@@ -69,8 +96,9 @@ export const en: Dictionary = {
 
   gallery: {
     title: "Works",
+    metaTitle: "Original oil paintings for sale",
     metaDescription:
-      "Oil paintings by Berlant Dzhabrailova: mountains, towers and villages of the Chechen Republic. Every painting is a hand-painted original.",
+      "Original oil paintings by Chechen artist Berlant Dzhabrailova: mountains, towers, villages and rivers of Chechnya. Price and availability on every painting.",
     kicker: "Gallery",
     lead: "Oil painting. Tap a work to open it full screen.",
     emptyFilteredTitle: "Nothing matches this filter",
@@ -109,7 +137,6 @@ export const en: Dictionary = {
 
   work: {
     notFound: "Work not found",
-    fallbackDescription: "Painting by Berlant Dzhabrailova.",
     fallbackKicker: "Painting",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
@@ -127,6 +154,17 @@ export const en: Dictionary = {
     openFullscreen: (title) => `Open “${title}” full screen`,
     fullscreen: "Full screen",
     closeViewer: "Close viewer",
+  },
+
+  seo: {
+    oilPainting: "oil painting",
+    painting: "painting",
+    workTitle: (title, kind, size) => (size ? `${title} — ${kind}, ${size}` : `${title} — ${kind}`),
+    workDescription: (title, details) => (details ? `“${title}”: ${details}.` : `“${title}”.`),
+    byArtist: (artist) => `By Chechen artist ${artist}.`,
+    price: (price) => `Price ${price}.`,
+    status: { AVAILABLE: "Available.", RESERVED: "Reserved.", SOLD: "Sold." },
+    imageAlt: (title, kind, artistGenitive) => `“${title}” — ${kind} by ${artistGenitive}`,
   },
 
   purchase: {
@@ -153,8 +191,9 @@ export const en: Dictionary = {
 
   contactPage: {
     title: "Contact",
+    metaTitle: "Buy or commission a painting",
     metaDescription:
-      "How to reach Berlant Dzhabrailova: WhatsApp, phone, Instagram. Buying and commissioning paintings.",
+      "Buy an original or commission a painting from Chechen artist Berlant Dzhabrailova. WhatsApp, phone, Instagram. Grozny, Chechen Republic.",
     kicker: "Contact",
     heading: "Commission a painting",
     lead: "Buy a finished work, commission a painting or just ask a question — write or call in whatever way suits you.",
@@ -207,14 +246,15 @@ export const en: Dictionary = {
 
   about: {
     title: "About the artist",
+    metaTitle: "An artist who started at 53",
     metaDescription:
-      "Berlant Dzhabrailova picked up a brush at 54, on her birthday, and paints in oils every day. The story of an artist from the Chechen Republic.",
+      "Berlant Dzhabrailova from Grozny picked up a brush at 53, with no art school, and has painted in oils every day since. The story of a Chechen artist.",
     portraitAlt:
       "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; books and finished mountain landscapes behind her",
     tag: "About the artist",
-    heading: "A path that began at 54",
+    heading: "A path that began at 53",
     intro: [
-      "On her birthday in 2020, Berlant Dzhabrailova bought a small canvas and a set of oil paints. She was turning fifty-four. She had no art school behind her, no drawing lessons — not even the habit of holding a brush. She simply wanted to try.",
+      "On her birthday in 2020, Berlant Dzhabrailova bought a small canvas and a set of oil paints. She was turning fifty-three. She had no art school behind her, no drawing lessons — not even the habit of holding a brush. She simply wanted to try.",
       "The first painting turned out well enough not to be put away in a cupboard. Today it belongs to a friend of her son's, who is proud that Berlant's first work went to him.",
     ],
     pathTitle: "Her path",
@@ -232,7 +272,7 @@ export const en: Dictionary = {
       {
         label: "Today",
         title: "A style of her own",
-        text: "With no training and no experience, Berlant has found her place among the artists of the Chechen Republic. Seven years ago nobody would have believed it — neither she herself nor those who knew her.",
+        text: "With no training and no experience, Berlant has found a manner of her own — with a brush and a palette knife — and paints every day, now in her {year} year. A few years ago nobody would have believed it — neither she herself nor those who knew her.",
       },
     ],
     giftTitle: "A gift she didn't know she had",

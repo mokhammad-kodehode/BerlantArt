@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { ButtonLink } from "@/components/ui/Button";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import { paintingYear } from "@/lib/site";
 
 /**
  * Первый экран. Снимок один — художница в мастерской, его выбрала она сама,
@@ -98,7 +99,7 @@ export function Hero({ lang }: { lang: Locale }) {
             На телефоне скрыт — см. описание компонента.
           */}
           <p className="text-ink-soft m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
-            {t.hero.story}
+            {t.hero.story(t.hero.yearOrdinal(paintingYear()))}
           </p>
 
           {/* Главное действие одно — галерея. «О художнице» — ссылка, а не

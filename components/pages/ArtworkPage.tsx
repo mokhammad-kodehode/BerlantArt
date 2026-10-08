@@ -11,9 +11,9 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import { Tag } from "@/components/ui/Tag";
 import { cameraTarget } from "@/lib/ar";
 import {
-  artworkCaption,
   artworkCategory,
   artworkDimensions,
+  artworkSeo,
   artworkStatusLabel,
   artworkTechnique,
   formatPrice,
@@ -44,23 +44,20 @@ export async function artworkMetadata(lang: Locale, id: string): Promise<Metadat
     return { title: t.work.notFound };
   }
 
-  // Описания нет пока ни у одной работы, поэтому запасной вариант собран
-  // из того, что известно наверняка. Выдумывать сюжет и историю нельзя.
-  const description =
-    (lang === "ru" ? work.description : null) ??
-    [artworkCaption(work, lang), t.work.fallbackDescription].filter(Boolean).join(" · ");
+  // Заголовок и описание собраны из данных админки — без выдуманного.
+  const { title, description, imageAlt } = artworkSeo(work, lang);
   const image = primaryImageUrl(work);
   const photo = work.images[0];
 
   return {
-    title: work.title,
+    title,
     description,
     alternates: pageAlternates(lang, `/gallery/${work.id}`),
     // Ссылка на работу в мессенджере показывает саму картину, а не общее
     // фото художницы. Размер — из базы, если он есть (AR-1): с ним
     // превью не прыгает, пока грузится.
     openGraph: {
-      title: work.title,
+      title,
       description,
       type: "article",
       ...(image
@@ -68,7 +65,7 @@ export async function artworkMetadata(lang: Locale, id: string): Promise<Metadat
             images: [
               {
                 url: image,
-                alt: work.title,
+                alt: imageAlt,
                 ...(photo?.width && photo.height
                   ? { width: photo.width, height: photo.height }
                   : {}),
@@ -164,7 +161,8 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
       <ArtworkStage
         lang={lang}
         src={primaryImageUrl(work)}
-        alt={work.title}
+        alt={artworkSeo(work, lang).imageAlt}
+        title={work.title}
         priority
         prev={neighbours.prev}
         next={neighbours.next}

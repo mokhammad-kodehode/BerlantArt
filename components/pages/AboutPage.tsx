@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
 import { getFeatured } from "@/lib/artworks";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
-import { site } from "@/lib/site";
+import { paintingYear, site } from "@/lib/site";
 
 /**
  * История художницы.
@@ -100,7 +100,9 @@ export async function AboutPage({ lang }: { lang: Locale }) {
                   <p className="font-heading text-accent m-0 text-[22px]">{milestone.label}</p>
                   <div>
                     <h3 className="mt-0 mb-1.5 text-[18px]">{milestone.title}</h3>
-                    <p className="text-ink-soft m-0 max-w-[56ch]">{milestone.text}</p>
+                    <p className="text-ink-soft m-0 max-w-[56ch]">
+                      {milestone.text.replace("{year}", t.hero.yearOrdinal(paintingYear()))}
+                    </p>
                   </div>
                 </div>
               ))}

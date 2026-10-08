@@ -75,6 +75,57 @@ export function artworkDimensions(dimensions: string | null, lang: Locale = "ru"
   return lang === "ru" ? dimensions : dimensions.replace(/\s*см\.?\s*$/i, " cm");
 }
 
+/** Тексты картины для поисковиков: заголовок, описание, подпись картинки. */
+export type ArtworkSeo = { title: string; description: string; imageAlt: string };
+
+/**
+ * Заголовок, описание и подпись картинки для выдачи — из того, что заполнено
+ * в админке. Пустое поле не попадает в текст: нет размера — нет и размера
+ * в заголовке, нет цены — нет цены (.ai/rules/content.md).
+ *
+ * «Картина маслом» — только если в технике есть масло: у художницы техника
+ * всегда одна, но если когда-нибудь появится другая, заголовок не соврёт.
+ * Статус — словом: проданная картина не получит «В наличии».
+ */
+export function artworkSeo(
+  work: Pick<
+    ArtworkWithImages,
+    "title" | "description" | "technique" | "dimensions" | "year" | "price" | "status"
+  >,
+  lang: Locale = "ru",
+): ArtworkSeo {
+  const t = getDictionary(lang);
+  const isOil = work.technique !== null && /масл/i.test(work.technique);
+  const kind = isOil ? t.seo.oilPainting : t.seo.painting;
+  const size = artworkDimensions(work.dimensions, lang);
+  const technique = artworkTechnique(work.technique, lang);
+  const price = formatPrice(work.price, lang);
+
+  // После двоеточия — со строчной: «Картина «Село»: холст, масло, 40 × 40 см».
+  const details = [technique, size, work.year]
+    .filter(Boolean)
+    .join(", ")
+    .replace(/^./, (letter) => letter.toLowerCase());
+
+  const description = [
+    t.seo.workDescription(work.title, details),
+    t.seo.byArtist(t.site.artist),
+    price === null ? null : t.seo.price(price),
+    t.seo.status[work.status],
+    // Описание из админки — только по-русски (решение заказчика), поэтому
+    // в английском тексте его нет.
+    lang === "ru" ? work.description : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    title: t.seo.workTitle(work.title, kind, size),
+    description,
+    imageAlt: t.seo.imageAlt(work.title, kind, t.site.artistGenitive),
+  };
+}
+
 /** Категория на языке страницы; не из утверждённого списка — как есть. */
 export function artworkCategory(category: string | null, lang: Locale = "ru"): string | null {
   if (category === null) return null;
