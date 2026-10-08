@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { Header } from "@/components/layout/Header";
+import { HeaderBar } from "@/components/layout/HeaderBar";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
@@ -16,7 +16,9 @@ import { localePath } from "@/lib/i18n/config";
  *
  * Хедер подключается здесь же: страница ошибки рендерится вместо обычной,
  * а хедер у нас живёт на страницах, а не в общем каркасе, — без него
- * отсюда некуда уйти.
+ * отсюда некуда уйти. Клиентская его часть, HeaderBar, а не обёртка
+ * Header: та собирает контакты на сервере, а эта страница работает
+ * в браузере. Поэтому в меню бургера здесь нет блока контактов.
  */
 export default function ErrorPage({
   error,
@@ -36,7 +38,7 @@ export default function ErrorPage({
 
   return (
     <>
-      <Header />
+      <HeaderBar />
 
       <main>
         <Container>

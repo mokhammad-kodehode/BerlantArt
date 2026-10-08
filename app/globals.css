@@ -586,6 +586,82 @@
     overflow: hidden;
   }
 
+  /* Меню бургера на весь экран (components/layout/HeaderBar.tsx) —
+     <dialog>, как просмотр картины: встроенные поля, рамка и max-width
+     сняты. Фон — стена зала, а не тёмная плашка: меню продолжает шапку
+     того же зала, в котором человек смотрит сайт. Высокое меню на низком
+     экране (телефон боком) прокручивается внутри себя. */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    color: var(--color-ink);
+    background: var(--color-wall);
+    border: 0;
+  }
+  .mobile-nav::backdrop {
+    background: var(--color-wall);
+  }
+  /* Фокус при открытии стоит на самом окне — его рамка вокруг экрана
+     ничего не сообщает; у пунктов обводка обычная (см. .viewer). */
+  .mobile-nav:focus-visible {
+    outline: none;
+  }
+  html:has(.mobile-nav[open]) {
+    overflow: hidden;
+  }
+
+  /* Появление: окно проявляется, пункты выезжают снизу друг за другом
+     (--i — номер пункта). Кто просит меньше движения — без анимации. */
+  .mobile-nav[open] {
+    animation: mobile-nav-in 0.24s ease-out;
+  }
+  .mobile-nav[open] .mobile-nav-item {
+    animation: mobile-nav-item 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 55ms + 60ms);
+  }
+  @keyframes mobile-nav-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes mobile-nav-item {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav[open],
+    .mobile-nav[open] .mobile-nav-item {
+      animation: none;
+    }
+  }
+
+  /* Способ связи в меню: значок и название в таблетке. Номер и адрес —
+     в подписи для скринридера, на экране они удлиняли бы таблетки вдвое. */
+  .mobile-nav-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 15px;
+    color: var(--color-ink);
+    text-decoration: none;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-pill);
+    transition: background-color 0.18s;
+  }
+  .mobile-nav-contact:hover {
+    background: var(--color-surface);
+  }
+
   .btn-ghost {
     color: var(--color-accent);
     padding-inline: var(--space-1);

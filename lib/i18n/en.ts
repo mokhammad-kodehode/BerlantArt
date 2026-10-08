@@ -60,6 +60,8 @@ export const en: Dictionary = {
     cta: "Contact the artist",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    menu: "Menu",
+    contacts: "Get in touch",
     theme: "Switch room: light or dark",
     themeTitle: "Light or dark room",
     language: "Language",
