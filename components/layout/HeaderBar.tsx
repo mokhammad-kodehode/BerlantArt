@@ -102,53 +102,84 @@ export function HeaderBar({
   );
 
   return (
+    /*
+      На компьютере шапка в две строки (вариант «Б», заказчик 9.10.2026):
+      сверху имя по центру, как название на обложке, под тонкой линией —
+      меню: зал и язык слева, пункты по центру, «Написать художнице»
+      справа. Пункты крупнее прежнего — 17px вместо 14.
+
+      Липкая шапка сдвинута вверх на высоту строки с именем (lg:-top-[72px]):
+      при прокрутке имя уезжает, у верха остаётся только меню. Две строки
+      у верха экрана — около 140px, многовато для страницы, которую читают.
+      72px — та же высота, что задана строке с именем (lg:h-[72px]):
+      разойдутся — у верха останется полоска имени или срежется меню.
+    */
     <header
       className={cn(
-        variant === "solid" && "bg-wall text-ink sticky top-0 z-20",
+        variant === "solid" && "bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
         variant === "stage" && "text-ink relative z-10 bg-transparent",
       )}
     >
-      <nav className="flex items-center gap-x-[17.6px] gap-y-3 px-[clamp(20px,5vw,64px)] py-5">
+      {/* Компьютер, строка 1: имя. */}
+      <div className="hidden h-[72px] items-end justify-center px-[clamp(20px,5vw,64px)] pb-3 lg:flex">
         <Link
           href={localePath(lang, "/")}
-          className="font-heading mr-auto text-[18px] no-underline"
+          className="font-heading text-[clamp(26px,2.3vw,32px)] leading-none no-underline"
         >
           {t.site.artist}
         </Link>
+      </div>
 
-        {/* Десктоп: пункты в строку */}
-        <div className="hidden items-center gap-x-[17.6px] lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={localePath(lang, item.href)}
-              aria-current={isCurrent(item.href) ? "page" : undefined}
-              className="nav-link text-sm"
-            >
-              {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
-              <span className="nav-link-label">{t.nav[item.key]}</span>
-            </Link>
-          ))}
-          {languageLink("lang-switch")}
-          <ThemeSwitch className="mx-1" />
-          <ButtonLink href={localePath(lang, navCta.href)} variant="primary">
-            {t.nav[navCta.key]}
-          </ButtonLink>
+      <nav className="px-[clamp(20px,5vw,64px)]">
+        {/* Телефон и планшет: имя и бургер в одну строку. */}
+        <div className="flex items-center py-5 lg:hidden">
+          <Link
+            href={localePath(lang, "/")}
+            className="font-heading mr-auto text-[18px] no-underline"
+          >
+            {t.site.artist}
+          </Link>
+          <button
+            type="button"
+            onClick={openMenu}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav"
+            aria-label={t.nav.openMenu}
+            className="flex size-10 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border-0 bg-transparent"
+          >
+            <span className="block h-[1.5px] w-5 bg-current" />
+            <span className="block h-[1.5px] w-5 bg-current" />
+            <span className="block h-[1.5px] w-5 bg-current" />
+          </button>
         </div>
 
-        {/* Мобильный: кнопка-бургер */}
-        <button
-          type="button"
-          onClick={openMenu}
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-nav"
-          aria-label={t.nav.openMenu}
-          className="flex size-10 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border-0 bg-transparent lg:hidden"
-        >
-          <span className="block h-[1.5px] w-5 bg-current" />
-          <span className="block h-[1.5px] w-5 bg-current" />
-          <span className="block h-[1.5px] w-5 bg-current" />
-        </button>
+        {/* Компьютер, строка 2: три колонки 1fr · auto · 1fr — пункты стоят
+            ровно по центру окна, как имя над ними, какой бы ширины ни были
+            края. */}
+        <div className="border-divider hidden grid-cols-[1fr_auto_1fr] items-center border-t py-3.5 lg:grid">
+          <div className="flex items-center gap-3">
+            <ThemeSwitch />
+            {languageLink("lang-switch")}
+          </div>
+          <div className="flex items-center gap-x-[26px]">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={localePath(lang, item.href)}
+                aria-current={isCurrent(item.href) ? "page" : undefined}
+                className="nav-link text-[17px]"
+              >
+                {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
+                <span className="nav-link-label">{t.nav[item.key]}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <ButtonLink href={localePath(lang, navCta.href)} variant="primary">
+              {t.nav[navCta.key]}
+            </ButtonLink>
+          </div>
+        </div>
       </nav>
 
       {/*
