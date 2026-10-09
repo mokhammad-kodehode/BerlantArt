@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties, type MouseEvent, type SyntheticEvent } from "react";
 
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
@@ -14,6 +14,16 @@ import type { ContactLink } from "@/lib/contacts";
 import { localePath, splitLocale } from "@/lib/i18n/config";
 import { useDictionary } from "@/lib/i18n/client";
 import { navCta, navItems } from "@/lib/site";
+
+/**
+ * Сколько меню исчезает перед закрытием — та же длина, что у анимаций
+ * `.mobile-nav[data-closing]` в globals.css: собраться обратно в кнопку —
+ * 420 мс, растаять для тех, кто просит меньше движения, — 250 мс.
+ * Разойдутся — меню либо мигнёт полным перед исчезновением, либо
+ * пропадёт, не доиграв.
+ */
+const MENU_CLOSE_MS = 420;
+const MENU_FADE_MS = 250;
 
 /** Номер пункта меню для CSS: по нему пункты появляются друг за другом. */
 function itemDelay(index: number): CSSProperties & { "--i": number } {
@@ -72,16 +82,50 @@ export function HeaderBar({
    * «Главная» открывалась бы с обводкой фокуса, будто выбрана (та же
    * история, что со стрелкой в просмотре картины).
    */
-  function openMenu(): void {
+  function openMenu(event: MouseEvent<HTMLButtonElement>): void {
     const menu = menuRef.current;
     if (!menu) return;
+    // Меню растекается кругом из самой кнопки: центр круга — её середина
+    // (globals.css, .mobile-nav). Окно во весь экран, поэтому координаты
+    // кнопки на экране — это и координаты внутри окна.
+    const button = event.currentTarget.getBoundingClientRect();
+    menu.style.setProperty("--menu-x", `${button.left + button.width / 2}px`);
+    menu.style.setProperty("--menu-y", `${button.top + button.height / 2}px`);
     menu.showModal();
     menu.focus();
     setIsMenuOpen(true);
   }
 
+  /** Закрыть сразу — при переходе по ссылке: страница всё равно сменится. */
   function closeMenu(): void {
     menuRef.current?.close();
+  }
+
+  /**
+   * Закрыть с движением обратно в кнопку — крестиком и Esc. Окно
+   * закрывается после анимации, а не до: иначе сжиматься было бы нечему.
+   * Сначала close(), потом снять пометку — в обратном порядке на кадр
+   * мелькнуло бы полное меню. Кто просит меньше движения — меню просто
+   * тает, без сжатия.
+   */
+  function dismissMenu(): void {
+    const menu = menuRef.current;
+    if (!menu || menu.dataset.closing !== undefined) return;
+    const isCalm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    menu.dataset.closing = "";
+    setTimeout(
+      () => {
+        menu.close();
+        delete menu.dataset.closing;
+      },
+      isCalm ? MENU_FADE_MS : MENU_CLOSE_MS,
+    );
+  }
+
+  // Esc браузер закрыл бы сразу — перехватываем, чтобы закрыть с движением.
+  function handleCancel(event: SyntheticEvent<HTMLDialogElement>): void {
+    event.preventDefault();
+    dismissMenu();
   }
 
   // Короткая подпись (EN / RU), чтобы не теснить строку меню на 1024px;
@@ -150,15 +194,22 @@ export function HeaderBar({
             aria-expanded={isMenuOpen}
             aria-controls="mobile-nav"
             aria-label={t.nav.openMenu}
-            className="flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
+            className="burger flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
           >
             {/* Два мазка вместо трёх ровных полосок (заказчик, 9.10.2026,
                 вариант «Б»): неровные края и сужение к концу — как у мазка
-                под пунктом меню, разной длины — нижний короче. Крестик
-                в открытом меню нарисован теми же мазками. */}
+                под пунктом меню, разной длины — нижний короче. При наведении
+                мазки тянутся (globals.css, .burger-stroke). Крестик в открытом
+                меню нарисован теми же мазками. */}
             <svg viewBox="0 0 24 24" aria-hidden="true" width="26" height="26" fill="currentColor">
-              <path d="M3 8.3C8 6.9 15 7.9 21 7.2l.1 2.1c-6 .7-12.6.2-18 1.1Z" />
-              <path d="M8 14.6c4-1.1 9-.3 13-.8l-.3 2.1c-4.3.6-8.6 0-12.8.9Z" />
+              <path
+                className="burger-stroke burger-stroke-top"
+                d="M3 8.3C8 6.9 15 7.9 21 7.2l.1 2.1c-6 .7-12.6.2-18 1.1Z"
+              />
+              <path
+                className="burger-stroke burger-stroke-bottom"
+                d="M8 14.6c4-1.1 9-.3 13-.8l-.3 2.1c-4.3.6-8.6 0-12.8.9Z"
+              />
             </svg>
           </button>
         </div>
@@ -205,6 +256,7 @@ export function HeaderBar({
         // -1: фокус на окно ставит openMenu, а в порядок Tab оно не входит.
         tabIndex={-1}
         onClose={() => setIsMenuOpen(false)}
+        onCancel={handleCancel}
         className="mobile-nav"
       >
         <div className="flex min-h-full flex-col px-[clamp(20px,5vw,64px)]">
@@ -222,7 +274,7 @@ export function HeaderBar({
             </Link>
             <button
               type="button"
-              onClick={closeMenu}
+              onClick={dismissMenu}
               aria-label={t.nav.closeMenu}
               className="flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
             >

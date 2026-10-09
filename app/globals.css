@@ -616,8 +616,11 @@
     background: var(--color-wall);
     border: 0;
   }
+  /* Подложка прозрачная: окно и так во весь экран, а сплошная подложка
+     появлялась бы сразу и прятала страницу раньше, чем меню успеет
+     растечься по ней (анимация ниже). */
   .mobile-nav::backdrop {
-    background: var(--color-wall);
+    background: transparent;
   }
   /* Фокус при открытии стоит на самом окне — его рамка вокруг экрана
      ничего не сообщает; у пунктов обводка обычная (см. .viewer). */
@@ -628,18 +631,43 @@
     overflow: hidden;
   }
 
-  /* Появление: окно проявляется, пункты выезжают снизу друг за другом
-     (--i — номер пункта). Кто просит меньше движения — без анимации. */
+  /* Появление: меню растекается кругом из кнопки, как капля краски по
+     холсту (заказчик, 9.10.2026), — прежде оно просто проявлялось за
+     0.24 с, и движения было не заметить. Центр круга — середина кнопки,
+     его ставит HeaderBar (--menu-x/--menu-y); по умолчанию — правый
+     верхний угол, где кнопка и стоит. 150vmax — радиус, которого хватит
+     закрыть экран из любой точки. Закрывается обратным движением —
+     в кнопку (data-closing, 0.42 с — столько же ждёт HeaderBar).
+     Пункты выезжают снизу друг за другом (--i — номер), когда круг уже
+     дошёл до них. Кто просит меньше движения — без анимации. */
+  .mobile-nav {
+    --menu-x: calc(100% - 40px);
+    --menu-y: 36px;
+  }
   .mobile-nav[open] {
-    animation: mobile-nav-in 0.24s ease-out;
+    animation: mobile-nav-spread 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .mobile-nav[data-closing] {
+    animation: mobile-nav-gather 0.42s cubic-bezier(0.65, 0, 0.35, 1) forwards;
   }
   .mobile-nav[open] .mobile-nav-item {
-    animation: mobile-nav-item 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: calc(var(--i) * 55ms + 60ms);
+    animation: mobile-nav-item 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 60ms + 220ms);
   }
-  @keyframes mobile-nav-in {
+  @keyframes mobile-nav-spread {
     from {
-      opacity: 0;
+      clip-path: circle(0 at var(--menu-x) var(--menu-y));
+    }
+    to {
+      clip-path: circle(150vmax at var(--menu-x) var(--menu-y));
+    }
+  }
+  @keyframes mobile-nav-gather {
+    from {
+      clip-path: circle(150vmax at var(--menu-x) var(--menu-y));
+    }
+    to {
+      clip-path: circle(0 at var(--menu-x) var(--menu-y));
     }
   }
   @keyframes mobile-nav-item {
@@ -648,10 +676,60 @@
       transform: translateY(14px);
     }
   }
+  /* Кто просит меньше движения (в Windows — выключенные «Эффекты
+     анимации»), получает не пустоту, а мягкое проявление без движения:
+     круг и выезд пунктов — движение, а смена прозрачности — нет. */
+  @keyframes mobile-nav-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes mobile-nav-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .mobile-nav[open],
+    .mobile-nav[open] {
+      animation: mobile-nav-fade-in 0.25s ease-out;
+    }
+    .mobile-nav[data-closing] {
+      animation: mobile-nav-fade-out 0.25s ease-in forwards;
+    }
     .mobile-nav[open] .mobile-nav-item {
       animation: none;
+    }
+  }
+
+  /* Кнопка меню — два мазка (HeaderBar). При наведении мазки тянутся
+     влево, будто кисть протянула краску дальше: короткий нижний почти
+     догоняет верхний, верхний удлиняется чуть-чуть (заказчик, 9.10.2026).
+     Правые концы на одной линии и стоят на месте — origin справа.
+     На телефоне наведения нет — там то же движение на нажатие. */
+  .burger-stroke {
+    transform-box: fill-box;
+    transform-origin: 100% 50%;
+    transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .burger:focus-visible .burger-stroke-top,
+  .burger:active .burger-stroke-top {
+    transform: scaleX(1.08);
+  }
+  .burger:focus-visible .burger-stroke-bottom,
+  .burger:active .burger-stroke-bottom {
+    transform: scaleX(1.4);
+  }
+  @media (hover: hover) {
+    .burger:hover .burger-stroke-top {
+      transform: scaleX(1.08);
+    }
+    .burger:hover .burger-stroke-bottom {
+      transform: scaleX(1.4);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .burger-stroke {
+      transition: none;
     }
   }
 
