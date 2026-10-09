@@ -150,11 +150,16 @@ export function HeaderBar({
             aria-expanded={isMenuOpen}
             aria-controls="mobile-nav"
             aria-label={t.nav.openMenu}
-            className="flex size-10 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border-0 bg-transparent"
+            className="flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
           >
-            <span className="block h-[1.5px] w-5 bg-current" />
-            <span className="block h-[1.5px] w-5 bg-current" />
-            <span className="block h-[1.5px] w-5 bg-current" />
+            {/* Два мазка вместо трёх ровных полосок (заказчик, 9.10.2026,
+                вариант «Б»): неровные края и сужение к концу — как у мазка
+                под пунктом меню, разной длины — нижний короче. Крестик
+                в открытом меню нарисован теми же мазками. */}
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="26" height="26" fill="currentColor">
+              <path d="M3 8.3C8 6.9 15 7.9 21 7.2l.1 2.1c-6 .7-12.6.2-18 1.1Z" />
+              <path d="M8 14.6c4-1.1 9-.3 13-.8l-.3 2.1c-4.3.6-8.6 0-12.8.9Z" />
+            </svg>
           </button>
         </div>
 
@@ -221,17 +226,17 @@ export function HeaderBar({
               aria-label={t.nav.closeMenu}
               className="flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
             >
+              {/* Крестик из двух мазков — те же, что на кнопке меню, только
+                  накрест: меню закрывается тем же жестом, каким открылось. */}
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
-                width="22"
-                height="22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                strokeLinecap="round"
+                width="26"
+                height="26"
+                fill="currentColor"
               >
-                <path d="M5 5l14 14M19 5 5 19" />
+                <path d="M5.1 6.3c4.4 3.7 8.9 8 13.6 11.7l-1.3 1.6C12.6 15.9 8.3 11.6 3.9 7.8Z" />
+                <path d="M18.6 5.6c-4.2 4.1-8.4 8.6-12.9 12.6l1.5 1.4c4.4-4 8.6-8.4 12.8-12.6Z" />
               </svg>
             </button>
           </div>

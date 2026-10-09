@@ -386,6 +386,17 @@
     height: 2.3em;
     transform: translateY(-48%);
   }
+  /* Тот же мазок под второй частью девиза на первом экране. Не во всю
+     высоту строки, как в меню, а полосой по нижней половине букв: так
+     крупный заголовок читается, а мазок подчёркивает, а не заливает. */
+  .hero-stroke {
+    color: var(--color-stroke);
+    left: -0.18em;
+    top: 64%;
+    width: calc(100% + 0.36em);
+    height: 0.85em;
+    transform: translateY(-50%);
+  }
   .nav-touch {
     transform-box: fill-box;
     transform-origin: center;
