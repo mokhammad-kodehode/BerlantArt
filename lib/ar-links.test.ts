@@ -26,7 +26,10 @@ describe("адрес модели", () => {
 
 describe("адреса страниц", () => {
   it("не пишут умолчаний и переносят раму между камерой и примерочной", () => {
-    expect(arPageUrl("w1", { frame: "classic", finish: "gold" })).toBe("/gallery/w1/ar");
+    expect(arPageUrl("w1", { frame: "none", finish: "gold" })).toBe("/gallery/w1/ar");
+    expect(arPageUrl("w1", { frame: "classic", finish: "gold" })).toBe(
+      "/gallery/w1/ar?frame=classic",
+    );
     expect(arPageUrl("w1", { frame: "thin", finish: "white" })).toBe(
       "/gallery/w1/ar?frame=thin&finish=white",
     );
