@@ -47,9 +47,10 @@ describe("arTarget", () => {
     expect(arTarget(work())?.canvas).toEqual({ widthM: 0.4, heightM: 0.5 });
   });
 
-  it("не показывает проданную работу", () => {
-    expect(arTarget(work({ status: "SOLD" }))).toBeNull();
-    // Бронь — ещё не продажа: примерить её можно.
+  it("показывает работу при любом статусе", () => {
+    // Продажа на сайте выключена, статус посетителю не виден — и по
+    // кнопке камеры не должно быть видно, что картина продана.
+    expect(arTarget(work({ status: "SOLD" }))).not.toBeNull();
     expect(arTarget(work({ status: "RESERVED" }))).not.toBeNull();
   });
 
