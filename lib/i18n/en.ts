@@ -245,7 +245,7 @@ export const en: Dictionary = {
       {
         label: "Before 2020",
         title: "A different life",
-        text: "She comes from the village of Goyty. After the war she lived in Turkey, then in Moscow, and only in 2013 returned to the Chechen Republic — her home has been in Grozny ever since. All her earlier life she was an entrepreneur, and neither she nor her family ever thought about painting.",
+        text: "She comes from the village of Goyty. After the war she lived in Turkey, then in Moscow, and only in 2013 returned to the Chechen Republic — her home has been in Grozny ever since. She speaks Turkish. All her earlier life she was an entrepreneur, and neither she nor her family ever thought about painting.",
       },
       {
         label: "2020",
@@ -255,7 +255,7 @@ export const en: Dictionary = {
       {
         label: "Today",
         title: "A style of her own",
-        text: "With no training and no experience, Berlant has found a manner of her own — with a brush and a palette knife — and paints every day, now in her {year} year. A few years ago nobody would have believed it — neither she herself nor those who knew her.",
+        text: "With no art training and no experience, Berlant has found a manner of her own — with a brush and a palette knife — and paints every day, now in her {year} year. A few years ago nobody would have believed it — neither she herself nor those who knew her.",
       },
     ],
     giftTitle: "A gift she didn't know she had",
@@ -268,7 +268,7 @@ export const en: Dictionary = {
     subjectsTitle: "What she paints",
     subjects: [
       "In oils — with a brush and a palette knife. Her subjects: Chechen towers, old architecture, things with a story behind them. She doesn't paint still lifes.",
-      "She has no separate studio — there is a room that became one. She works every day: ideas come in waves, and then she paints for hours on end, not stopping until she lets go of what she has begun.",
+      "She has her own studio and works there every day: ideas come in waves, and then she paints for hours on end, not stopping until she lets go of what she has begun.",
     ],
     motto:
       "Berlant heard this phrase in a film — and recognised herself in it. She sets herself no goal: she doesn't paint for exhibitions, sales or recognition. She paints because it brings her fulfilment.",
