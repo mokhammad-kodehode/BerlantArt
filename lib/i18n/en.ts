@@ -261,7 +261,7 @@ export const en: Dictionary = {
     giftTitle: "A gift she didn't know she had",
     gift: [
       "In 2017 she lost her husband, and those years were hard. Three years passed between the loss and the first canvas. Paint came where words fell short: what she had lived through and left unsaid began to settle on the canvas as colour.",
-      "Berlant herself explains it simply: all her life she saw the world in her own way — telling shades apart where others see a single colour, and composing what she saw into pictures in her head. She just didn't know it was a gift, or that it could be put on canvas. That is why it worked straight away, without any school: it was her hand that had to learn — her eye had been ready for a long time.",
+      "Berlant herself explains it simply: all her life she saw the world in her own way — telling shades apart where others see a single colour, and composing what she saw into pictures in her head. She just didn't know it was a gift, or that it could be put on canvas. That is why it worked straight away, without any art school: it was her hand that had to learn — her eye had been ready for a long time.",
     ],
     studioAlt:
       "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
