@@ -131,11 +131,16 @@ export function HeaderBar({
       </div>
 
       <nav className="px-[clamp(20px,5vw,64px)]">
-        {/* Телефон и планшет: имя и бургер в одну строку. */}
-        <div className="flex items-center py-5 lg:hidden">
+        {/* Телефон и планшет: имя по центру, бургер справа — продолжение
+            варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
+            клетка шириной с бургер: без неё имя стояло бы по центру
+            остатка строки, а не окна. Линия снизу — та же, что на
+            компьютере между именем и меню. */}
+        <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4 lg:hidden">
+          <span aria-hidden="true" />
           <Link
             href={localePath(lang, "/")}
-            className="font-heading mr-auto text-[18px] no-underline"
+            className="font-heading text-center text-[20px] leading-tight no-underline"
           >
             {t.site.artist}
           </Link>
@@ -198,13 +203,15 @@ export function HeaderBar({
         className="mobile-nav"
       >
         <div className="flex min-h-full flex-col px-[clamp(20px,5vw,64px)]">
-          {/* Верхняя строка повторяет шапку: имя слева, крестик на месте
-              бургера — меню читается как та же шапка, раскрытая вниз. */}
-          <div className="flex items-center py-5">
+          {/* Верхняя строка повторяет шапку: имя по центру, крестик на месте
+              бургера — меню читается как та же шапка, раскрытая вниз.
+              Всё содержимое меню тоже по центру, как шапка. */}
+          <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4">
+            <span aria-hidden="true" />
             <Link
               href={localePath(lang, "/")}
               onClick={closeMenu}
-              className="font-heading mr-auto text-[18px] no-underline"
+              className="font-heading text-center text-[20px] leading-tight no-underline"
             >
               {t.site.artist}
             </Link>
@@ -232,7 +239,7 @@ export function HeaderBar({
           {/* Пункты — крупно, шрифтом заголовков: на весь экран мелкий
               список выглядел бы потерянным. Появляются друг за другом
               (--i — номер пункта для задержки, globals.css). */}
-          <div className="mt-[clamp(8px,5vh,40px)] flex flex-col items-start gap-1">
+          <div className="mt-[clamp(16px,6vh,48px)] flex flex-col items-center gap-1">
             {navItems.map((item, index) => (
               <Link
                 key={item.href}
@@ -252,7 +259,7 @@ export function HeaderBar({
             href={localePath(lang, navCta.href)}
             variant="primary"
             size="lg"
-            className="mt-8 self-start"
+            className="mt-8 self-center"
             onClick={closeMenu}
           >
             {t.nav[navCta.key]}
@@ -263,10 +270,10 @@ export function HeaderBar({
           <div className="mt-auto pt-10">
             {contacts.length > 0 && (
               <>
-                <p className="text-accent mt-0 mb-3 text-[13px] font-semibold tracking-[0.1em] uppercase">
+                <p className="text-accent mt-0 mb-3 text-center text-[13px] font-semibold tracking-[0.1em] uppercase">
                   {t.nav.contacts}
                 </p>
-                <ul className="m-0 flex list-none flex-wrap gap-2.5 p-0">
+                <ul className="m-0 flex list-none flex-wrap justify-center gap-2.5 p-0">
                   {contacts.map((contact) => {
                     const name = contactName(contact.id, t.contacts);
                     return (
@@ -289,7 +296,7 @@ export function HeaderBar({
               </>
             )}
 
-            <div className="border-divider mt-6 flex items-center gap-5 border-t py-5">
+            <div className="border-divider mt-6 flex items-center justify-center gap-5 border-t py-5">
               <ThemeSwitch />
               {languageLink("lang-switch")}
             </div>
