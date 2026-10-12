@@ -161,7 +161,7 @@ export function HeaderBar({
     <header
       className={cn(
         variant === "solid" && "bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
-        variant === "stage" && "text-ink relative z-10 bg-transparent",
+        variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
       {/* Компьютер, строка 1: имя. */}
