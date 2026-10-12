@@ -10,12 +10,39 @@ import { revalidatePath } from "next/cache";
  * начнёт появляться на сайте сразу, а часть через пять минут, и понять,
  * почему так, будет не по чему.
  */
+
+/**
+ * Готовые адреса: главная, галерея, а также «О художнице» и «Контакты» —
+ * на них стоит картина из выборки для главной. На каждом языке свои.
+ */
+export const publicPaths = [
+  "/",
+  "/gallery",
+  "/about",
+  "/contact",
+  "/en",
+  "/en/gallery",
+  "/en/about",
+  "/en/contact",
+] as const;
+
+/**
+ * Страницы работ — шаблоны по файлам в `app/`, а не адреса: их столько же,
+ * сколько работ. **Группа маршрута в шаблоне обязательна** (документация
+ * Next, revalidatePath, «with route groups»). Когда страницы разложили по
+ * языкам в `(ru)` и `(en)`, здесь остался `/gallery/[id]` без группы —
+ * вызов перестал находить страницу, и правка в админке появлялась на сайте
+ * только через пять минут (`revalidate = 300`), заказчик 12.10.2026.
+ * Тест сверяет шаблоны с файлами, чтобы при следующем переезде это упало
+ * сразу.
+ */
+export const artworkPagePatterns = ["/(ru)/gallery/[id]", "/(en)/en/gallery/[id]"] as const;
+
 export function revalidatePublicPages(): void {
-  revalidatePath("/");
-  revalidatePath("/gallery");
+  for (const path of publicPaths) revalidatePath(path);
   // Путь с динамическим сегментом требует второго аргумента: без него
   // вызов не находит, какие именно страницы обновлять.
-  revalidatePath("/gallery/[id]", "page");
+  for (const pattern of artworkPagePatterns) revalidatePath(pattern, "page");
 }
 
 /** Страница работы в админке — её тоже надо обновить, иначе список
