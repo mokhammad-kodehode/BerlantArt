@@ -2,7 +2,6 @@ import Image from "next/image";
 
 import Link from "next/link";
 
-import { Header } from "@/components/layout/Header";
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
@@ -45,11 +44,12 @@ export function Hero({ lang }: { lang: Locale }) {
   const t = getDictionary(lang);
 
   return (
-    <section className="bg-bg flex min-h-svh flex-col">
-      {/* stage, а не solid: шапка прозрачная и не липкая — на первом экране
-          она часть композиции, а высоту экрана делят она и содержимое. */}
-      <Header variant="stage" />
-
+    /* Шапки здесь нет: с 12.10.2026 она липкая, как на остальных страницах
+       (заказчик), и подключается в HomePage над hero. Внутри секции липкой
+       она быть не могла — sticky держится только в пределах родителя и
+       уехала бы вместе с первым экраном. Первый экран по-прежнему ровно
+       в высоту окна: секция ниже его на высоту шапки (--header-h). */
+    <section className="bg-bg flex min-h-[calc(100svh-var(--header-h))] flex-col">
       {/*
         Телефон: имя, фото, остальное — друг под другом, фото забирает всю
         оставшуюся высоту (1fr). Десктоп: две колонки, фото справа во всю

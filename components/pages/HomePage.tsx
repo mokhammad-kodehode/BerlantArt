@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
 import { PaintingReel } from "@/components/home/PaintingReel";
+import { Header } from "@/components/layout/Header";
 import { ButtonLink } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { countArtworks, getFeatured } from "@/lib/artworks";
@@ -52,11 +53,15 @@ export async function HomePage({ lang }: { lang: Locale }) {
           websiteJsonLd({ base, lang, name: t.site.artist }),
         ]}
       />
+      {/* Липкая шапка, как на остальных страницах (заказчик, 12.10.2026).
+          Здесь, а не в Hero: внутри секции первого экрана она уехала бы
+          вместе с ним. */}
+      <Header />
       <Hero lang={lang} />
 
       {/* main вокруг стены: у страницы должна быть одна главная область,
           и после удаления секции «Выставки» ею стала стена работ. Hero
-          снаружи намеренно — внутри него шапка, а шапке в main не место. */}
+          снаружи намеренно — это первый экран, а не основное содержимое. */}
       <main>
         {/*
           Стена работ — тот же коллаж, что в галерее, тем же компонентом.
