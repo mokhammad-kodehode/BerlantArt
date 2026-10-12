@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState, type CSSProperties, type MouseEvent, type SyntheticEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type SyntheticEvent,
+} from "react";
 
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
@@ -66,9 +73,43 @@ export function HeaderBar({
   const { lang, path } = splitLocale(usePathname());
   const t = useDictionary();
   const menuRef = useRef<HTMLDialogElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   // Только для подписи кнопки и aria-expanded: открыто ли окно, знает
   // само окно, но React должен перерисовать кнопку.
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  /*
+    Линия под липкой шапкой — только когда шапка прилипла (заказчик,
+    12.10.2026): у верха страницы она лишняя, а при прокрутке шапка того же
+    цвета, что секции под ней, и сливалась с ними. Прилипла — значит её
+    верх дошёл до своего `top`: 0 на телефоне, −72px на компьютере, где
+    уезжает строка с именем. Пишется атрибутом прямо в DOM, а не состоянием:
+    перерисовывать шапку на каждый кадр прокрутки незачем.
+  */
+  useEffect(() => {
+    const header = headerRef.current;
+    if (variant !== "solid" || header === null) return;
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const stuckAt = parseFloat(getComputedStyle(header).top) || 0;
+      const isStuck = window.scrollY > 0 && header.getBoundingClientRect().top <= stuckAt + 0.5;
+      header.toggleAttribute("data-stuck", isStuck);
+    };
+    const onScroll = () => {
+      if (frame === 0) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [variant]);
 
   const isCurrent = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const otherLang = lang === "ru" ? "en" : "ru";
@@ -159,16 +200,20 @@ export function HeaderBar({
       разойдутся — у верха останется полоска имени или срежется меню.
     */
     <header
+      ref={headerRef}
       className={cn(
-        variant === "solid" && "bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
+        variant === "solid" && "header-solid bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
       {/* Компьютер, строка 1: имя. */}
-      <div className="hidden h-[72px] items-end justify-center px-[clamp(20px,5vw,64px)] pb-3 lg:flex">
+      {/* По центру строки и крупнее (заказчик, 12.10.2026): прижатое к низу
+          имя читалось подписью над линией, а не названием. Высота строки
+          та же 72px — на ней держатся lg:-top-[72px] и --header-h. */}
+      <div className="hidden h-[72px] items-center justify-center px-[clamp(20px,5vw,64px)] lg:flex">
         <Link
           href={localePath(lang, "/")}
-          className="font-heading text-[clamp(26px,2.3vw,32px)] leading-none no-underline"
+          className="font-heading text-[clamp(30px,2.6vw,38px)] leading-none no-underline"
         >
           {t.site.artist}
         </Link>
