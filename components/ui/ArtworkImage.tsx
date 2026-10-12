@@ -92,6 +92,9 @@ export function ArtworkImage({
           sizes={sizes ?? "100vw"}
           priority={priority}
           onLoad={() => setIsLoaded(true)}
+          // Не загрузилось — мерцать бесконечно незачем: заглушка убирается,
+          // и браузер показывает подпись картины вместо пустой серой плитки.
+          onError={() => setIsLoaded(true)}
           className={cn(fit === "contain" ? "object-contain" : "object-cover", className)}
         />
       </>
