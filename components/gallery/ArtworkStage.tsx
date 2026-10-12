@@ -1,10 +1,12 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { ArtworkLink } from "@/lib/artworks";
+import { cn } from "@/lib/cn";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
 /**
  * Показ одной работы во весь экран.
@@ -46,20 +48,36 @@ import type { ArtworkLink } from "@/lib/artworks";
  * вправо, в зону большого пальца.
  */
 export function ArtworkStage({
+  lang,
   src,
+  aspect,
   alt,
+  title,
   priority,
   children,
   prev,
   next,
 }: {
+  lang: Locale;
   src?: string;
+  /**
+   * Пропорции фотографии, ширина к высоте, — из базы (Image.width/height).
+   * По ним на телефоне и планшете строится блок картины. Нет размеров —
+   * блок прежний, по остатку высоты экрана.
+   */
+  aspect?: number;
+  /** Подпись картинки для поиска и скринридера: «Село» — картина маслом … */
   alt: string;
+  /** Название работы — для кнопки «Открыть «…» во весь экран». */
+  title: string;
   priority?: boolean;
   prev?: ArtworkLink | null;
   next?: ArtworkLink | null;
   children: ReactNode;
 }) {
+  const t = getDictionary(lang).work;
+  const artBoxStyle: (CSSProperties & { "--art-ratio": number }) | undefined =
+    aspect === undefined ? undefined : { "--art-ratio": aspect };
   const stageArt = (
     <ArtworkImage
       src={src}
@@ -134,15 +152,34 @@ export function ArtworkStage({
         «почти белый» (globals.css). Без него картина упиралась в нижний
         край окна и читалась обрезанной. В остальных залах холст стоит как
         стоял — тёмный зал заказчик просил не трогать.
+
+        Ниже 1024px блок картины строится по пропорциям фото: во всю ширину,
+        но не выше экрана без шапки — картина целиком на первом экране.
+        Прежде он брал остаток высоты после подписи, не меньше 46vh, и про
+        ширину не знал: на планшете 768×1024 квадратная картина занимала
+        507px — 66% ширины, а в окне пониже и того меньше (заказчик,
+        8.10.2026). Без размеров фото в базе — прежний способ.
       */}
-        <div className="stage-art-area relative flex min-h-[46vh] flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]">
+        <div
+          className={cn(
+            "stage-art-area relative flex flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]",
+            aspect === undefined ? "min-h-[46vh]" : "max-lg:justify-center lg:min-h-[46vh]",
+          )}
+        >
           {/*
           Нажатие на картину открывает её на весь экран (ArtworkViewer).
           Без фотографии открывать нечего — заглушка остаётся как есть.
         */}
-          <div className="relative flex-1">
+          <div
+            style={artBoxStyle}
+            className={cn(
+              "relative flex-1",
+              aspect !== undefined &&
+                "max-lg:aspect-(--art-ratio) max-lg:max-h-[calc(100svh-120px)] max-lg:flex-none",
+            )}
+          >
             {src ? (
-              <ArtworkViewer src={src} title={alt} prev={prev} next={next}>
+              <ArtworkViewer src={src} title={title} prev={prev} next={next}>
                 {stageArt}
               </ArtworkViewer>
             ) : (
@@ -161,7 +198,7 @@ export function ArtworkStage({
         иначе скринридер прочитал бы «ссылка, стрелка влево».
       */}
         <nav
-          aria-label="Навигация по работам"
+          aria-label={t.navLabel}
           className="relative z-[2] flex items-center justify-between gap-2.5 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:absolute lg:inset-0 lg:p-0"
         >
           {/*
@@ -174,10 +211,10 @@ export function ArtworkStage({
           накладкой во весь экран, и ссылка осталась в подписи внизу слева.
         */}
           <Link
-            href="/gallery"
+            href={localePath(lang, "/gallery")}
             className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
           >
-            ← Все работы
+            {t.backToAll}
           </Link>
 
           {/* lg:contents убирает обёртку на десктопе, и стрелки снова
@@ -185,9 +222,9 @@ export function ArtworkStage({
           <div className="flex gap-2.5 lg:contents">
             {prev && (
               <Link
-                href={`/gallery/${prev.id}`}
+                href={localePath(lang, `/gallery/${prev.id}`)}
                 rel="prev"
-                aria-label={`Предыдущая работа: «${prev.title}»`}
+                aria-label={t.prev(prev.title)}
                 className="stage-nav lg:left-[calc(36%-58px)]"
               >
                 ←
@@ -196,9 +233,9 @@ export function ArtworkStage({
 
             {next && (
               <Link
-                href={`/gallery/${next.id}`}
+                href={localePath(lang, `/gallery/${next.id}`)}
                 rel="next"
-                aria-label={`Следующая работа: «${next.title}»`}
+                aria-label={t.next(next.title)}
                 className="stage-nav lg:right-[17px]"
               >
                 →

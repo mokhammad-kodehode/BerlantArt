@@ -1,4 +1,6 @@
+import { contactName, type ContactId } from "@/lib/contact-names";
 import { clientEnv } from "@/lib/env";
+import type { Dictionary } from "@/lib/i18n";
 import { site } from "@/lib/site";
 
 /**
@@ -15,7 +17,7 @@ import { site } from "@/lib/site";
  */
 export type Contact = {
   /** Для ключа в разметке и для выбора значка. */
-  id: "whatsapp" | "phone" | "telegram" | "facebook" | "email" | "instagram";
+  id: ContactId;
   /** Как называется способ связи: «WhatsApp», «Почта». */
   label: string;
   /** Что видит человек: номер, адрес, имя. */
@@ -54,73 +56,94 @@ export function whatsappLink(phone: string, message?: string): string {
   return `https://wa.me/${phone}${text}`;
 }
 
+/**
+ * Способ связи без подписей: вид, адрес, ссылка. Такой список можно
+ * передать в клиентский компонент — меню в шапке подставит подписи из
+ * своего словаря (lib/contact-names.ts) на языке страницы.
+ */
+export type ContactLink = Pick<Contact, "id" | "value" | "href" | "isExternal">;
+
 /** Все настроенные способы связи — в порядке, в котором их показываем. */
-export function contactList(): Contact[] {
-  const contacts: Contact[] = [];
+export function contactLinks(): ContactLink[] {
+  const links: ContactLink[] = [];
 
   if (whatsappPhone !== undefined) {
-    contacts.push({
+    links.push({
       id: "whatsapp",
-      label: "WhatsApp",
       value: formatPhone(whatsappPhone),
       href: whatsappLink(whatsappPhone),
-      action: "Написать",
       isExternal: true,
     });
 
     // Телефон — тот же номер, что WhatsApp: так решил заказчик 2026-09-26.
     // Отдельной переменной нет, чтобы номера не разошлись при смене.
-    contacts.push({
+    links.push({
       id: "phone",
-      label: "Телефон",
       value: formatPhone(whatsappPhone),
       href: `tel:+${whatsappPhone}`,
-      action: "Позвонить",
       isExternal: false,
     });
   }
 
   if (clientEnv.NEXT_PUBLIC_TELEGRAM !== undefined) {
-    contacts.push({
+    links.push({
       id: "telegram",
-      label: "Telegram",
       value: `@${clientEnv.NEXT_PUBLIC_TELEGRAM}`,
       href: `https://t.me/${clientEnv.NEXT_PUBLIC_TELEGRAM}`,
-      action: "Написать",
       isExternal: true,
     });
   }
 
-  contacts.push({
+  links.push({
     id: "instagram",
-    label: "Instagram",
     value: `@${site.instagram.handle}`,
     href: site.instagram.url,
-    action: "Смотреть работы",
     isExternal: true,
   });
 
   if (clientEnv.NEXT_PUBLIC_FACEBOOK !== undefined) {
-    contacts.push({
+    links.push({
       id: "facebook",
-      label: "Facebook",
       value: clientEnv.NEXT_PUBLIC_FACEBOOK,
       href: `https://www.facebook.com/${clientEnv.NEXT_PUBLIC_FACEBOOK}`,
-      action: "Открыть страницу",
       isExternal: true,
     });
   }
 
   if (contactEmail !== undefined) {
-    contacts.push({
+    links.push({
       id: "email",
-      label: "Почта",
       value: contactEmail,
       href: `mailto:${contactEmail}`,
-      action: "Написать письмо",
       isExternal: false,
     });
   }
 
-  return contacts;
+  return links;
+}
+
+/** Глагол на кнопке для каждого способа связи. */
+function contactAction(id: ContactId, t: Dictionary["contacts"]): string {
+  switch (id) {
+    case "phone":
+      return t.call;
+    case "email":
+      return t.writeEmail;
+    case "instagram":
+      return t.seeWorks;
+    case "facebook":
+      return t.openPage;
+    case "whatsapp":
+    case "telegram":
+      return t.write;
+  }
+}
+
+/** Настроенные способы связи с подписями на языке страницы. */
+export function contactList(t: Dictionary["contacts"]): Contact[] {
+  return contactLinks().map((link) => ({
+    ...link,
+    label: contactName(link.id, t),
+    action: contactAction(link.id, t),
+  }));
 }

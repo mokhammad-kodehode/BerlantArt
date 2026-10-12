@@ -37,6 +37,10 @@
   --color-ink-faint: var(--theme-ink-faint);
   --color-accent: var(--theme-accent);
   --color-accent-2: var(--theme-accent-2);
+  /* Мазок под текущим пунктом меню. Свой цвет, а не accent: текст лежит
+     прямо на мазке, и охра подобрана под контраст с ink в каждом зале
+     (светлый 7.6:1, тёмный 5.4:1). Полупрозрачный accent выходил бледным. */
+  --color-stroke: var(--theme-stroke);
   --color-divider: var(--theme-divider);
   /* Главная кнопка: не цветная, а контрастная фону — в галерее самым
      ярким пятном должна быть живопись, а не призыв к действию. */
@@ -140,6 +144,7 @@
   --theme-ink-faint: #a9a6a1;
   --theme-accent: #c99a6a;
   --theme-accent-2: #8a9878;
+  --theme-stroke: #7f5531;
   --theme-divider: #2c2825;
   --theme-btn: #efebe5;
   --theme-btn-ink: #2b251f;
@@ -181,6 +186,7 @@
   --theme-ink-faint: #6c6762;
   --theme-accent: #7a5632;
   --theme-accent-2: #5b6b48;
+  --theme-stroke: #d8b083;
   --theme-divider: #dcd9d3;
   --theme-btn: #2b251f;
   --theme-btn-ink: #f5f4f1;
@@ -310,6 +316,110 @@
     }
   }
 
+  /* — пункт меню в шапке (components/layout/Header.tsx) —
+
+     Текущий раздел отмечен мазком мастихина под словом — тем же
+     инструментом, каким пишет художница (выбор заказчика 03.10.2026 из пяти
+     концептов). Все пункты — полным ink и весом 500: приглушённые до
+     ink-soft соседи вместе с бледным мазком делали шапку тусклой.
+
+     Нанесение (v2): сначала касание — пятно краски в начале, мастихин лёг
+     на холст; затем семь ворсинок протягивают краску каждая в своём темпе
+     (длительность и задержка приходят из Header.tsx через --dur и --delay).
+     Кривая — быстрый рывок и долгое замедление: рука тянет и отрывает.
+     Проигрывается при каждом появлении мазка — он рисуется только у
+     текущего пункта, и при переходе в другой раздел элемент создаётся заново.
+
+     prefers-reduced-motion здесь намеренно не отключает анимацию: мазок
+     ничего не сдвигает по экрану, а проявляется на месте меньше чем за секунду. Эта
+     настройка — против сдвигов, параллакса и масштабирования; у заказчика
+     в Windows выключены «Эффекты анимации», и мазок не рисовался вовсе. */
+  /* Переключатель языка в шапке: короткий код EN / RU, тонкой таблеткой —
+     той же рамкой, что у тумблера темы, чтобы они читались одной группой
+     настроек, а не ещё одним пунктом меню. */
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--color-ink);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+    border-radius: var(--radius-pill);
+    transition: border-color 0.18s ease;
+  }
+  .lang-switch:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+  }
+  .nav-link:not([aria-current]):hover {
+    opacity: 0.7;
+  }
+  .nav-link-label {
+    position: relative;
+  }
+  /* Сам мазок (components/ui/BrushStroke.tsx); положение задаёт место,
+     где он лежит: .nav-stroke в меню. */
+  .brush-stroke {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .nav-stroke {
+    color: var(--color-stroke);
+    left: -0.6em;
+    top: 50%;
+    width: calc(100% + 1.2em);
+    height: 2.3em;
+    transform: translateY(-48%);
+  }
+  /* Тот же мазок под второй частью девиза на первом экране. Не во всю
+     высоту строки, как в меню, а полосой по нижней половине букв: так
+     крупный заголовок читается, а мазок подчёркивает, а не заливает. */
+  .hero-stroke {
+    color: var(--color-stroke);
+    left: -0.18em;
+    top: 64%;
+    width: calc(100% + 0.36em);
+    height: 0.85em;
+    transform: translateY(-50%);
+  }
+  .nav-touch {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0);
+    /* Лёгкий перехлёст за 1 — краска чуть растекается под нажимом */
+    animation: stroke-touch 0.2s cubic-bezier(0.3, 1.5, 0.5, 1) 0.08s forwards;
+  }
+  @keyframes stroke-touch {
+    to {
+      transform: scale(1);
+    }
+  }
+  .nav-bristle {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    animation: stroke-draw var(--dur) cubic-bezier(0.3, 0.6, 0.25, 1) var(--delay) forwards;
+  }
+  @keyframes stroke-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
   /* — кнопки — */
   .btn {
     display: inline-flex;
@@ -424,21 +534,24 @@
   .viewer::backdrop {
     background: var(--color-neutral-900);
   }
-  /* Стрелки просмотра. На телефоне — справа в нижней полосе рядом
-     с названием: картина там во всю ширину, и стрелки по бокам легли бы
-     на холст (та же причина, что у .stage-nav). На десктопе — по краям
-     экрана, посередине высоты, в поле рядом с картиной. */
-  .viewer-nav {
+  /* Фокус при открытии стоит на самом окне (ArtworkViewer, showViewer).
+     Его обводка — рамка вокруг всего экрана — ничего не сообщает, а Tab
+     уводит фокус на стрелки и крестик, и у них обводка обычная. */
+  .viewer:focus-visible {
+    outline: none;
+  }
+  /* Стрелки и крестик просмотра — одного вида: полупрозрачный круг
+     с тонкой светлой обводкой. Обводка держит круг видимым целиком и на
+     тёмном поле, и над светлой картиной: без неё у крестика был виден
+     только край, лёгший на холст, — полукруг (заказчик, 8.10.2026). */
+  .viewer-nav,
+  .viewer-close {
     position: absolute;
-    bottom: 18px;
     z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-    line-height: 1;
+    padding: 0;
     color: var(--color-neutral-100);
     text-decoration: none;
     background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent);
@@ -447,8 +560,28 @@
     cursor: pointer;
     transition: background-color 0.18s;
   }
-  .viewer-nav:hover {
+  .viewer-nav:hover,
+  .viewer-close:hover {
     background: color-mix(in srgb, var(--color-neutral-100) 16%, transparent);
+  }
+  /* Крестик — 48px с рисованным значком 22px. Прежде это был символ «×»
+     шрифтом: на экране около 10px, заказчик его не разглядел. */
+  .viewer-close {
+    top: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+  /* Стрелки просмотра. На телефоне — парой по центру под картиной: она
+     там во всю ширину, и стрелки по бокам легли бы на холст (та же
+     причина, что у .stage-nav). На десктопе — по краям
+     экрана, посередине высоты, в поле рядом с картиной. */
+  .viewer-nav {
+    bottom: 18px;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    line-height: 1;
   }
   @media (min-width: 1024px) {
     .viewer-nav {
@@ -462,6 +595,160 @@
      колесо мыши листало бы невидимую страницу за картиной. */
   html:has(.viewer[open]) {
     overflow: hidden;
+  }
+
+  /* Меню бургера на весь экран (components/layout/HeaderBar.tsx) —
+     <dialog>, как просмотр картины: встроенные поля, рамка и max-width
+     сняты. Фон — стена зала, а не тёмная плашка: меню продолжает шапку
+     того же зала, в котором человек смотрит сайт. Высокое меню на низком
+     экране (телефон боком) прокручивается внутри себя. */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    color: var(--color-ink);
+    background: var(--color-wall);
+    border: 0;
+  }
+  /* Подложка прозрачная: окно и так во весь экран, а сплошная подложка
+     появлялась бы сразу и прятала страницу раньше, чем меню успеет
+     растечься по ней (анимация ниже). */
+  .mobile-nav::backdrop {
+    background: transparent;
+  }
+  /* Фокус при открытии стоит на самом окне — его рамка вокруг экрана
+     ничего не сообщает; у пунктов обводка обычная (см. .viewer). */
+  .mobile-nav:focus-visible {
+    outline: none;
+  }
+  html:has(.mobile-nav[open]) {
+    overflow: hidden;
+  }
+
+  /* Появление: меню растекается кругом из кнопки, как капля краски по
+     холсту (заказчик, 9.10.2026), — прежде оно просто проявлялось за
+     0.24 с, и движения было не заметить. Центр круга — середина кнопки,
+     его ставит HeaderBar (--menu-x/--menu-y); по умолчанию — правый
+     верхний угол, где кнопка и стоит. 150vmax — радиус, которого хватит
+     закрыть экран из любой точки. Закрывается обратным движением —
+     в кнопку (data-closing, 0.42 с — столько же ждёт HeaderBar).
+     Пункты выезжают снизу друг за другом (--i — номер), когда круг уже
+     дошёл до них. Кто просит меньше движения — без анимации. */
+  .mobile-nav {
+    --menu-x: calc(100% - 40px);
+    --menu-y: 36px;
+  }
+  .mobile-nav[open] {
+    animation: mobile-nav-spread 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .mobile-nav[data-closing] {
+    animation: mobile-nav-gather 0.42s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+  .mobile-nav[open] .mobile-nav-item {
+    animation: mobile-nav-item 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 60ms + 220ms);
+  }
+  @keyframes mobile-nav-spread {
+    from {
+      clip-path: circle(0 at var(--menu-x) var(--menu-y));
+    }
+    to {
+      clip-path: circle(150vmax at var(--menu-x) var(--menu-y));
+    }
+  }
+  @keyframes mobile-nav-gather {
+    from {
+      clip-path: circle(150vmax at var(--menu-x) var(--menu-y));
+    }
+    to {
+      clip-path: circle(0 at var(--menu-x) var(--menu-y));
+    }
+  }
+  @keyframes mobile-nav-item {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  /* Кто просит меньше движения (в Windows — выключенные «Эффекты
+     анимации»), получает не пустоту, а мягкое проявление без движения:
+     круг и выезд пунктов — движение, а смена прозрачности — нет. */
+  @keyframes mobile-nav-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes mobile-nav-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav[open] {
+      animation: mobile-nav-fade-in 0.25s ease-out;
+    }
+    .mobile-nav[data-closing] {
+      animation: mobile-nav-fade-out 0.25s ease-in forwards;
+    }
+    .mobile-nav[open] .mobile-nav-item {
+      animation: none;
+    }
+  }
+
+  /* Кнопка меню — два мазка (HeaderBar). При наведении мазки тянутся
+     влево, будто кисть протянула краску дальше: короткий нижний почти
+     догоняет верхний, верхний удлиняется чуть-чуть (заказчик, 9.10.2026).
+     Правые концы на одной линии и стоят на месте — origin справа.
+     На телефоне наведения нет — там то же движение на нажатие. */
+  .burger-stroke {
+    transform-box: fill-box;
+    transform-origin: 100% 50%;
+    transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .burger:focus-visible .burger-stroke-top,
+  .burger:active .burger-stroke-top {
+    transform: scaleX(1.08);
+  }
+  .burger:focus-visible .burger-stroke-bottom,
+  .burger:active .burger-stroke-bottom {
+    transform: scaleX(1.4);
+  }
+  @media (hover: hover) {
+    .burger:hover .burger-stroke-top {
+      transform: scaleX(1.08);
+    }
+    .burger:hover .burger-stroke-bottom {
+      transform: scaleX(1.4);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .burger-stroke {
+      transition: none;
+    }
+  }
+
+  /* Способ связи в меню: значок и название в таблетке. Номер и адрес —
+     в подписи для скринридера, на экране они удлиняли бы таблетки вдвое. */
+  .mobile-nav-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 15px;
+    color: var(--color-ink);
+    text-decoration: none;
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-pill);
+    transition: background-color 0.18s;
+  }
+  .mobile-nav-contact:hover {
+    background: var(--color-surface);
   }
 
   .btn-ghost {
@@ -551,6 +838,60 @@
       display: flex;
       flex-wrap: wrap;
     }
+  }
+
+  /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
+     popover: закрытие по клику мимо и по Esc браузер делает сам. По
+     умолчанию popover стоит по центру экрана с рамкой — это сброшено,
+     и меню встаёт под кнопкой привязкой (anchor positioning); не хватит
+     места снизу — над ней. Ширина не меньше самой кнопки. */
+  .menu-pop {
+    inset: auto;
+    margin: 8px 0;
+    padding: 6px;
+    min-width: 220px;
+    min-width: max(220px, anchor-size(width));
+    color: var(--color-ink);
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-tile);
+    box-shadow: var(--shadow-lg);
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-block;
+  }
+  /* Браузер без привязки к кнопке: на компьютере меню по центру экрана,
+     как маленькое окно, на телефоне — листом снизу, под большой палец. */
+  @supports not (position-area: block-end) {
+    .menu-pop {
+      inset: 0;
+      margin: auto;
+    }
+    @media (max-width: 639px) {
+      .menu-pop {
+        inset: auto 12px 12px;
+        margin: 0;
+      }
+    }
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--color-ink);
+    text-align: left;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--radius-tile) - 6px);
+    cursor: pointer;
+  }
+  .menu-item:hover,
+  .menu-item:focus-visible {
+    background: var(--color-surface);
   }
 
   /* — теги — */
@@ -768,7 +1109,9 @@
   .wall-tile {
     position: relative;
     overflow: hidden;
-    border-radius: 14px;
+    /* Без скругления: у холста прямые углы, скруглённая картина выглядит
+       карточкой интерфейса, а не живописью. */
+    border-radius: 0;
     box-shadow: var(--theme-shadow-tile);
     transition:
       transform 0.35s ease,
@@ -937,27 +1280,70 @@
 
   /* — переключатель зала (components/ui/ThemeSwitch.tsx) —
 
-     Какой кружок выбран, решает CSS по атрибуту на <html>, а не состояние
+     Тумблер: слева солнце, справа луна, ползунок под выбранным залом.
+     Где стоит ползунок, решает CSS по атрибуту на <html>, а не состояние
      React: атрибут выставлен до отрисовки, и копия в состоянии разошлась бы
      с серверной разметкой. */
-  .hall {
-    width: 20px;
-    height: 20px;
-    padding: 0;
+  .hall-toggle {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    width: 56px;
+    height: 30px;
+    padding: 0 3px;
     cursor: pointer;
+    color: var(--color-ink);
+    background: transparent;
     border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
     border-radius: var(--radius-pill);
     transition: border-color 0.18s ease;
   }
-  .hall:hover {
+  .hall-toggle:hover {
     border-color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   }
 
-  :root:not([data-theme]) .hall-dark,
-  :root[data-theme="paper"] .hall-paper {
-    border-color: transparent;
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+  .hall-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-ink);
+    border-radius: var(--radius-pill);
+    transition: transform 0.22s ease;
+  }
+  /* 56 − 2 рамки − 2×3 отступа − 22 ползунка = 26 */
+  :root:not([data-theme]) .hall-toggle-thumb {
+    transform: translateX(26px);
+  }
+
+  .hall-toggle-icon {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: color 0.22s ease;
+  }
+  .hall-toggle-icon + .hall-toggle-icon {
+    margin-left: auto;
+  }
+  /* Значок на ползунке — цветом фона, чтобы читался на заливке ink. */
+  :root[data-theme="paper"] .hall-toggle-icon:first-of-type,
+  :root:not([data-theme]) .hall-toggle-icon:last-of-type {
+    color: var(--color-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hall-toggle-thumb,
+    .hall-toggle-icon {
+      transition: none;
+    }
   }
 
   /* Затемнение под подписью: густое в левом нижнем углу, сходит на нет
@@ -980,9 +1366,20 @@
 
      Пол занимает нижнюю четверть: стык со стеной намечен тонкой полосой
      на 20.6-21.4%, а не жёсткой линией — резкая граница на глаз читается
-     как ошибка вёрстки, а не как угол комнаты. */
+     как ошибка вёрстки, а не как угол комнаты.
+
+     Пол — только с 1024px. Уже этого подпись и кнопки стоят под картиной
+     в столбик, ровно на месте пола, и стык стены с полом резал кнопку
+     «Примерить на стену» пополам — углом комнаты он там не читался
+     (заказчик, 03.10.2026). Белый зал на компьютере пол убирает сам,
+     ниже по файлу. */
   .stage-hall {
-    background: var(--theme-hall-vignette), var(--theme-hall-floor);
+    background: var(--theme-hall-vignette);
+  }
+  @media (min-width: 1024px) {
+    .stage-hall {
+      background: var(--theme-hall-vignette), var(--theme-hall-floor);
+    }
   }
 }
 
@@ -1437,6 +1834,54 @@
   .room-pill:focus-visible {
     outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
+  }
+
+  /* Переключатель «Камера | На стене»: таблетка с двумя половинами,
+     выбранная залита светлым. На телефоне — своей строкой во всю ширину. */
+  .room-modes {
+    display: inline-flex;
+    gap: 2px;
+    padding: 4px;
+    background: var(--room-panel);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+  }
+  .room-mode {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 16px;
+    font-size: 15px;
+    color: var(--room-ink);
+    text-decoration: none;
+    border-radius: 999px;
+    opacity: 0.78;
+    transition:
+      background-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+  .room-mode:hover {
+    opacity: 1;
+  }
+  .room-mode[aria-current="page"] {
+    color: var(--room-night);
+    background: var(--room-ink);
+    opacity: 1;
+  }
+  .room-mode:focus-visible {
+    outline: 2px solid var(--room-light-warm);
+    outline-offset: 2px;
+  }
+  @media (max-width: 1023px) {
+    .room-modes {
+      order: 1;
+      width: 100%;
+    }
+    .room-mode {
+      flex: 1;
+    }
   }
 
   .room-scene {
@@ -2386,6 +2831,140 @@
     opacity: 0.7;
   }
 
+  /* Подготовка к камере (ArGuide). На телефоне — лист снизу, как
+     системные листы iOS и Android; на компьютере — карточка по центру.
+     Цвета — примерочной: диалог лежит внутри .room и берёт её переменные. */
+  .ar-guide {
+    width: min(100%, 440px);
+    max-width: none;
+    max-height: min(92svh, 760px);
+    margin: auto auto 0;
+    padding: 0;
+    color: var(--room-ink);
+    background: rgb(22 19 17);
+    border: 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 40px rgb(0 0 0 / 0.4);
+  }
+  .ar-guide::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+  .ar-guide[open] {
+    animation: ar-guide-in 0.3s var(--room-ease);
+  }
+  @keyframes ar-guide-in {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+  @media (min-width: 640px) {
+    .ar-guide {
+      margin: auto;
+      border-radius: 20px;
+    }
+  }
+  .ar-guide-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  .ar-guide-work {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .ar-guide-thumb {
+    position: relative;
+    flex: none;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+  .ar-guide-kicker {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .ar-guide-title {
+    margin: 2px 0 0;
+    overflow: hidden;
+    font-size: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ar-guide-size {
+    margin: 2px 0 0;
+    font-size: 13px;
+    opacity: 0.75;
+  }
+  .ar-guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ar-guide-step {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    background: rgb(255 255 255 / 0.05);
+    border-radius: 14px;
+  }
+  .ar-guide-picture {
+    width: 96px;
+    height: auto;
+    color: var(--room-light-warm);
+  }
+  .ar-guide-step-title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .ar-guide-step-number {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    color: var(--label-ink);
+    background: var(--room-ink);
+    border-radius: 999px;
+  }
+  .ar-guide-step-text {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.75;
+  }
+  .ar-guide-tip {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.65;
+  }
+  .ar-guide-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   /* Что видно на какой ширине. Эти правила — после общих намеренно:
      при равной специфичности побеждает то, что ниже, и раньше вкладки
      оставались на компьютере, а неактивные разделы — на телефоне. */
@@ -2626,6 +3205,12 @@
       --sofa-fit: 175;
       height: 100svh;
       min-height: 0;
+    }
+    /* Строка переключателя режимов: 44px таблетки и 12px отступа. Без
+       поправки картина с рамой не помещалась бы над строкой инструментов. */
+    .room[data-modes] {
+      --v-art: calc(100svh - var(--sheet-space) - 206px);
+      --v-room: calc(100svh - var(--sheet-space) - 186px);
     }
     /* Открыт ряд вариантов — картина плавно уменьшается над ним. */
     .room[data-tool] {

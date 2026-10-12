@@ -3,7 +3,9 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
+import { getDictionary, translateValue, type Locale } from "@/lib/i18n";
 import { publicUrl } from "@/lib/r2";
+import type { SitemapArtwork } from "@/lib/seo";
 
 // Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
 // (проверяется линтером, architecture.md) — им нужен только тип значения,
@@ -49,38 +51,104 @@ export type ArtworkWithImages = Prisma.ArtworkGetPayload<{ include: typeof withI
  * работы, и в подписи не должно появиться ни «undefined», ни висящей точки:
  * карточка работы — карточка товара, врать в ней о габаритах нельзя.
  */
-export function artworkCaption(work: Pick<ArtworkWithImages, "technique" | "dimensions">): string {
-  return [work.technique, work.dimensions].filter(Boolean).join(" · ");
+export function artworkCaption(
+  work: Pick<ArtworkWithImages, "technique" | "dimensions">,
+  lang: Locale = "ru",
+): string {
+  return [artworkTechnique(work.technique, lang), artworkDimensions(work.dimensions, lang)]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Техника на языке страницы: «Холст, масло» → «Oil on canvas». */
+export function artworkTechnique(technique: string | null, lang: Locale = "ru"): string | null {
+  if (technique === null) return null;
+  return translateValue(getDictionary(lang).techniques, technique);
 }
 
 /**
- * Подпись статуса словом. У доступной работы метки нет вовсе: подписывать
- * нормальное состояние незачем, метка нужна там, где картину уже не купить.
- *
- * Словом, а не только цветом, — требование доступности: серая карточка сама
- * по себе ничего не сообщает человеку, который не различает оттенки.
+ * Размер на языке страницы. В базе он строкой «40 × 40 см»: для английской
+ * версии меняется только единица, числа остаются как ввела художница.
  */
-const statusLabels: Record<ArtworkStatus, string | null> = {
-  AVAILABLE: null,
-  RESERVED: "Забронирована",
-  SOLD: "Продана",
-};
+export function artworkDimensions(dimensions: string | null, lang: Locale = "ru"): string | null {
+  if (dimensions === null) return null;
+  return lang === "ru" ? dimensions : dimensions.replace(/\s*см\.?\s*$/i, " cm");
+}
 
-/** Метка статуса для витрины или `null`, если работу можно купить. */
-export function artworkStatusLabel(status: ArtworkStatus): string | null {
-  return statusLabels[status];
+/** Тексты картины для поисковиков: заголовок, описание, подпись картинки. */
+export type ArtworkSeo = { title: string; description: string; imageAlt: string };
+
+/**
+ * Заголовок, описание и подпись картинки для выдачи — из того, что заполнено
+ * в админке. Пустое поле не попадает в текст: нет размера — нет и размера
+ * в заголовке (.ai/rules/content.md).
+ *
+ * «Картина маслом» — только если в технике есть масло: у художницы техника
+ * всегда одна, но если когда-нибудь появится другая, заголовок не соврёт.
+ * Цены и статуса в тексте нет: продажа на сайте выключена (ARCHITECTURE.md,
+ * «Продажа выключена»), и поисковик не должен показывать цену, которой нет
+ * на странице.
+ */
+export function artworkSeo(
+  work: Pick<ArtworkWithImages, "title" | "description" | "technique" | "dimensions" | "year">,
+  lang: Locale = "ru",
+): ArtworkSeo {
+  const t = getDictionary(lang);
+  const isOil = work.technique !== null && /масл/i.test(work.technique);
+  const kind = isOil ? t.seo.oilPainting : t.seo.painting;
+  const size = artworkDimensions(work.dimensions, lang);
+  const technique = artworkTechnique(work.technique, lang);
+
+  // После двоеточия — со строчной: «Картина «Село»: холст, масло, 40 × 40 см».
+  const details = [technique, size, work.year]
+    .filter(Boolean)
+    .join(", ")
+    .replace(/^./, (letter) => letter.toLowerCase());
+
+  const description = [
+    t.seo.workDescription(work.title, details),
+    t.seo.byArtist(t.site.artist),
+    // Описание из админки — только по-русски (решение заказчика), поэтому
+    // в английском тексте его нет.
+    lang === "ru" ? work.description : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    title: t.seo.workTitle(work.title, kind, size),
+    description,
+    imageAlt: t.seo.imageAlt(work.title, kind, t.site.artistGenitive),
+  };
+}
+
+/** Категория на языке страницы; не из утверждённого списка — как есть. */
+export function artworkCategory(category: string | null, lang: Locale = "ru"): string | null {
+  if (category === null) return null;
+  return translateValue(getDictionary(lang).categories, category);
 }
 
 /**
  * Цена в рублях без копеек: «45 000 ₽». Разряды отбивает Intl, а не мы —
  * он же ставит неразрывный пробел, чтобы число не переносилось по строке.
  */
-const priceFormat = new Intl.NumberFormat("ru-RU", {
-  style: "currency",
-  currency: "RUB",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+const priceFormats: Record<Locale, Intl.NumberFormat> = {
+  ru: new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }),
+  // В рублях и в английской версии — решение заказчика от 4 октября 2026:
+  // курс устаревает, а цена у художницы одна. Формат английский: «₽5,000».
+  en: new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "RUB",
+    currencyDisplay: "narrowSymbol",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }),
+};
 
 /**
  * Цена для показа или `null`, если она не заполнена.
@@ -89,9 +157,9 @@ const priceFormat = new Intl.NumberFormat("ru-RU", {
  * цену `0`. Правило «пустое поле не показываем» не должно втихую
  * превратиться в «дешёвое поле не показываем».
  */
-export function formatPrice(price: number | null): string | null {
+export function formatPrice(price: number | null, lang: Locale = "ru"): string | null {
   if (price === null) return null;
-  return priceFormat.format(price);
+  return priceFormats[lang].format(price);
 }
 
 /**
@@ -258,6 +326,27 @@ export async function countArtworks(): Promise<number> {
 }
 
 /**
+ * Работы для карты сайта (app/sitemap.ts): адрес, дата правки и главное
+ * фото. Один запрос на все работы, только нужные поля: карта сайта
+ * открывается поисковиками часто, тащить описания и цены ей незачем.
+ */
+export async function getSitemapArtworks(): Promise<SitemapArtwork[]> {
+  const rows = await db.artwork.findMany({
+    orderBy: galleryOrder,
+    select: {
+      id: true,
+      updatedAt: true,
+      images: { orderBy: withImages.images.orderBy, take: 1, select: { url: true } },
+    },
+  });
+
+  return rows.map((row) => {
+    const stored = row.images[0]?.url;
+    return { id: row.id, updatedAt: row.updatedAt, image: stored ? imageUrl(stored) : undefined };
+  });
+}
+
+/**
  * Список категорий для фильтра галереи — запросом `distinct`, а не строкой
  * в коде. Категория — свободный текст ([data.md](../.ai/rules/data.md)),
  * и художница заведёт новую через админку; фильтр обязан подхватить её сам,
@@ -295,6 +384,7 @@ export type ArtworkInput = {
   price: number | null;
   status: ArtworkStatus;
   featured: boolean;
+  isLarge: boolean;
 };
 
 /** Создаёт работу и возвращает её идентификатор — он нужен, чтобы сразу

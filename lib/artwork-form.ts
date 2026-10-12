@@ -130,6 +130,7 @@ export type ArtworkFormRaw = {
   price: string;
   status: string;
   featured: boolean;
+  isLarge: boolean;
 };
 
 /** Поля, у которых бывает своя ошибка под полем. */
@@ -161,6 +162,7 @@ export function newArtworkValues(): ArtworkFormRaw {
     price: "",
     status: "AVAILABLE",
     featured: true,
+    isLarge: false,
   };
 }
 
@@ -198,6 +200,7 @@ export function readArtworkForm(formData: FormData): ArtworkFormRaw {
     // Невыбранный флажок браузер не присылает вовсе — его отсутствие
     // и означает «нет», отдельного значения для этого не существует.
     featured: formData.get("featured") !== null,
+    isLarge: formData.get("isLarge") !== null,
   };
 }
 
@@ -313,6 +316,7 @@ function schema() {
 
     status: z.enum(artworkStatuses, { message: "Неизвестный статус" }),
     featured: z.boolean(),
+    isLarge: z.boolean(),
   });
 }
 

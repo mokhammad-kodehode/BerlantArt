@@ -132,14 +132,22 @@ const desktopRowClass: Record<number, string> = {
 /**
  * На телефоне коллажа нет — там два столбца ровных квадратов: плитка шириной
  * в четверть экрана на 375px ужалась бы до 88px, и разглядеть живопись
- * в ней было бы нельзя. Последняя работа при нечётном числе занимает
- * оба столбца и две строки, то есть остаётся квадратной, а не растягивается
- * в полосу.
+ * в ней было бы нельзя.
+ *
+ * Крупная работа (`isLarge`) занимает оба столбца и две строки — квадрат во
+ * всю ширину. Если перед ней стоит одна мелкая, справа от мелкой осталась бы
+ * пустая клетка; её закрывает следующая мелкая — сетка на телефоне идёт
+ * с `grid-flow-row-dense` (components/gallery/ArtworkCollage.tsx). Поэтому
+ * достаточно, чтобы мелких было чётное число: при нечётном последняя мелкая
+ * тоже становится квадратом во всю ширину, а не оставляет дыру в конце.
  */
-function mobileSpans(count: number): Span[] {
-  return Array.from({ length: count }, (_, index) => {
-    const isLastOdd = index === count - 1 && count % 2 === 1;
-    return isLastOdd ? { cols: 2, rows: 2 } : { cols: 1, rows: 1 };
+function mobileSpans(isLarge: readonly boolean[]): Span[] {
+  const smallCount = isLarge.filter((large) => !large).length;
+  const lastSmall = isLarge.lastIndexOf(false);
+
+  return isLarge.map((large, index) => {
+    const isLoneLast = smallCount % 2 === 1 && index === lastSmall;
+    return large || isLoneLast ? { cols: 2, rows: 2 } : { cols: 1, rows: 1 };
   });
 }
 
@@ -163,21 +171,68 @@ function desktopSpans(count: number): Span[] {
   return spans;
 }
 
+const isHero = (span: Span): boolean => span.cols === 2 && span.rows === 2;
+
 /**
- * Раскладка всех плиток коллажа по числу работ.
+ * Ставит крупные работы в крупные ячейки компьютерного коллажа.
+ *
+ * Сама сетка блоков не меняется — она проверена тестом на отсутствие дыр
+ * при любом числе работ. Меняется только порядок: отмеченная работа
+ * переезжает в ближайшую свободную крупную ячейку, не раньше предыдущей
+ * отмеченной, чтобы отмеченные шли в своём порядке. Остальные работы
+ * занимают оставшиеся места в исходном порядке.
+ *
+ * Крупных ячеек — одна на каждые пять работ. Отмеченных больше — лишние
+ * остаются мелкими на компьютере (на телефоне они всё равно крупные);
+ * об этом предупреждает подсказка у переключателя в админке.
+ */
+function arrange<T extends { isLarge: boolean }>(items: readonly T[], desktop: Span[]): T[] {
+  const heroSlots = desktop.flatMap((span, index) => (isHero(span) ? [index] : []));
+  const placed: (T | undefined)[] = Array.from({ length: items.length }, () => undefined);
+  const rest: T[] = [];
+  let lastSlot = -1;
+
+  for (const [index, item] of items.entries()) {
+    const free = heroSlots.filter((slot) => slot > lastSlot && placed[slot] === undefined);
+    if (!item.isLarge || free.length === 0) {
+      rest.push(item);
+      continue;
+    }
+
+    const slot = free.reduce((best, candidate) =>
+      Math.abs(candidate - index) < Math.abs(best - index) ? candidate : best,
+    );
+    placed[slot] = item;
+    lastSlot = slot;
+  }
+
+  return placed.map((item) => item ?? rest.shift()).filter((item) => item !== undefined);
+}
+
+/**
+ * Раскладка коллажа: порядок работ и плитка для каждой.
+ *
+ * Возвращает работы уже в том порядке, в каком их выводить: крупные могли
+ * переехать в крупные ячейки (`arrange`). Порядок общий для телефона
+ * и компьютера — разметка одна.
  *
  * `sizes` считается из размаха, а не пишется одним значением на всё: крупная
  * плитка занимает полэкрана, мелкая — четверть, и без этого браузер качал бы
  * для мелкой плитки файл вчетверо крупнее нужного.
  */
-export function collageLayout(count: number): CollageTile[] {
-  const mobile = mobileSpans(count);
-  const desktop = desktopSpans(count);
+export function collageLayout<T extends { isLarge: boolean }>(
+  items: readonly T[],
+): (CollageTile & { item: T })[] {
+  const desktop = desktopSpans(items.length);
+  const ordered = arrange(items, desktop);
+  const mobile = mobileSpans(ordered.map((item) => item.isLarge));
 
-  return mobile.map((mobileSpan, index) => {
+  return ordered.map((item, index) => {
+    const mobileSpan = mobile[index];
     const desktopSpan = desktop[index];
 
     return {
+      item,
       className: [
         mobileColClass[mobileSpan.cols],
         mobileRowClass[mobileSpan.rows],

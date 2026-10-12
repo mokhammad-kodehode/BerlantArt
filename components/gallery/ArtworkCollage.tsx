@@ -2,6 +2,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import type { ArtworkWithImages } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 import { collageLayout } from "@/lib/collage";
+import type { Locale } from "@/lib/i18n";
 
 /**
  * Стена-коллаж: работы разного размера, плотно и без дыр.
@@ -29,22 +30,30 @@ import { collageLayout } from "@/lib/collage";
  */
 export function ArtworkCollage({
   works,
+  lang,
   className,
 }: {
   works: ArtworkWithImages[];
+  lang: Locale;
   className?: string;
 }) {
-  const tiles = collageLayout(works.length);
+  // Порядок берётся из раскладки, а не из `works`: крупные работы могли
+  // переехать в крупные ячейки.
+  const tiles = collageLayout(works);
 
   return (
     <div className={cn("@container", className)}>
-      <ul className="wall m-0 grid list-none auto-rows-[calc((100cqw-10px)/2)] grid-cols-2 gap-2.5 p-0 md:auto-rows-[calc((100cqw-30px)*3/16)] md:grid-cols-4">
-        {works.map((work, index) => (
+      {/* dense только на телефоне: мелкая работа закрывает клетку рядом
+          с одиночной мелкой перед крупной (lib/collage.ts, mobileSpans).
+          На компьютере раскладка блоками без дыр и так. */}
+      <ul className="wall m-0 grid list-none grid-flow-row-dense auto-rows-[calc((100cqw-10px)/2)] grid-cols-2 gap-2.5 p-0 md:grid-flow-row md:auto-rows-[calc((100cqw-30px)*3/16)] md:grid-cols-4">
+        {tiles.map((tile) => (
           <ArtworkTile
-            key={work.id}
-            work={work}
-            className={tiles[index].className}
-            sizes={tiles[index].sizes}
+            key={tile.item.id}
+            work={tile.item}
+            lang={lang}
+            className={tile.className}
+            sizes={tile.sizes}
           />
         ))}
       </ul>

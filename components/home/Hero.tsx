@@ -1,8 +1,12 @@
 import Image from "next/image";
 
+import Link from "next/link";
+
 import { Header } from "@/components/layout/Header";
+import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
-import { site } from "@/lib/site";
+import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import { paintingYear } from "@/lib/site";
 
 /**
  * Первый экран. Снимок один — художница в мастерской, его выбрала она сама,
@@ -11,10 +15,15 @@ import { site } from "@/lib/site";
  * Десктоп — по макету design/mockups/Home.dc.html: слева текст на фоне зала,
  * справа фото на всю высоту до края окна.
  *
- * Телефон — «журнальная обложка»: сверху крупно имя, под ним фото во всю
- * ширину с чёткими краями, ниже девиз и кнопки. Первым человек читает, чей
- * это сайт. Абзац про 2020 год на телефоне скрыт: заказчик решил, что на
+ * Телефон — «журнальная обложка»: сверху крупно девиз и строка о том, что
+ * она начала в 53, под ними фото во всю ширину с чёткими краями, ниже
+ * кнопки. Абзац про 2020 год на телефоне скрыт: заказчик решил, что на
  * первом экране он не обязателен, история есть на /about.
+ *
+ * Заголовок — девиз, а не имя (вариант 2, заказчик 9.10.2026): имя
+ * крупно стоит в шапке по центру прямо над ним, два имени подряд
+ * читались повтором. Прежде здесь были надстрочник «Портфолио», имя
+ * и девиз мельче под фото.
  *
  * Как сюда пришли, чтобы не переигрывать: две половины «текст + полоска
  * фото» спорили; фото на весь экран с текстом поверх приближало
@@ -32,7 +41,9 @@ import { site } from "@/lib/site";
  * ВРЕМЕННО: кадр сгенерирован нейросетью, а не снят. Заменить настоящей
  * фотографией — docs/tekst-o-hudozhnitse.md, раздел 6.
  */
-export function Hero() {
+export function Hero({ lang }: { lang: Locale }) {
+  const t = getDictionary(lang);
+
   return (
     <section className="bg-bg flex min-h-svh flex-col">
       {/* stage, а не solid: шапка прозрачная и не липкая — на первом экране
@@ -49,14 +60,30 @@ export function Hero() {
       */}
       <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
         <div className="px-[clamp(20px,5vw,64px)] pt-6 pb-6 [grid-area:title] min-[900px]:py-0">
-          <span className="text-accent mb-3.5 block text-[14px] font-semibold tracking-[0.1em] uppercase">
-            {site.role}
-          </span>
-          {/* На телефоне крупнее, чем по формуле десктопа: имя здесь — главное
-              на экране, как название журнала на обложке. */}
-          <h1 className="text-ink m-0 text-[clamp(44px,12.5vw,58px)] leading-[1.02] min-[900px]:text-[clamp(38px,4.6vw,68px)] min-[900px]:leading-[1.06]">
-            {site.artist}
+          {/*
+            Заголовок — девиз, а не имя (вариант 2, заказчик 9.10.2026):
+            имя крупно стоит в шапке прямо над ним, и два имени подряд
+            читались повтором. Для поисковика и скринридера имя остаётся
+            началом заголовка — скрытым текстом: главный заголовок
+            страницы должен говорить, чей это сайт.
+
+            «нет цели!» подчёркнуто тем же мазком мастихина, что пункт меню;
+            он ложится чуть позже, когда заголовок уже прочитан.
+          */}
+          <h1 className="text-ink m-0 text-[clamp(42px,11.5vw,58px)] leading-[1.05] min-[900px]:text-[clamp(44px,5vw,76px)]">
+            <span className="sr-only">{t.site.artist}. </span>
+            {t.hero.motto.lead}{" "}
+            <span className="relative inline-block whitespace-nowrap">
+              <BrushStroke className="hero-stroke" delay={0.45} duration={1.1} />
+              <span className="relative">{t.hero.motto.accent}</span>
+            </span>
           </h1>
+          {/* На телефоне — короткая строка вместо абзаца `story`: тот
+              скрыт там по решению заказчика, а без подписи девиз остался
+              бы без героя. */}
+          <p className="text-ink-soft mt-4 mb-0 text-[16px] leading-relaxed min-[900px]:hidden">
+            {t.hero.subline}
+          </p>
         </div>
 
         {/*
@@ -71,7 +98,7 @@ export function Hero() {
         <div className="relative min-h-[260px] [grid-area:photo]">
           <Image
             src="/about/berlant-v-masterskoy.webp"
-            alt="Берлант Джабраилова кладёт мастихином мазок на холст с башней; рядом палитра и тюбики масляных красок"
+            alt={t.hero.photoAlt}
             fill
             preload
             sizes="(min-width: 900px) 59vw, 100vw"
@@ -80,13 +107,6 @@ export function Hero() {
         </div>
 
         <div className="flex flex-col gap-6 px-[clamp(20px,5vw,64px)] pt-6 pb-8 [grid-area:rest] min-[900px]:gap-7 min-[900px]:pt-5 min-[900px]:pb-0">
-          {/* Разрядка, а не курсив, — так девиз набирался с прежним
-              Oranienbaum, у которого курсива не было. У Cormorant курсив
-              есть и подключён: перейти на него — решение заказчика. */}
-          <p className="font-heading text-accent m-0 text-[clamp(19px,2.2vw,28px)] tracking-[0.06em]">
-            {site.slogan}
-          </p>
-
           {/*
             Только подтверждённое самой художницей: масло (акрил она
             не называла), возраст, отсутствие школы и что пишет каждый день.
@@ -94,17 +114,30 @@ export function Hero() {
             На телефоне скрыт — см. описание компонента.
           */}
           <p className="text-ink-soft m-0 hidden max-w-[46ch] text-base leading-relaxed min-[900px]:block">
-            Пишет маслом с 2020 года. Взялась за кисть в 54 года, без художественной школы и без
-            единого урока рисования, — и с тех пор пишет каждый день.
+            {t.hero.story(t.hero.yearOrdinal(paintingYear()))}
           </p>
 
-          <div className="btn-row">
-            <ButtonLink href="/gallery" variant="primary" size="lg">
-              Смотреть галерею
+          {/* Главное действие одно — галерея. «О художнице» — ссылка, а не
+              вторая кнопка: две кнопки рядом спорили за внимание. */}
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+            <ButtonLink href={localePath(lang, "/gallery")} variant="primary" size="lg">
+              {t.hero.toGallery}
             </ButtonLink>
-            <ButtonLink href="/about" variant="secondary" size="lg">
-              О художнице
-            </ButtonLink>
+            <Link
+              href={localePath(lang, "/about")}
+              className="group text-ink decoration-ink/35 hover:decoration-ink text-base font-medium underline underline-offset-[6px] transition-colors"
+            >
+              {t.hero.toAbout}{" "}
+              {/* Стрелка уезжает вправо при наведении и фокусе — подсказка
+                  «туда», а не украшение. inline-block — иначе transform на
+                  строчном элементе не работает. */}
+              <span
+                aria-hidden="true"
+                className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-focus-visible:translate-x-1.5"
+              >
+                →
+              </span>
+            </Link>
           </div>
         </div>
       </div>

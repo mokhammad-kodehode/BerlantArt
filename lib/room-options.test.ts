@@ -21,8 +21,9 @@ import {
  * впишется ли холст в его комнату.
  */
 describe("parseRoomOptions", () => {
-  it("без параметров отдаёт значения по умолчанию", () => {
+  it("без параметров отдаёт значения по умолчанию — картину без рамы", () => {
     expect(parseRoomOptions({})).toEqual(defaultRoomOptions);
+    expect(parseRoomOptions({}).frame).toBe("none");
   });
 
   it("читает выбор из адреса", () => {
@@ -168,8 +169,13 @@ describe("roomMessage", () => {
   });
 
   it("из камеры не называет нарисованную стену", () => {
-    expect(roomMessage("Село", defaultRoomOptions, "", "camera")).toContain(
-      "в раме «Классический багет», золото, у себя на стене, через камеру.",
-    );
+    expect(
+      roomMessage(
+        "Село",
+        { ...defaultRoomOptions, frame: "classic", finish: "gold" },
+        "",
+        "camera",
+      ),
+    ).toContain("в раме «Классический багет», золото, у себя на стене, через камеру.");
   });
 });

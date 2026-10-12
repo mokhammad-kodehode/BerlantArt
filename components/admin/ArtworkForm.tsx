@@ -205,7 +205,13 @@ export function ArtworkForm({
         </div>
 
         <div className="field">
-          <label htmlFor="price">Цена, ₽</label>
+          {/* Пометка внутри подписи, а не отдельной строкой: так её прочтёт
+              и скринридер вместе с названием поля. Цена и статус хранятся,
+              но посетителю не видны — продажа на сайте выключена
+              (ARCHITECTURE.md, «Продажа выключена»). */}
+          <label htmlFor="price">
+            Цена, ₽ <span className="text-ink-faint font-normal">— на сайте не видна</span>
+          </label>
           <input {...field("price")} type="text" inputMode="numeric" autoComplete="off" />
           {fieldError("price")}
         </div>
@@ -215,7 +221,9 @@ export function ArtworkForm({
 
       <div className="grid items-start gap-5 sm:grid-cols-2">
         <div className="field">
-          <label htmlFor="status">Статус</label>
+          <label htmlFor="status">
+            Статус <span className="text-ink-faint font-normal">— на сайте не виден</span>
+          </label>
           <select
             {...fieldProps("status")}
             key={`status-${values.status}`}
@@ -239,6 +247,26 @@ export function ArtworkForm({
             className="accent-accent size-4"
           />
           Показывать на главной
+        </label>
+
+        {/* Подсказка честно называет ограничение компьютера: крупных ячеек
+            в коллаже одна на каждые пять работ (lib/collage.ts), и лишним
+            отмеченным работам места может не хватить. */}
+        <label className="flex cursor-pointer items-start gap-3 pt-5 text-sm">
+          <input
+            type="checkbox"
+            name="isLarge"
+            key={`isLarge-${values.isLarge}`}
+            defaultChecked={values.isLarge}
+            className="accent-accent mt-0.5 size-4"
+          />
+          <span>
+            Показывать крупно в галерее
+            <span className="text-ink-faint mt-0.5 block text-[13px]">
+              На телефоне — во всю ширину. На компьютере — в крупной ячейке, если она есть: одна на
+              каждые пять работ.
+            </span>
+          </span>
         </label>
       </div>
 

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { getDictionary, type Locale } from "@/lib/i18n";
+
 /**
  * Примерочная: какие рамы, покрытия, стены и свет можно выбрать и как
  * выбор живёт в адресе страницы.
@@ -201,13 +203,19 @@ export type RoomOptions = {
 };
 
 /**
- * Что открывается без параметров: классический золотой багет на тёплой
- * стене при дневном свете. Вечер с лампой был по умолчанию, пока заказчик
- * не попросил начинать со светлого: картину сначала хотят разглядеть,
+ * Что открывается без параметров: картина без рамы на тёплой стене при
+ * дневном свете. Вечер с лампой был по умолчанию, пока заказчик не
+ * попросил начинать со светлого: картину сначала хотят разглядеть,
  * а подсветку — включить потом.
+ *
+ * Без рамы — с 9 октября 2026 (заказчик): сначала человек видит саму
+ * картину, а раму примеряет, если захочет; панель с рамами для этого
+ * открыта сразу (ArtworkRoom). Прежде по умолчанию стоял классический
+ * золотой багет. Покрытие «золото» хранится и у «без рамы»: выберешь
+ * раму — она сразу золотая.
  */
 export const defaultRoomOptions: RoomOptions = {
-  frame: "classic",
+  frame: "none",
   finish: "gold",
   wall: "beige",
   light: "day",
@@ -338,19 +346,23 @@ export function framedSides(sides: CanvasSides, frame: RoomFrame): CanvasSides {
  *
  * Из примерки через камеру стена своя, настоящая, — называть цвет
  * нарисованной стены там было бы неправдой.
+ *
+ * Текст — на языке страницы (lib/i18n): из английской версии пишут
+ * по-английски. Подписи рам и стен для русского — те же, что здесь.
  */
 export function roomMessage(
   title: string,
   options: RoomOptions,
   pageUrl: string,
   place: "room" | "camera" = "room",
+  lang: Locale = "ru",
 ): string {
+  const t = getDictionary(lang).room;
   const framing =
     options.frame === "none"
-      ? "без рамы"
-      : `в раме «${frameModels[options.frame].label}», ${finishText[options.finish].label.toLowerCase()}`;
-  const where =
-    place === "camera" ? "у себя на стене, через камеру" : wallText[options.wall].phrase;
+      ? t.messageNoFrame
+      : t.messageFramed(t.frames[options.frame].label, t.finishes[options.finish]);
+  const where = place === "camera" ? t.messageCamera : t.walls[options.wall].phrase;
   // «Смотрю её…», а не «примерял»: без рода — пишут и мужчины, и женщины.
-  return `Здравствуйте! Интересует работа «${title}». Смотрю её ${framing}, ${where}. ${pageUrl}`;
+  return t.message(title, framing, where, pageUrl);
 }

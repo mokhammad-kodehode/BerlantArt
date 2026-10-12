@@ -4,18 +4,23 @@
 
 ```
 app/                    маршруты App Router
-  layout.tsx            шрифты, метаданные, подвал
-  page.tsx              главная
+  (ru)/                 русская версия, адреса без приставки; админка и витрина — только здесь
+  (en)/en/              английская версия, тонкие обёртки над components/pages
+  global-not-found.tsx  404 для адресов, не совпавших ни с одним маршрутом
   globals.css           дизайн-система: токены и компонентные классы
   styleguide/           витрина дизайн-системы (закрыта от индексации)
 components/
-  ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch
-  layout/               Header, Footer
+  ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch, BrushStroke,
+                        PopoverMenu (кнопка с меню), ContactIcon
+  layout/               Header (серверная обёртка) и HeaderBar (сама шапка), Footer,
+                        RootDocument (общий <html> для обоих языков)
+  pages/                тела публичных страниц с параметром lang — одно на оба языка
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, ArtworkCollage, ArtworkStage, ArtworkViewer,
-                        ArtworkRoom и PictureLamp (примерочная), ArCameraButton (камера)
+                        ShareButton, ArtworkRoom и PictureLamp (примерочная), ArCamera и ArGuide (камера)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
+  i18n/                 языки, адреса (localePath), словари ru и en
   demo-artworks.ts      временные данные (уйдут на этапе 3)
   env.ts                валидация переменных окружения
   cn.ts                 склейка классов
@@ -36,12 +41,16 @@ public/                 всё отсюда доступно из интерне
 
 - **Серверные компоненты по умолчанию.** `"use client"` добавляется, только
   когда нужны состояние, эффекты или обработчики. На публичных страницах
-  клиентские: `Header` (бургер-меню, подсветка текущего раздела),
+  клиентские: `HeaderBar` (меню бургера на весь экран, подсветка текущего
+  раздела; страницы подключают серверную обёртку `Header` — она собирает
+  контакты для меню, потому что lib/contacts.ts в браузере не работает),
+  `PopoverMenu` (меню у кнопки «Написать художнице»), `ShareButton`
+  («Поделиться»: системное меню телефона или своё меню на компьютере),
   `PaintingReel` (видео в конце главной, надпись по прокрутке),
   `ArtworkViewer` (просмотр картины на весь экран), `ArtworkRoom` (примерочная:
   рама по пропорциям загруженной фотографии, выбор без перезагрузки; она же
-  примерка через камеру в режиме `variant="camera"`), `ArCameraButton`
-  (выбор просмотрщика телефона в момент нажатия),
+  примерка через камеру в режиме `variant="camera"`), `useArCamera`
+  (`ArCamera`: выбор просмотрщика телефона, `ArGuide`: подготовка перед камерой),
   `ContactForm` (проверка полей, сборка сообщения), `AdminReturnBar`
   (возврат в панель) и `ThemeSwitch` (выбор зала). У последнего своего
   состояния нет — он только пишет атрибут на `<html>` и в localStorage,
