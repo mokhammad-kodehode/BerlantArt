@@ -251,7 +251,7 @@ export const en: Dictionary = {
       {
         label: "Before 2020",
         title: "A different life",
-        text: "She comes from the village of Goyty. After the war she lived in Turkey, then in Moscow, and only in 2013 returned to the Chechen Republic — her home has been in Grozny ever since. She speaks Turkish. All her earlier life she was an entrepreneur, and neither she nor her family ever thought about painting.",
+        text: "After the war she lived in Turkey, then in Moscow, and only in 2013 returned to the Chechen Republic — her home has been in Grozny ever since. She speaks Turkish. All her earlier life she was an entrepreneur, and neither she nor her family ever thought about painting.",
       },
       {
         label: "2020",
