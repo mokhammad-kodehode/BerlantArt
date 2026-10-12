@@ -11,6 +11,6 @@ import { contactLinks } from "@/lib/contacts";
  * и уходит в HeaderBar готовыми данными, без подписей: подписи HeaderBar
  * берёт из своего словаря на языке страницы.
  */
-export function Header({ variant }: { variant?: "solid" | "plain" | "stage" }) {
+export function Header({ variant }: { variant?: "solid" | "stage" }) {
   return <HeaderBar variant={variant} contacts={contactLinks()} />;
 }

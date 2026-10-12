@@ -38,7 +38,6 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  * Три варианта:
  *
  * - `solid` — плашка цвета стены, липнет к верху;
- * - `plain` — та же плашка, не липкая (галерея);
  * - `stage` — страница работы. На компьютере спрятана над экраном и
  *   выезжает, когда мышь подходит к верхнему краю; на телефоне — тонкая
  *   прозрачная полоса с одним бургером. Шапка не должна отвлекать от
@@ -47,7 +46,7 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  * Пункты меню везде под кнопкой-бургером. На телефоне — с самого начала:
  * в макете навигация переносилась по словам и занимала три строки (148px).
  * На компьютере — с 12.10.2026 (заказчик): шапка в одну строку вместо двух,
- * 72px вместо 144px, — картина и фото на первом экране крупнее.
+ * 86px вместо 144px, — картина и фото на первом экране крупнее.
  *
  * Меню бургера на телефоне — на весь экран (заказчик, 8.10.2026), на
  * компьютере — панель справа (12.10.2026): на экране 1900px четыре пункта
@@ -64,11 +63,10 @@ export function HeaderBar({
   contacts = [],
 }: {
   /**
-   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея:
-   * там шапка у верха только мешает разглядывать стену, заказчик
-   * 12.10.2026); stage — страница работы: спрятана, не отвлекает от картины.
+   * solid — плашкой и липкая; stage — страница работы: спрятана, не
+   * отвлекает от картины.
    */
-  variant?: "solid" | "plain" | "stage";
+  variant?: "solid" | "stage";
   /** Способы связи для меню бургера. Пусто — блока контактов нет. */
   contacts?: ContactLink[];
 }) {
@@ -186,7 +184,6 @@ export function HeaderBar({
     <header
       className={cn(
         variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20",
-        variant === "plain" && "header-line bg-wall text-ink relative z-20",
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
@@ -222,8 +219,9 @@ export function HeaderBar({
             справа бургер; пункты меню и «Написать художнице» — в панели,
             которая выезжает справа (заказчик, 12.10.2026). Прежде шапка
             была в две строки, 144px: имя сверху, меню под ним. Одна строка
-            — 72px, и первый экран отдаёт картине на 72px больше. */}
-        <div className="hidden h-[72px] grid-cols-[1fr_auto_1fr] items-center lg:grid">
+            — 86px (было 72px, заказчик 12.10.2026 попросил на 20% выше),
+            и первый экран всё равно отдаёт картине больше прежнего. */}
+        <div className="hidden h-[86px] grid-cols-[1fr_auto_1fr] items-center lg:grid">
           <div className="flex items-center gap-3">
             <ThemeSwitch />
             {languageLink("lang-switch")}
@@ -240,7 +238,7 @@ export function HeaderBar({
 
       {/*
         Меню. На телефоне — на весь экран, на компьютере — панель справа
-        шириной 440px, страница за ней затемняется (globals.css,
+        шириной от 528px, растёт с экраном; страница за ней затемняется (globals.css,
         .mobile-nav). Справа — потому что там бургер: панель выезжает
         оттуда, куда человек только что нажал.
       */}
@@ -264,7 +262,7 @@ export function HeaderBar({
           {/* На компьютере имени в панели нет: оно и так стоит в шапке
               рядом, а в узкой панели повторялось бы. Клетка остаётся,
               чтобы крестик стоял там же, где был бургер. */}
-          <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4 lg:h-[72px] lg:py-0">
+          <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4 lg:h-[86px] lg:py-0">
             <span aria-hidden="true" />
             <Link
               href={localePath(lang, "/")}
