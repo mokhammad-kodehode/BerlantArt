@@ -147,6 +147,12 @@ export const ru = {
     emptyText: "Картины появятся здесь, как только художница добавит их.",
     filterCategory: "Фильтр по категории",
     categoryAll: "Все категории",
+    searchLabel: "Поиск по работам",
+    searchPlaceholder: "Найти картину…",
+    searchClear: "Очистить поиск",
+    emptySearchTitle: (query: string) => `По запросу «${query}» ничего нет`,
+    emptySearchText: "Попробуйте другое слово — ищем в названиях, описаниях и категориях.",
+    showAll: "Показать все работы",
   },
 
   /**

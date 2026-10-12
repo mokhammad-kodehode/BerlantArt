@@ -3,6 +3,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
+import { likePattern } from "@/lib/gallery-search";
 import { getDictionary, translateValue, type Locale } from "@/lib/i18n";
 import { publicUrl } from "@/lib/r2";
 import type { SitemapArtwork } from "@/lib/seo";
@@ -203,7 +204,34 @@ export type ArtworkFilters = {
   /** Границы цены в рублях, включительно. */
   priceMin?: number;
   priceMax?: number;
+  /** Поисковый запрос, уже приведённый `normalizeSearch` (lib/gallery-search.ts). */
+  search?: string;
+  /**
+   * Категории, которые тоже считаются найденными по запросу, — их находит
+   * по переводу английская версия (`categoriesMatching`).
+   */
+  searchCategories?: string[];
 };
+
+/**
+ * Работы, у которых запрос есть в названии, описании или категории.
+ *
+ * Запрос написан вручную, потому что Prisma не умеет сравнивать «ё» с «е»:
+ * `contains` с `mode: "insensitive"` не нашёл бы «Берёзу» по «береза».
+ * Значение уходит параметром (тегированный шаблон $queryRaw), а не
+ * склейкой строки — подставить в него свой SQL нельзя. Работ — десятки,
+ * поэтому полный просмотр таблицы без индекса здесь дешевле индекса.
+ */
+async function searchArtworkIds(search: string): Promise<string[]> {
+  const rows = await db.$queryRaw<{ id: string }[]>`
+    SELECT "id" FROM "Artwork"
+    WHERE translate(
+      lower("title" || ' ' || coalesce("description", '') || ' ' || coalesce("category", '')),
+      'ё', 'е'
+    ) LIKE ${likePattern(search)}
+  `;
+  return rows.map((row) => row.id);
+}
 
 /**
  * Список работ под фильтры галереи.
@@ -213,10 +241,22 @@ export type ArtworkFilters = {
  * игнорирует, а `where: { category: "" }` вернул бы пусто.
  */
 export async function getArtworks(filters: ArtworkFilters = {}): Promise<ArtworkWithImages[]> {
-  const { category, technique, status, priceMin, priceMax } = filters;
+  const {
+    category,
+    technique,
+    status,
+    priceMin,
+    priceMax,
+    search,
+    searchCategories = [],
+  } = filters;
 
   const price =
     priceMin === undefined && priceMax === undefined ? undefined : { gte: priceMin, lte: priceMax };
+
+  // Поиск — отдельным запросом за списком id: найденное дальше выбирается
+  // тем же findMany, с теми же изображениями и порядком, что и без поиска.
+  const found = search === undefined ? undefined : await searchArtworkIds(search);
 
   return db.artwork.findMany({
     where: {
@@ -224,6 +264,10 @@ export async function getArtworks(filters: ArtworkFilters = {}): Promise<Artwork
       technique: technique || undefined,
       status,
       price,
+      OR:
+        found === undefined
+          ? undefined
+          : [{ id: { in: found } }, { category: { in: searchCategories } }],
     },
     include: withImages,
     orderBy: galleryOrder,

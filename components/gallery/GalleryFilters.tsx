@@ -1,20 +1,10 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { artworkCategory } from "@/lib/artworks";
-import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import { galleryHref, type GalleryQuery } from "@/lib/gallery-search";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 /** Разобранные и проверенные параметры адреса — то, что реально ушло в запрос. */
-export type GalleryFilters = {
-  category?: string;
-};
-
-/**
- * Адрес `/gallery` с выбранной категорией. `undefined` убирает параметр —
- * так «Все категории» выглядит как `/gallery`, а не как `/gallery?category=`.
- */
-function galleryHref(lang: Locale, category: string | undefined): string {
-  const path = localePath(lang, "/gallery");
-  return category ? `${path}?${new URLSearchParams({ category })}` : path;
-}
+export type GalleryFilters = GalleryQuery;
 
 /**
  * Переключатели категории — ссылки, а не кнопки с обработчиком.
@@ -40,6 +30,9 @@ function galleryHref(lang: Locale, category: string | undefined): string {
  * Фильтра «Доступные / Проданные» нет: продажа на сайте выключена
  * (ARCHITECTURE.md, «Продажа выключена»). Старые ссылки с `?status=`
  * не ломаются — параметр просто не читается, и видна вся галерея.
+ *
+ * Поиск при смене категории сохраняется: ищут «ромашки», потом сужают до
+ * «Цветов» — запрос не должен пропадать.
  */
 export function GalleryFilters({
   lang,
@@ -61,7 +54,7 @@ export function GalleryFilters({
       aria-label={t.filterCategory}
     >
       <ButtonLink
-        href={galleryHref(lang, undefined)}
+        href={galleryHref(lang, { q: current.q })}
         variant={!current.category ? "primary" : "soft"}
         aria-current={!current.category ? "page" : undefined}
         className="flex-none"
@@ -73,7 +66,7 @@ export function GalleryFilters({
         return (
           <ButtonLink
             key={category}
-            href={galleryHref(lang, category)}
+            href={galleryHref(lang, { category, q: current.q })}
             variant={active ? "primary" : "soft"}
             aria-current={active ? "page" : undefined}
             className="flex-none"

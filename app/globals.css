@@ -1220,6 +1220,106 @@
      экране она только мешает, — а правый край растворяется, чтобы было
      видно: лента продолжается за краем. Маска только ниже 768px: с этой
      ширины чипы снова переносятся по строкам и прятать нечего. */
+  /* Поле поиска в галерее: таблетка, как кнопки-фильтры рядом, лупа
+     слева, крестик справа. Встроенный крестик браузера у type="search"
+     спрятан — у нас свой, одинаковый во всех браузерах. */
+  .search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    height: 44px;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  @media (min-width: 768px) {
+    .search-field {
+      width: 340px;
+    }
+  }
+  .search-field:focus-within {
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+  .search-field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 44px 0 46px;
+    font: inherit;
+    /* 16px, а не меньше: мельче мобильный Safari приближает страницу
+       при касании поля. */
+    font-size: 16px;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    outline: none;
+    appearance: none;
+  }
+  .search-field input::placeholder {
+    color: var(--color-ink-faint);
+  }
+  .search-field input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .search-field-icon {
+    position: absolute;
+    left: 17px;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+  /* Пока сервер ищет, лупа тихо пульсирует — видно, что запрос ушёл. */
+  .search-field[data-pending] .search-field-icon {
+    animation: search-pending 0.9s ease-in-out infinite alternate;
+  }
+  @keyframes search-pending {
+    to {
+      opacity: 0.35;
+    }
+  }
+  .search-field-clear {
+    position: absolute;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    color: var(--color-ink-soft);
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+  }
+  .search-field-clear:hover {
+    color: var(--color-ink);
+    background: var(--color-surface);
+  }
+  .search-field-clear svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .search-field[data-pending] .search-field-icon {
+      animation: none;
+    }
+  }
+
   .filter-rail {
     scrollbar-width: none;
   }

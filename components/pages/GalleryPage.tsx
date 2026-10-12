@@ -2,7 +2,11 @@ import { z } from "zod";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
-import { getArtworks, getCategories } from "@/lib/artworks";
+import { GallerySearch } from "@/components/gallery/GallerySearch";
+import { ButtonLink } from "@/components/ui/Button";
+import { artworkCategories } from "@/lib/artwork-form";
+import { artworkCategory, getArtworks, getCategories } from "@/lib/artworks";
+import { categoriesMatching, galleryHref, normalizeSearch } from "@/lib/gallery-search";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 /**
@@ -19,6 +23,9 @@ import { getDictionary, type Locale } from "@/lib/i18n";
  */
 const filtersSchema = z.object({
   category: z.string().min(1).optional().catch(undefined),
+  // Поиск: строка как есть — её показывает поле; к виду для базы её
+  // приводит normalizeSearch (lib/gallery-search.ts).
+  q: z.string().optional().catch(undefined),
 });
 
 /**
@@ -55,10 +62,26 @@ export async function GalleryPage({
 
   const filters = filtersSchema.parse({
     category: first(rawParams.category),
+    q: first(rawParams.q),
   });
+  const search = normalizeSearch(filters.q);
+  // Пустой или из одних пробелов запрос — не запрос: в ссылки категорий
+  // он не попадает.
+  const current = { category: filters.category, q: search === undefined ? undefined : filters.q };
+  // В английской версии запрос сверяется и с переводами категорий: в базе
+  // они по-русски, и «flowers» иначе не нашёл бы «Цветы».
+  const searchCategories =
+    search === undefined || lang === "ru"
+      ? []
+      : categoriesMatching(search, artworkCategories, (category) =>
+          artworkCategory(category, lang),
+        );
 
   // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
-  const [works, categories] = await Promise.all([getArtworks(filters), getCategories()]);
+  const [works, categories] = await Promise.all([
+    getArtworks({ category: filters.category, search, searchCategories }),
+    getCategories(),
+  ]);
 
   return (
     <main className="flex flex-1 flex-col">
@@ -76,7 +99,12 @@ export async function GalleryPage({
           </p>
         </div>
 
-        <GalleryFilters lang={lang} current={filters} categories={categories} />
+        {/* Поиск над категориями: на телефоне — во всю ширину, на компьютере
+            — справа, той же колонкой, что и переключатели. */}
+        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
+          <GallerySearch lang={lang} category={current.category} query={filters.q} />
+          <GalleryFilters lang={lang} current={current} categories={categories} />
+        </div>
       </div>
 
       {works.length === 0 ? (
@@ -85,7 +113,19 @@ export async function GalleryPage({
             {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
                   иначе пустая категория выглядела бы так, будто сайт вообще
                   без картин. */}
-            {filters.category ? (
+            {search !== undefined ? (
+              <>
+                <h2 className="text-ink mt-0 mb-2 text-[20px]">
+                  {t.emptySearchTitle(filters.q?.trim() ?? "")}
+                </h2>
+                <p className="text-ink-soft mt-0 mb-5 max-w-[48ch] text-[14px]">
+                  {t.emptySearchText}
+                </p>
+                <ButtonLink href={galleryHref(lang, {})} variant="primary">
+                  {t.showAll}
+                </ButtonLink>
+              </>
+            ) : filters.category ? (
               <>
                 <h2 className="text-ink mt-0 mb-2 text-[20px]">{t.emptyFilteredTitle}</h2>
                 <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">{t.emptyFilteredText}</p>

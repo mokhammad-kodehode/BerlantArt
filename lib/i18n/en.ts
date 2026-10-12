@@ -110,6 +110,12 @@ export const en: Dictionary = {
     emptyText: "Paintings will appear here as soon as the artist adds them.",
     filterCategory: "Filter by category",
     categoryAll: "All categories",
+    searchLabel: "Search works",
+    searchPlaceholder: "Find a painting…",
+    searchClear: "Clear search",
+    emptySearchTitle: (query: string) => `Nothing found for “${query}”`,
+    emptySearchText: "Try another word — titles, descriptions and categories are searched.",
+    showAll: "Show all works",
   },
 
   categories: {

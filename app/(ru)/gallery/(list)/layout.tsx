@@ -12,7 +12,9 @@ import { Header } from "@/components/layout/Header";
 export default function GalleryListLayout({ children }: LayoutProps<"/gallery">) {
   return (
     <div className="bg-wall flex min-h-svh flex-col">
-      <Header />
+      {/* Не липкая — исключение по просьбе заказчика (12.10.2026): на стене
+          работ шапка у верха закрывала верхний ряд картин. */}
+      <Header variant="plain" />
       {children}
     </div>
   );

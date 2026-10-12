@@ -66,7 +66,12 @@ export function HeaderBar({
   variant = "solid",
   contacts = [],
 }: {
-  variant?: "solid" | "stage";
+  /**
+   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея:
+   * там шапка у верха только мешает разглядывать стену, заказчик
+   * 12.10.2026); stage — над картиной на странице работы.
+   */
+  variant?: "solid" | "plain" | "stage";
   /** Способы связи для меню бургера. Пусто — блока контактов нет. */
   contacts?: ContactLink[];
 }) {
@@ -203,6 +208,7 @@ export function HeaderBar({
       ref={headerRef}
       className={cn(
         variant === "solid" && "header-solid bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
+        variant === "plain" && "bg-wall text-ink relative z-20",
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
