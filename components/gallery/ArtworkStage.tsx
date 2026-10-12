@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
+import { ArtworkPicker } from "@/components/gallery/ArtworkPicker";
 import { ArtworkSwipe } from "@/components/gallery/ArtworkSwipe";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
@@ -77,7 +78,8 @@ export function ArtworkStage({
   children: ReactNode;
 }) {
   const t = getDictionary(lang).work;
-  const { prev, next, position, total } = neighbours;
+  const { prev, next, position, total, works } = neighbours;
+  const currentId = works[position - 1]?.id;
   const prevHref = prev ? localePath(lang, `/gallery/${prev.id}`) : undefined;
   const nextHref = next ? localePath(lang, `/gallery/${next.id}`) : undefined;
   const artBoxStyle: (CSSProperties & { "--art-ratio": number }) | undefined =
@@ -258,6 +260,8 @@ export function ArtworkStage({
                     <path d="m9.5 6 6 6-6 6" />
                   </svg>
                 </Link>
+                {/* «Все работы» — панель с миниатюрами поверх страницы. */}
+                {currentId && <ArtworkPicker works={works} currentId={currentId} />}
               </div>
             )}
           </nav>
@@ -270,7 +274,7 @@ export function ArtworkStage({
         (заказчик, 12.10.2026). Справа поле уже, чем слева: там его и так
         отделяет от картины стена.
       */}
-        <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:w-[30%] lg:self-end lg:pt-8 lg:pr-10 lg:pb-14 lg:[grid-area:1/1]">
+        <div className="stage-caption relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:w-[30%] lg:self-end lg:pt-8 lg:pr-10 lg:[grid-area:1/1]">
           {/* На телефоне эта ссылка стоит в ряду со стрелками, под картиной. */}
           <Link
             href={localePath(lang, "/gallery")}

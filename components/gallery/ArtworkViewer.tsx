@@ -93,9 +93,14 @@ export function ArtworkViewer({
       );
       const width = img.naturalWidth * scale;
       const height = img.naturalHeight * scale;
+      // Где лёг холст по вертикали, решает object-position: на компьютере
+      // он прижат к низу блока (globals.css, .stage-art), на телефоне —
+      // по центру. Читаем из CSS, чтобы кнопка не разошлась с картиной.
+      const [, y = "50%"] = getComputedStyle(img).objectPosition.split(" ");
+      const yShare = parseFloat(y) / 100;
       setPaintedBox({
         left: (box.clientWidth - width) / 2,
-        top: (box.clientHeight - height) / 2,
+        top: (box.clientHeight - height) * (Number.isNaN(yShare) ? 0.5 : yShare),
         width,
         height,
       });

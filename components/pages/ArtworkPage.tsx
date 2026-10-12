@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ArtworkStage } from "@/components/gallery/ArtworkStage";
 import { ShareButton } from "@/components/gallery/ShareButton";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
-import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/ui/JsonLd";
@@ -17,7 +15,6 @@ import {
   artworkTechnique,
   getArtworkById,
   getArtworkNeighbours,
-  getOtherArtworks,
   imageUrl,
   primaryImageUrl,
 } from "@/lib/artworks";
@@ -93,11 +90,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
   const t = getDictionary(lang);
 
   // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
-  const [work, others, neighbours] = await Promise.all([
-    getArtworkById(id),
-    getOtherArtworks(id),
-    getArtworkNeighbours(id),
-  ]);
+  const [work, neighbours] = await Promise.all([getArtworkById(id), getArtworkNeighbours(id)]);
 
   if (!work) notFound();
 
@@ -139,7 +132,6 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
   const mailHref = contactEmail
     ? `mailto:${contactEmail}?subject=${encodeURIComponent(t.work.mailSubject(work.title))}&body=${encodeURIComponent(message)}`
     : null;
-  const hasMore = extraImages.length > 0 || others.length > 0;
 
   return (
     <>
@@ -288,21 +280,9 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
             )}
           </p>
         )}
-
-        {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
-            есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
-            с клавиатуры и читается скринридером. */}
-        {hasMore && (
-          <a
-            href="#more"
-            className="text-accent mt-5 inline-block text-[14px] font-semibold no-underline hover:underline"
-          >
-            {t.work.seeMore}
-          </a>
-        )}
       </ArtworkStage>
 
-      <main id="more">
+      <main>
         {extraImages.length > 0 && (
           <Container>
             <section className="pt-12 pb-4">
@@ -321,34 +301,6 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
               </ul>
             </section>
           </Container>
-        )}
-
-        {others.length > 0 && (
-          /* Секция во всю ширину, а не класс .bleed: тот задан шириной 100vw,
-             а она включает полосу прокрутки — на этой странице документ
-             вылезал за окно на 8px (1433px при окне 1425px). Так же сделаны
-             полосы на главной и /about. */
-          <div className="bg-wall w-full pt-14 pb-16">
-            <Container>
-              <div className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-                <h2 className="text-ink m-0 text-[26px]">{t.work.otherWorks}</h2>
-                <Link
-                  href={localePath(lang, "/gallery")}
-                  className="text-accent font-semibold no-underline hover:underline"
-                >
-                  {t.work.allGallery}
-                </Link>
-              </div>
-
-              {/* Ровный ряд, без неровных пролётов коллажа: здесь это
-                  дополнение к карточке, а не главная витрина. */}
-              <ul className="wall m-0 grid list-none auto-rows-[190px] grid-cols-2 gap-5 p-0 md:grid-cols-4">
-                {others.map((other) => (
-                  <ArtworkTile key={other.id} work={other} lang={lang} />
-                ))}
-              </ul>
-            </Container>
-          </div>
         )}
       </main>
     </>

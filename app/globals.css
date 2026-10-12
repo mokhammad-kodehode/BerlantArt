@@ -991,6 +991,156 @@
     border-color: var(--color-ink-faint);
   }
 
+  /* «Все работы» (components/gallery/ArtworkPicker.tsx): кнопка рядом
+     со стрелками и панель с миниатюрами поверх страницы.
+
+     Панель тёмная в любом зале, как лента в примерочной и просмотр во весь
+     экран: миниатюры картин на ней читаются, а интерфейс не спорит с ними.
+     Внизу экрана, в два ряда, листается вбок. */
+  .stage-picker-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-left: 4px;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-pill);
+    transition: background-color 0.18s ease;
+  }
+  .stage-picker-button:hover {
+    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+  }
+  .stage-picker-button svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+  .picker {
+    inset: auto 0 16px;
+    width: min(1240px, calc(100vw - 24px));
+    max-width: none;
+    margin: 0 auto;
+    padding: 12px 14px 14px;
+    color: var(--color-neutral-100);
+    background: rgb(22 19 17 / 0.95);
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+  }
+  .picker[open] {
+    animation: picker-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .picker::backdrop {
+    background: rgb(20 18 17 / 0.35);
+  }
+  .picker:focus-visible {
+    outline: none;
+  }
+  @keyframes picker-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  .picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-left: 4px;
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.75);
+  }
+  .picker-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+  }
+  .picker-close:hover {
+    color: var(--color-neutral-100);
+    background: rgb(255 255 255 / 0.1);
+  }
+  .picker-close svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+  /* Два ряда, поток — по колонкам: лента растёт вбок, а не вниз. */
+  .picker-strip {
+    --thumb: 112px;
+    display: grid;
+    grid-template-rows: repeat(2, var(--thumb));
+    grid-auto-flow: column;
+    grid-auto-columns: var(--thumb);
+    gap: 8px;
+    margin: 0;
+    padding: 4px 4px 10px;
+    overflow-x: auto;
+    list-style: none;
+    overscroll-behavior-x: contain;
+    scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+  }
+  @media (max-width: 767px) {
+    .picker-strip {
+      --thumb: 84px;
+    }
+  }
+  .picker-thumb {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
+    transition: transform 0.18s ease;
+  }
+  .picker-thumb:hover {
+    transform: scale(1.04);
+  }
+  .picker-thumb[aria-current="page"] {
+    outline: 2px solid var(--color-neutral-100);
+    outline-offset: 2px;
+  }
+  .picker-thumb-empty {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    background: rgb(255 255 255 / 0.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .picker[open] {
+      animation: none;
+    }
+    .picker-thumb {
+      transition: none;
+    }
+    .picker-thumb:hover {
+      transform: none;
+    }
+  }
+
   /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
      popover: закрытие по клику мимо и по Esc браузер делает сам. По
      умолчанию popover стоит по центру экрана с рамкой — это сброшено,
@@ -1380,6 +1530,19 @@
   .stage-art {
     filter: var(--theme-shadow-art);
   }
+  /* На компьютере холст прижат к низу своего блока, а не стоит по центру
+     (заказчик, 12.10.2026): тогда низ картины всегда на одной линии с низом
+     подписи слева (.stage-caption) и стрелки «‹ 3 / 32 ›» стоят сразу под
+     холстом. По центру широкая картина на большом экране поднималась, и
+     подпись оказывалась ниже холста. Заглушка загрузки прижата так же. */
+  @media (min-width: 1024px) {
+    .stage-art {
+      object-position: 50% 100%;
+    }
+    .stage-art-area .image-loader-frame {
+      align-items: flex-end;
+    }
+  }
 
   /* Название работы поверх картины. В тёмном зале ему нужна тень: фоном
      лежит размытая копия холста, и у светлой работы он светлеет. В светлых
@@ -1566,7 +1729,7 @@
       margin-right: -12px;
     }
   }
-  .stage-pager a {
+  .stage-pager > a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1576,10 +1739,10 @@
     border-radius: var(--radius-pill);
     transition: background-color 0.18s ease;
   }
-  .stage-pager a:hover {
+  .stage-pager > a:hover {
     background: color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
-  .stage-pager svg {
+  .stage-pager > a svg {
     width: 20px;
     height: 20px;
     fill: none;
@@ -1717,6 +1880,18 @@
    Только этот зал и только с 1024px: на телефоне эффект и так работает,
    а тёмный зал заказчик просил не трогать.
    ═════════════════════════════════════════════════════════════════════════ */
+/* Низ подписи слева — на той же линии, что низ холста: отступ снизу
+   такой же, как у блока картины (lg:pb-[100px] там, правило ниже — для
+   белого зала). Холст прижат к низу блока (.stage-art). */
+@media (min-width: 1024px) {
+  .stage-caption {
+    padding-bottom: 100px;
+  }
+  :root[data-theme="paper"] .stage-caption {
+    padding-bottom: clamp(100px, 11vh, 120px);
+  }
+}
+
 @media (min-width: 1024px) {
   /* Не меньше 100px: в этом поле стоит ряд «‹ 3 / 32 ›» (ArtworkStage). */
   :root[data-theme="paper"] .stage-art-area {

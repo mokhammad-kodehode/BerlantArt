@@ -16,7 +16,7 @@ components/
                         RootDocument (общий <html> для обоих языков)
   pages/                тела публичных страниц с параметром lang — одно на оба языка
   home/                 блоки только для главной: Hero, PaintingReel
-  gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkStage, ArtworkViewer, ArtworkSwipe,
+  gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkStage, ArtworkViewer, ArtworkSwipe, ArtworkPicker,
                         ShareButton, ArtworkRoom и PictureLamp (примерочная), ArCamera и ArGuide (камера)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
@@ -48,7 +48,8 @@ public/                 всё отсюда доступно из интерне
   («Поделиться»: системное меню телефона или своё меню на компьютере),
   `PaintingReel` (видео в конце главной, надпись по прокрутке),
   `ArtworkViewer` (просмотр картины на весь экран), `ArtworkSwipe` (листание
-  работ свайпом и стрелками клавиатуры), `ArtworkRoom` (примерочная:
+  работ свайпом и стрелками клавиатуры), `ArtworkPicker` (панель «Все работы»
+  с миниатюрами поверх страницы работы), `ArtworkRoom` (примерочная:
   рама по пропорциям загруженной фотографии, выбор без перезагрузки; она же
   примерка через камеру в режиме `variant="camera"`), `useArCamera`
   (`ArCamera`: выбор просмотрщика телефона, `ArGuide`: подготовка перед камерой),

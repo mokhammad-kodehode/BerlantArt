@@ -197,7 +197,7 @@ export function primaryImageUrl(work: ArtworkWithImages): string | undefined {
  * отдавать их то так, то эдак, и стрелка «дальше» прыгала бы.
  *
  * Вынесен в константу, потому что его должны разделять выборки — список,
- * «другие работы», соседи для листания и карта сайта. Разойдись они,
+ * главная, соседи для листания с панелью «Все работы» и карта сайта. Разойдись они,
  * стрелка «дальше» вела бы не на ту работу, которая стоит следующей в стене.
  */
 const galleryOrder = [
@@ -297,29 +297,11 @@ export const getArtworkById = cache(async (id: string): Promise<ArtworkWithImage
   });
 });
 
-/**
- * Другие работы — для блока внизу карточки.
- *
- * Отбор нарочно простой: все работы, кроме открытой. Вариант «похожие
- * по категории» отвергнут, пока картин мало: категорий три, работ пять,
- * и у «Дома с бирюзовыми ставнями» блок вышел бы пустым. Вернуться к нему
- * стоит работах на пятнадцати.
- *
- * Лишнюю работу отсекает база через `where`, а не страница через `.filter()`:
- * иначе при тридцати картинах страница качала бы всю базу ради четырёх
- * карточек.
- */
-export async function getOtherArtworks(excludeId: string, limit = 4): Promise<ArtworkWithImages[]> {
-  return db.artwork.findMany({
-    where: { id: { not: excludeId } },
-    include: withImages,
-    orderBy: galleryOrder,
-    take: limit,
-  });
-}
-
 /** Ссылка на соседнюю работу: больше странице для стрелки ничего не нужно. */
 export type ArtworkLink = { id: string; title: string };
+
+/** Работа для списка-выбора на странице работы: название и миниатюра. */
+export type ArtworkThumb = ArtworkLink & { src?: string };
 
 /** Соседи работы и её место в галерее — для счётчика «3 / 32». */
 export type ArtworkNeighbours = {
@@ -328,6 +310,8 @@ export type ArtworkNeighbours = {
   /** Номер работы в порядке галереи, с единицы; 0 — работы в списке нет. */
   position: number;
   total: number;
+  /** Все работы в порядке галереи — для панели «Все работы» (ArtworkPicker). */
+  works: ArtworkThumb[];
 };
 
 /**
@@ -338,30 +322,42 @@ export type ArtworkNeighbours = {
  * не решается: курсор по дате путается на работах, добавленных в одну
  * секунду (пачкой через seed или импорт), — а ошибку такого рода на глаз
  * не видно, стрелка просто ведёт не туда. Тот же список даёт и номер
- * для счётчика, отдельный `count()` не нужен.
+ * для счётчика, и панель «Все работы» с миниатюрами: у каждой работы
+ * берётся одно главное фото, только адрес. Один запрос на страницу при
+ * любом числе работ; на 112 работах это около 15 КБ в разметке.
  *
  * Листание замкнуто в кольцо: с последней работы вперёд — на первую.
  * Так у стрелок нет выключенного состояния, а тупик в конце на галерее
  * из пяти работ раздражал бы сильнее, чем возврат к началу.
  */
 export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbours> {
-  const works = await db.artwork.findMany({
-    select: { id: true, title: true },
+  const rows = await db.artwork.findMany({
+    select: {
+      id: true,
+      title: true,
+      images: { select: { url: true }, orderBy: withImages.images.orderBy, take: 1 },
+    },
     orderBy: galleryOrder,
   });
 
+  const works: ArtworkThumb[] = rows.map((row) => {
+    const stored = row.images[0]?.url;
+    return { id: row.id, title: row.title, src: stored ? imageUrl(stored) : undefined };
+  });
   const index = works.findIndex((work) => work.id === id);
 
   // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
   if (index === -1 || works.length < 2) {
-    return { prev: null, next: null, position: index + 1, total: works.length };
+    return { prev: null, next: null, position: index + 1, total: works.length, works };
   }
 
+  const link = ({ id, title }: ArtworkThumb): ArtworkLink => ({ id, title });
   return {
-    prev: works[(index - 1 + works.length) % works.length],
-    next: works[(index + 1) % works.length],
+    prev: link(works[(index - 1 + works.length) % works.length]),
+    next: link(works[(index + 1) % works.length]),
     position: index + 1,
     total: works.length,
+    works,
   };
 }
 
