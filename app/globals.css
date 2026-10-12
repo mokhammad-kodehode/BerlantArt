@@ -93,6 +93,9 @@
   /* — радиусы. Имена смысловые, а не размерные: в этой системе кнопки и теги
        всегда таблетки, а карточки и панели — крупные скругления — */
   --radius-pill: 999px;
+  /* Лёгкое скругление панелей поверх картин — «Все работы»: крупное
+     спорило с прямыми углами миниатюр (заказчик, 12.10.2026). */
+  --radius-soft: 6px;
   --radius-tile: 16px;
   --radius-card: 32px;
   --radius-panel: 40px;
@@ -1031,7 +1034,9 @@
     color: var(--color-neutral-100);
     background: rgb(22 19 17 / 0.95);
     border: 0;
-    border-radius: 18px;
+    /* Скругление лёгкое, как у плиток: крупное делало панель похожей на
+       всплывающее окно телефона (заказчик, 12.10.2026). */
+    border-radius: var(--radius-soft);
     box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
   }
   .picker[open] {
@@ -1108,8 +1113,9 @@
     display: block;
     width: 100%;
     height: 100%;
+    /* Без скругления: это миниатюры картин, а у холста прямые углы
+       (design-system.md). */
     overflow: hidden;
-    border-radius: 8px;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
     transition: transform 0.18s ease;
   }
