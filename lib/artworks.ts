@@ -313,23 +313,30 @@ export async function getOtherArtworks(excludeId: string, limit = 4): Promise<Ar
 /** Ссылка на соседнюю работу: больше странице для стрелки ничего не нужно. */
 export type ArtworkLink = { id: string; title: string };
 
+/** Соседи работы и её место в галерее — для счётчика «3 / 32». */
+export type ArtworkNeighbours = {
+  prev: ArtworkLink | null;
+  next: ArtworkLink | null;
+  /** Номер работы в порядке галереи, с единицы; 0 — работы в списке нет. */
+  position: number;
+  total: number;
+};
+
 /**
- * Соседние работы в порядке галереи — для листания стрелками на странице
- * работы.
+ * Соседние работы в порядке галереи — для листания на странице работы.
  *
  * Берётся список одних только id и названий, без изображений и описаний,
  * и в нём ищется позиция. Двумя запросами «предыдущая и следующая» это
  * не решается: сортировка составная (статус, потом дата), и курсор по
  * одному полю даёт неверных соседей — а ошибку такого рода на глаз
- * не видно, стрелка просто ведёт не туда.
+ * не видно, стрелка просто ведёт не туда. Тот же список даёт и номер
+ * для счётчика, отдельный `count()` не нужен.
  *
  * Листание замкнуто в кольцо: с последней работы вперёд — на первую.
  * Так у стрелок нет выключенного состояния, а тупик в конце на галерее
  * из пяти работ раздражал бы сильнее, чем возврат к началу.
  */
-export async function getArtworkNeighbours(
-  id: string,
-): Promise<{ prev: ArtworkLink | null; next: ArtworkLink | null }> {
+export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbours> {
   const works = await db.artwork.findMany({
     select: { id: true, title: true },
     orderBy: galleryOrder,
@@ -338,11 +345,15 @@ export async function getArtworkNeighbours(
   const index = works.findIndex((work) => work.id === id);
 
   // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
-  if (index === -1 || works.length < 2) return { prev: null, next: null };
+  if (index === -1 || works.length < 2) {
+    return { prev: null, next: null, position: index + 1, total: works.length };
+  }
 
   return {
     prev: works[(index - 1 + works.length) % works.length],
     next: works[(index + 1) % works.length],
+    position: index + 1,
+    total: works.length,
   };
 }
 

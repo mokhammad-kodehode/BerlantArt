@@ -167,19 +167,8 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
         alt={artworkSeo(work, lang).imageAlt}
         title={work.title}
         priority
-        prev={neighbours.prev}
-        next={neighbours.next}
+        neighbours={neighbours}
       >
-        {/* На телефоне эта ссылка спрятана: там она стоит в одном ряду
-            со стрелками (ArtworkStage), иначе выходили две строки
-            навигации подряд. */}
-        <Link
-          href={localePath(lang, "/gallery")}
-          className="text-ink-soft hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
-        >
-          {t.work.backToAll}
-        </Link>
-
         <span className="text-accent mb-2.5 block text-[13px] font-semibold tracking-[0.12em] uppercase">
           {artworkCategory(work.category, lang) ?? t.work.fallbackKicker}
         </span>

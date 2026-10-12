@@ -155,6 +155,7 @@ export const en: Dictionary = {
     navLabel: "Browse works",
     prev: (title) => `Previous work: “${title}”`,
     next: (title) => `Next work: “${title}”`,
+    position: (position, total) => `Work ${position} of ${total}`,
     openFullscreen: (title) => `Open “${title}” full screen`,
     fullscreen: "Full screen",
     closeViewer: "Close viewer",

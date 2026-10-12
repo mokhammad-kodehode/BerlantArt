@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
+import { ArtworkSwipe } from "@/components/gallery/ArtworkSwipe";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
-import type { ArtworkLink } from "@/lib/artworks";
+import type { ArtworkNeighbours } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 
@@ -37,16 +38,16 @@ import { getDictionary, localePath, type Locale } from "@/lib/i18n";
  * спрятана над экраном и выезжает, когда мышь подходит к верхнему краю
  * (globals.css, .stage-header-zone): картина сразу на весь экран.
  *
- * Стрелки листают работы в порядке галереи. Это обычные ссылки, а не кнопки
- * с обработчиком: переход между работами — навигация, адрес каждой картины
- * остаётся своим, и работает всё без JavaScript. Кольцо замкнуто, соседей
- * считает `getArtworkNeighbours`.
+ * Листание — ряд «← Все работы … ‹ 3 / 32 ›» над подписью, одинаковый
+ * на телефоне и на компьютере (заказчик, 12.10.2026). Прежде это были
+ * круги со стрелками по краям окна: на компьютере они висели посреди
+ * стены отдельно от всего, на телефоне — наклейками рядом с холстом.
+ * Счётчик заодно говорит, что работ больше одной и сколько их.
  *
- * Где они стоят, зависит от экрана. На десктопе — по краям окна, там для них
- * есть свободное поле. На телефоне окна нет: стрелки ложились на нижние углы
- * холста и выглядели наклейками на живописи — поэтому ниже 1024px они
- * выходят из картины в отдельный ряд между холстом и подписью, прижатый
- * вправо, в зону большого пальца.
+ * Стрелки — обычные ссылки: переход между работами — навигация, адрес
+ * каждой картины свой, и работает всё без JavaScript. Свайп и клавиши
+ * ← → добавляет ArtworkSwipe. Кольцо замкнуто, соседей и номер
+ * считает `getArtworkNeighbours`.
  */
 export function ArtworkStage({
   lang,
@@ -56,8 +57,7 @@ export function ArtworkStage({
   title,
   priority,
   children,
-  prev,
-  next,
+  neighbours,
 }: {
   lang: Locale;
   src?: string;
@@ -72,11 +72,13 @@ export function ArtworkStage({
   /** Название работы — для кнопки «Открыть «…» во весь экран». */
   title: string;
   priority?: boolean;
-  prev?: ArtworkLink | null;
-  next?: ArtworkLink | null;
+  neighbours: ArtworkNeighbours;
   children: ReactNode;
 }) {
   const t = getDictionary(lang).work;
+  const { prev, next, position, total } = neighbours;
+  const prevHref = prev ? localePath(lang, `/gallery/${prev.id}`) : undefined;
+  const nextHref = next ? localePath(lang, `/gallery/${next.id}`) : undefined;
   const artBoxStyle: (CSSProperties & { "--art-ratio": number }) | undefined =
     aspect === undefined ? undefined : { "--art-ratio": aspect };
   const stageArt = (
@@ -143,9 +145,6 @@ export function ArtworkStage({
         длинное описание росло вверх и заезжало под шапку — поймал заказчик
         на работе с описанием в семь строк. Теперь клетка вырастает под
         подпись, сцена становится выше экрана, и страница просто прокручивается.
-
-        У обёртки нет position: relative намеренно — накладка со стрелками
-        позиционируется от всей сцены, и стрелки остаются посередине экрана.
       */}
       <div className="flex flex-1 flex-col lg:grid lg:grid-cols-1 lg:grid-rows-[minmax(0,1fr)]">
         {/*
@@ -167,7 +166,7 @@ export function ArtworkStage({
       */}
         <div
           className={cn(
-            "stage-art-area relative flex flex-1 flex-col p-5 lg:p-12 lg:pr-[78px] lg:pl-[36%] lg:[grid-area:1/1]",
+            "stage-art-area relative flex flex-1 flex-col p-5 lg:p-12 lg:pl-[36%] lg:[grid-area:1/1]",
             aspect === undefined ? "min-h-[46vh]" : "max-lg:justify-center lg:min-h-[46vh]",
           )}
         >
@@ -175,10 +174,12 @@ export function ArtworkStage({
           Нажатие на картину открывает её на весь экран (ArtworkViewer).
           Без фотографии открывать нечего — заглушка остаётся как есть.
         */}
-          <div
+          <ArtworkSwipe
+            prevHref={prevHref}
+            nextHref={nextHref}
             style={artBoxStyle}
             className={cn(
-              "relative flex-1",
+              "relative flex-1 touch-pan-y touch-pinch-zoom",
               aspect !== undefined &&
                 "max-lg:aspect-(--art-ratio) max-lg:max-h-[calc(100svh-120px)] max-lg:flex-none",
             )}
@@ -190,64 +191,8 @@ export function ArtworkStage({
             ) : (
               stageArt
             )}
-          </div>
+          </ArtworkSwipe>
         </div>
-
-        {/*
-        Ряд со стрелками. На телефоне он в обычном потоке и потому раздвигает
-        картину и подпись; на десктопе становится прозрачной накладкой во всю
-        сцену, внутри которой стрелки встают по краям (клики сквозь неё
-        проходят — pointer-events-none на самой накладке).
-
-        Названия соседних работ — в подписи ссылки, а не только в стрелке:
-        иначе скринридер прочитал бы «ссылка, стрелка влево».
-      */}
-        <nav
-          aria-label={t.navLabel}
-          className="relative z-[2] flex items-center justify-between gap-2.5 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:absolute lg:inset-0 lg:p-0"
-        >
-          {/*
-          «Все работы» в одном ряду со стрелками — только на телефоне.
-          Раньше ссылка стояла над надстрочником в подписи, а стрелки
-          висели отдельной строкой выше: две строки навигации подряд.
-          Теперь это одна строка — текст слева, стрелки справа.
-
-          На десктопе она не нужна: там стрелки уходят к краям окна
-          накладкой во весь экран, и ссылка осталась в подписи внизу слева.
-        */}
-          <Link
-            href={localePath(lang, "/gallery")}
-            className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
-          >
-            {t.backToAll}
-          </Link>
-
-          {/* lg:contents убирает обёртку на десктопе, и стрелки снова
-            позиционируются прямо в накладке, как и раньше. */}
-          <div className="flex gap-2.5 lg:contents">
-            {prev && (
-              <Link
-                href={localePath(lang, `/gallery/${prev.id}`)}
-                rel="prev"
-                aria-label={t.prev(prev.title)}
-                className="stage-nav lg:left-[calc(36%-58px)]"
-              >
-                ←
-              </Link>
-            )}
-
-            {next && (
-              <Link
-                href={localePath(lang, `/gallery/${next.id}`)}
-                rel="next"
-                aria-label={t.next(next.title)}
-                className="stage-nav lg:right-[17px]"
-              >
-                →
-              </Link>
-            )}
-          </div>
-        </nav>
 
         {/*
         Ширина подписи на десктопе — 27%, а не 48%. Грань стены проходит
@@ -259,6 +204,43 @@ export function ArtworkStage({
         лучше держится колонка.
       */}
         <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:max-w-[27%] lg:self-end lg:pt-8 lg:pb-14 lg:[grid-area:1/1]">
+          {/*
+            Ряд навигации — первой строкой подписи. Названия соседних работ
+            стоят в подписях ссылок, а не только в стрелке: иначе скринридер
+            прочитал бы «ссылка, стрелка влево». Счётчик для него — словами
+            («Работа 3 из 32»), а не «три косая тридцать два».
+          */}
+          <nav
+            aria-label={t.navLabel}
+            className="mb-3 flex items-center justify-between gap-4 lg:mb-5"
+          >
+            <Link
+              href={localePath(lang, "/gallery")}
+              className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline"
+            >
+              {t.backToAll}
+            </Link>
+
+            {prevHref && nextHref && prev && next && (
+              <div className="stage-pager">
+                <Link href={prevHref} rel="prev" aria-label={t.prev(prev.title)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m14.5 6-6 6 6 6" />
+                  </svg>
+                </Link>
+                <span aria-hidden className="stage-pager-count">
+                  {position} / {total}
+                </span>
+                <span className="sr-only">{t.position(position, total)}</span>
+                <Link href={nextHref} rel="next" aria-label={t.next(next.title)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9.5 6 6 6-6 6" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+          </nav>
+
           {children}
         </div>
       </div>

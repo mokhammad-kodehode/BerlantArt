@@ -125,11 +125,11 @@ export function ArtworkViewer({
 
     const onKeyDown = (event: KeyboardEvent): void => {
       const target = event.key === "ArrowLeft" ? prev : event.key === "ArrowRight" ? next : null;
-      if (target) router.push(`/gallery/${target.id}${VIEW_HASH}`);
+      if (target) router.push(`${localePath(lang, `/gallery/${target.id}`)}${VIEW_HASH}`);
     };
     dialog.addEventListener("keydown", onKeyDown);
     return () => dialog.removeEventListener("keydown", onKeyDown);
-  }, [prev, next, router]);
+  }, [prev, next, router, lang]);
 
   function open(): void {
     if (dialogRef.current) showViewer(dialogRef.current);

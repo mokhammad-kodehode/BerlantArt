@@ -188,6 +188,7 @@ export const ru = {
     navLabel: "Навигация по работам",
     prev: (title: string) => `Предыдущая работа: «${title}»`,
     next: (title: string) => `Следующая работа: «${title}»`,
+    position: (position: number, total: number) => `Работа ${position} из ${total}`,
     openFullscreen: (title: string) => `Открыть «${title}» во весь экран`,
     fullscreen: "Во весь экран",
     closeViewer: "Закрыть просмотр",

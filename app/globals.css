@@ -586,7 +586,7 @@
   }
   /* Стрелки просмотра. На телефоне — парой по центру под картиной: она
      там во всю ширину, и стрелки по бокам легли бы на холст (та же
-     причина, что у .stage-nav). На десктопе — по краям
+     причина, по которой стрелки сцены ушли с холста в подпись). На десктопе — по краям
      экрана, посередине высоты, в поле рядом с картиной. */
   .viewer-nav {
     bottom: 18px;
@@ -1339,55 +1339,48 @@
     }
   }
 
-  /* Стрелки листания работ. Круг с плёнкой цвета панели читается и на
-     размытой картине в тёмном зале, и на белой стене в светлом. 44px —
-     чтобы по стрелке было удобно попасть пальцем.
+  /* Листание работ «‹ 3 / 32 ›» (components/gallery/ArtworkStage.tsx).
 
-     На телефоне круг стоит в обычном потоке, в ряду под картиной: поверх
-     холста он ложился на его нижние углы и выглядел наклейкой. С 1024px
-     (breakpoint lg у Tailwind, им же заданы left/right у ссылок) уходит
-     по краям окна — там для него есть свободное поле. */
-  .stage-nav {
-    z-index: 3;
+     Тонкие шевроны без кругов и плашек: ряд стоит в подписи, рядом с
+     текстом, и должен читаться как её часть, а не как кнопки поверх
+     картины. Поле нажатия 44px — пальцем попасть удобно, хотя сам
+     значок мелкий. Цифры — моноширинными (tabular-nums): иначе при
+     переходе с «1 / 5» на «4 / 5» ряд подрагивал бы. */
+  .stage-pager {
     display: flex;
     flex: none;
+    align-items: center;
+    margin-right: -12px;
+    color: var(--color-ink);
+  }
+  .stage-pager a {
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
-    font-size: 18px;
-    line-height: 1;
-    color: var(--color-ink);
-    text-decoration: none;
-    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
-    border: 1px solid var(--color-divider);
+    color: inherit;
     border-radius: var(--radius-pill);
-    backdrop-filter: blur(6px);
-    transition:
-      background-color 0.18s ease,
-      transform 0.18s ease;
+    transition: background-color 0.18s ease;
   }
-  .stage-nav:hover {
-    background: var(--color-surface);
-    transform: scale(1.06);
+  .stage-pager a:hover {
+    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
-
-  @media (min-width: 1024px) {
-    .stage-nav {
-      position: absolute;
-      top: 50%;
-      margin-top: -22px;
-      pointer-events: auto;
-    }
+  .stage-pager svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .stage-nav {
-      transition: none;
-    }
-    .stage-nav:hover {
-      transform: none;
-    }
+  .stage-pager-count {
+    min-width: 4.5ch;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-soft);
+    text-align: center;
   }
 
   /* — переключатель зала (components/ui/ThemeSwitch.tsx) —
