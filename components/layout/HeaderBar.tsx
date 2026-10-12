@@ -35,10 +35,14 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  * `Header` (components/layout/Header.tsx): она собирает контакты для меню
  * и передаёт их сюда готовыми.
  *
- * Два варианта:
+ * Три варианта:
  *
  * - `solid` — плашка цвета стены, липнет к верху;
- * - `plain` — та же плашка, но не липкая: галерея и страница работы.
+ * - `plain` — та же плашка, не липкая (галерея);
+ * - `stage` — страница работы. На компьютере спрятана над экраном и
+ *   выезжает, когда мышь подходит к верхнему краю; на телефоне — тонкая
+ *   прозрачная полоса с одним бургером. Шапка не должна отвлекать от
+ *   картины (заказчик, 12.10.2026).
  *
  * Пункты меню везде под кнопкой-бургером. На телефоне — с самого начала:
  * в макете навигация переносилась по словам и занимала три строки (148px).
@@ -60,11 +64,11 @@ export function HeaderBar({
   contacts = [],
 }: {
   /**
-   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея
-   * и страница работы: там шапка у верха только мешает разглядывать
-   * картины, заказчик 12.10.2026).
+   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея:
+   * там шапка у верха только мешает разглядывать стену, заказчик
+   * 12.10.2026); stage — страница работы: спрятана, не отвлекает от картины.
    */
-  variant?: "solid" | "plain";
+  variant?: "solid" | "plain" | "stage";
   /** Способы связи для меню бургера. Пусто — блока контактов нет. */
   contacts?: ContactLink[];
 }) {
@@ -183,26 +187,33 @@ export function HeaderBar({
       className={cn(
         variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20",
         variant === "plain" && "header-line bg-wall text-ink relative z-20",
+        variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
       <nav className="px-[clamp(20px,5vw,64px)]">
         {/* Телефон и планшет: имя по центру, бургер справа — продолжение
             варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
             клетка шириной с бургер: без неё имя стояло бы по центру
-            остатка строки, а не окна.
+            остатка строки, а не окна. Линию снизу рисует .header-line;
+            вместо прежней рамки — лишний 1px снизу, высота та же 73px.
 
-            Линию снизу рисует .header-line. Вместо прежней рамки — лишний
-            1px снизу, высота та же 73px. */}
-        <div className="grid grid-cols-[40px_1fr_40px] items-center pt-4 pb-[17px] lg:hidden">
-          <span aria-hidden="true" />
-          <Link
-            href={localePath(lang, "/")}
-            className="font-heading text-center text-[20px] leading-tight no-underline"
-          >
-            {t.site.artist}
-          </Link>
-          {burgerButton}
-        </div>
+            На странице работы (stage) — тонкая полоса 48px с одним бургером,
+            без имени и без линии (заказчик, 12.10.2026): имя и линия
+            отвлекали от картины, а меню должно оставаться под рукой. */}
+        {variant === "stage" ? (
+          <div className="flex h-12 items-center justify-end lg:hidden">{burgerButton}</div>
+        ) : (
+          <div className="grid grid-cols-[40px_1fr_40px] items-center pt-4 pb-[17px] lg:hidden">
+            <span aria-hidden="true" />
+            <Link
+              href={localePath(lang, "/")}
+              className="font-heading text-center text-[20px] leading-tight no-underline"
+            >
+              {t.site.artist}
+            </Link>
+            {burgerButton}
+          </div>
+        )}
 
         {/* Компьютер: одна строка, три колонки 1fr · auto · 1fr — имя ровно
             по центру окна, какой бы ширины ни были края. Слева зал и язык,

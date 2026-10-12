@@ -1733,6 +1733,70 @@
   box-shadow: 0 1px 0 var(--color-divider);
 }
 
+/* Шапка на странице работы на компьютере — спрятана над экраном и выезжает,
+   когда мышь подходит к верхнему краю (заказчик, 12.10.2026). Картина при
+   входе сразу на весь экран, без меню над ней, а меню под рукой.
+
+   Без скрипта: над шапкой лежит невидимая полоса .stage-header-zone, и
+   наведение на неё (а потом на саму шапку) держит шапку открытой.
+   Прятать с задержкой 0.35 с — иначе шапка мигала бы, когда мышь на миг
+   выходит за край. С клавиатуры шапка выезжает по фокусу (:focus-within),
+   иначе её пункты были бы невидимы для Tab.
+
+   До этого (03–12.10) шапка стояла в потоке над картиной, сначала
+   прозрачной, потом полосой: прозрачная лежала поверх размытой панели
+   слева, полоса съедала 144px высоты у картины. Телефон не тронут —
+   там шапка короткая и стоит в потоке. */
+.stage-header-zone {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .stage-header-zone {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 29;
+    display: flex;
+    justify-content: center;
+    height: 14px;
+  }
+
+  /* «Ручка» — подсказка, что сверху что-то есть. */
+  .stage-header-zone::after {
+    content: "";
+    width: 44px;
+    height: 4px;
+    margin-top: 6px;
+    background: var(--color-ink-faint);
+    border-radius: 999px;
+    opacity: 0.45;
+  }
+
+  .stage-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 30;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-divider);
+    box-shadow: 0 10px 30px rgb(43 37 31 / 0.12);
+    transform: translateY(-100%);
+    transition: transform 0.25s ease 0.35s;
+  }
+
+  .stage-header-zone:hover + .stage-header,
+  .stage-header:hover,
+  .stage-header:focus-within {
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-header {
+    transition: none;
+  }
+}
+
 @media (min-width: 1024px) {
   /* Пол и угол убраны совсем: их роль теперь у фотографии и грани стены. */
   :root[data-theme="paper"] .stage-hall {
