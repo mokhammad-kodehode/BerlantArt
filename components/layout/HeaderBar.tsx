@@ -37,9 +37,8 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  *
  * Два варианта:
  *
- * - `stage` — на главной и на странице работы: прозрачная, не липкая,
- *   текст берётся из темы — в белом зале светлые надписи исчезли бы;
- * - `solid` — на остальных страницах: плашка цвета стены, липнет к верху.
+ * - `solid` — плашка цвета стены, липнет к верху;
+ * - `plain` — та же плашка, но не липкая: галерея и страница работы.
  *
  * Пункты меню везде под кнопкой-бургером. На телефоне — с самого начала:
  * в макете навигация переносилась по словам и занимала три строки (148px).
@@ -61,11 +60,11 @@ export function HeaderBar({
   contacts = [],
 }: {
   /**
-   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея:
-   * там шапка у верха только мешает разглядывать стену, заказчик
-   * 12.10.2026); stage — над картиной на странице работы.
+   * solid — плашкой и липкая; plain — та же плашка, но не липкая (галерея
+   * и страница работы: там шапка у верха только мешает разглядывать
+   * картины, заказчик 12.10.2026).
    */
-  variant?: "solid" | "plain" | "stage";
+  variant?: "solid" | "plain";
   /** Способы связи для меню бургера. Пусто — блока контактов нет. */
   contacts?: ContactLink[];
 }) {
@@ -184,7 +183,6 @@ export function HeaderBar({
       className={cn(
         variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20",
         variant === "plain" && "header-line bg-wall text-ink relative z-20",
-        variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
       <nav className="px-[clamp(20px,5vw,64px)]">
@@ -193,15 +191,9 @@ export function HeaderBar({
             клетка шириной с бургер: без неё имя стояло бы по центру
             остатка строки, а не окна.
 
-            Линия снизу своя только у прозрачной шапки на странице работы:
-            у остальных её рисует .header-line, и рамка дала бы двойную
-            линию. Вместо рамки — лишний 1px снизу, высота та же 73px. */}
-        <div
-          className={cn(
-            "grid grid-cols-[40px_1fr_40px] items-center pt-4 lg:hidden",
-            variant === "stage" ? "border-divider border-b pb-4" : "pb-[17px]",
-          )}
-        >
+            Линию снизу рисует .header-line. Вместо прежней рамки — лишний
+            1px снизу, высота та же 73px. */}
+        <div className="grid grid-cols-[40px_1fr_40px] items-center pt-4 pb-[17px] lg:hidden">
           <span aria-hidden="true" />
           <Link
             href={localePath(lang, "/")}
