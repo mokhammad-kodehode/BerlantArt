@@ -94,7 +94,7 @@ export function ArtworkStage({
   );
 
   return (
-    <section className="bg-wall relative flex min-h-svh flex-col overflow-hidden">
+    <section className="bg-wall relative flex min-h-svh flex-col overflow-clip">
       {/*
         Фон и картина — одна и та же фотография с одинаковым `sizes`:
         браузер скачивает файл один раз и рисует его дважды. Разные `sizes`
@@ -164,10 +164,16 @@ export function ArtworkStage({
         ширину не знал: на планшете 768×1024 квадратная картина занимала
         507px — 66% ширины, а в окне пониже и того меньше (заказчик,
         8.10.2026). Без размеров фото в базе — прежний способ.
+
+        На компьютере блок картины — ровно экран высотой и липкий: длинная
+        подпись прокручивается рядом, а картина со стрелками под ней стоит
+        на месте (заказчик, 12.10.2026). Липкость работает, потому что у
+        сцены overflow: clip, а не hidden: hidden делает сцену своей
+        областью прокрутки, и sticky внутри неё перестаёт прилипать.
       */}
         <div
           className={cn(
-            "stage-art-area relative flex flex-1 flex-col p-5 lg:p-12 lg:pb-[100px] lg:pl-[36%] lg:[grid-area:1/1]",
+            "stage-art-area relative flex flex-1 flex-col px-5 pt-5 lg:sticky lg:top-0 lg:h-svh lg:self-start lg:p-12 lg:pb-[100px] lg:pl-[36%] lg:[grid-area:1/1]",
             aspect === undefined ? "min-h-[46vh]" : "max-lg:justify-center lg:min-h-[46vh]",
           )}
         >
@@ -193,67 +199,69 @@ export function ArtworkStage({
               stageArt
             )}
           </ArtworkSwipe>
+
+          {/*
+            Листание — под картиной (заказчик, 12.10.2026). Сначала ряд стоял
+            первой строкой подписи, и в колонке шириной 27% он сжимал «Все
+            работы» в две строки, а стрелки читались частью текста про эту
+            картину, а не переходом к соседней.
+
+            На телефоне ряд — в потоке между картиной и подписью: слева «Все
+            работы», справа стрелки, в зоне большого пальца. На компьютере —
+            внутри блока картины, прижат к его низу и выровнен по центру
+            холста: левый отступ тот же 36%, что у картины. Нижнее поле
+            картины на компьютере увеличено под этот ряд (globals.css,
+            .stage-art-area). Полоса во всю ширину пропускает клики насквозь
+            — иначе она закрыла бы подпись слева.
+
+            Ряд лежит именно в блоке картины, а не отдельной клеткой сетки:
+            прежде с длинным описанием клетка вырастала выше экрана, и ряд
+            уезжал вместе с её низом за край (заказчик, 12.10.2026).
+
+            Названия соседних работ — в подписях ссылок, а не только в
+            стрелке: иначе скринридер прочитал бы «ссылка, стрелка влево».
+            Счётчик для него — словами («Работа 3 из 32»).
+          */}
+          <nav
+            aria-label={t.navLabel}
+            className="relative z-[2] flex items-center justify-between gap-4 pt-3 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0 lg:justify-center lg:px-12 lg:pt-0 lg:pb-7 lg:pl-[36%]"
+          >
+            <Link
+              href={localePath(lang, "/gallery")}
+              className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
+            >
+              {t.backToAll}
+            </Link>
+
+            {prevHref && nextHref && prev && next && (
+              <div className="stage-pager lg:pointer-events-auto">
+                <Link href={prevHref} rel="prev" aria-label={t.prev(prev.title)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m14.5 6-6 6 6 6" />
+                  </svg>
+                </Link>
+                <span aria-hidden className="stage-pager-count">
+                  {position} / {total}
+                </span>
+                <span className="sr-only">{t.position(position, total)}</span>
+                <Link href={nextHref} rel="next" aria-label={t.next(next.title)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9.5 6 6 6-6 6" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+          </nav>
         </div>
 
         {/*
-          Листание — под картиной (заказчик, 12.10.2026). Сначала ряд стоял
-          первой строкой подписи, и в колонке шириной 27% он сжимал «Все
-          работы» в две строки, а стрелки читались частью текста про эту
-          картину, а не переходом к соседней.
-
-          На телефоне ряд — в потоке между картиной и подписью: слева «Все
-          работы», справа стрелки, в зоне большого пальца. На компьютере —
-          в той же клетке сетки, что картина, прижат к низу и выровнен по
-          центру холста: левый отступ тот же 36%, что у картины. Нижнее
-          поле картины на компьютере увеличено под этот ряд (globals.css,
-          .stage-art-area). Сама полоса во всю ширину пропускает клики
-          насквозь — иначе она закрыла бы подпись слева.
-
-          Названия соседних работ — в подписях ссылок, а не только в
-          стрелке: иначе скринридер прочитал бы «ссылка, стрелка влево».
-          Счётчик для него — словами («Работа 3 из 32»).
-        */}
-        <nav
-          aria-label={t.navLabel}
-          className="relative z-[2] flex items-center justify-between gap-4 px-[clamp(20px,5vw,64px)] pt-3 lg:pointer-events-none lg:justify-center lg:self-end lg:px-12 lg:pt-0 lg:pb-7 lg:pl-[36%] lg:[grid-area:1/1]"
-        >
-          <Link
-            href={localePath(lang, "/gallery")}
-            className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
-          >
-            {t.backToAll}
-          </Link>
-
-          {prevHref && nextHref && prev && next && (
-            <div className="stage-pager lg:pointer-events-auto">
-              <Link href={prevHref} rel="prev" aria-label={t.prev(prev.title)}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m14.5 6-6 6 6 6" />
-                </svg>
-              </Link>
-              <span aria-hidden className="stage-pager-count">
-                {position} / {total}
-              </span>
-              <span className="sr-only">{t.position(position, total)}</span>
-              <Link href={nextHref} rel="next" aria-label={t.next(next.title)}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m9.5 6 6 6-6 6" />
-                </svg>
-              </Link>
-            </div>
-          )}
-        </nav>
-
-        {/*
-        Ширина подписи на десктопе — 27%, а не 48%. Грань стены проходит
-        на 30%, и при прежней ширине заголовок доезжал до 31%: текст
-        наползал на стену, которой он принадлежать не должен. Замерено
-        в браузере.
-
-        Длинное название от этого переносится на две строки — так даже
-        лучше держится колонка.
+        Подпись на десктопе — ровно до грани стены (30%), с отступом 40px
+        справа. При 48% заголовок наползал на стену; при 27% с полями по
+        64px с обеих сторон описание сжималось в колонку в 4–5 слов
+        (заказчик, 12.10.2026). Справа поле уже, чем слева: там его и так
+        отделяет от картины стена.
       */}
-        <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:max-w-[27%] lg:self-end lg:pt-8 lg:pb-14 lg:[grid-area:1/1]">
+        <div className="relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:w-[30%] lg:self-end lg:pt-8 lg:pr-10 lg:pb-14 lg:[grid-area:1/1]">
           {/* На телефоне эта ссылка стоит в ряду со стрелками, под картиной. */}
           <Link
             href={localePath(lang, "/gallery")}

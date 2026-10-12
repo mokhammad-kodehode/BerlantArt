@@ -852,6 +852,55 @@
     }
   }
 
+  /* Пара плиток под описанием работы (components/pages/ArtworkPage.tsx):
+     «Примерить на стену» и «Поделиться». Две колонки одной ширины,
+     значок над подписью — так обе помещаются в строку и в узкой колонке
+     подписи на компьютере, и на телефоне 375px. Это те же кнопки (.btn),
+     здесь только переставлено их устройство: селектор длиннее, чем у
+     .btn и .btn-soft, поэтому побеждает без !important. */
+  .action-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-width: 400px;
+  }
+  .action-pair > .btn {
+    flex-direction: column;
+    gap: 8px;
+    min-height: 84px;
+    padding: 14px 10px;
+    font-size: 14px;
+    line-height: 1.25;
+    white-space: normal;
+    text-align: center;
+    background: var(--color-surface);
+    border-color: var(--color-divider);
+    border-radius: var(--radius-tile);
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .action-pair > .btn svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.18s ease;
+  }
+  .action-pair > .btn:hover {
+    background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
+    border-color: var(--color-ink-faint);
+  }
+  .action-pair > .btn:hover svg {
+    transform: translateY(-2px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .action-pair > .btn svg {
+      transition: none;
+    }
+    .action-pair > .btn:hover svg {
+      transform: none;
+    }
+  }
+
   /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
      popover: закрытие по клику мимо и по Esc браузер делает сам. По
      умолчанию popover стоит по центру экрана с рамкой — это сброшено,

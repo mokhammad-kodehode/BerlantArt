@@ -138,7 +138,7 @@ export const en: Dictionary = {
     fallbackKicker: "Painting",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
-    write: "Message the artist",
+    ask: "Ask about this painting:",
     message: (title, url) => `Hello! I'm interested in the painting “${title}”. ${url}`,
     share: "Share",
     shareCopied: "Link copied",

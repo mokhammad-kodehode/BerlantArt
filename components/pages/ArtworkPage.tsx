@@ -6,11 +6,9 @@ import { ArtworkStage } from "@/components/gallery/ArtworkStage";
 import { ShareButton } from "@/components/gallery/ShareButton";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
-import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
-import { ContactIcon } from "@/components/ui/ContactIcon";
+import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { PopoverMenu } from "@/components/ui/PopoverMenu";
 import { cameraTarget } from "@/lib/ar";
 import {
   artworkCategory,
@@ -177,62 +175,26 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
             на размытой копии картины, и у светлой работы фон светлеет —
             без тени тонкие засечки Literata сливались с ним. В светлых
             залах тень снимается (класс stage-title в globals.css). */}
-        <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,5vw,64px)]">{work.title}</h1>
+        <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,4vw,56px)] leading-[1.02]">
+          {work.title}
+        </h1>
 
         {meta && <p className="text-ink-soft mt-0 mb-4 text-[14px]">{meta}</p>}
 
         {description && (
-          <p className="text-ink-soft mt-0 mb-4 max-w-[46ch] text-[16px] leading-relaxed">
+          <p className="text-ink-soft mt-0 mb-5 max-w-[52ch] text-[15px] leading-[1.65]">
             {description}
           </p>
         )}
 
-        <div className="btn-row">
-          {/*
-            «Написать художнице» — одна кнопка, а способ связи выбирается
-            в меню под ней: WhatsApp или почта (заказчик, 8.10.2026).
-            Прежде это были две кнопки и подсказка «откроет WhatsApp» —
-            в меню способ назван прямо, подсказка больше не нужна.
-
-            Пункт появляется, только когда номер или почта заполнены
-            в переменных окружения: кнопка с выдуманным адресом хуже,
-            чем её отсутствие. Способ один — меню незачем, кнопка ведёт
-            сразу туда.
-          */}
-          {whatsappHref && mailHref ? (
-            <PopoverMenu variant="primary" label={t.work.write}>
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="menu-item"
-              >
-                <ContactIcon id="whatsapp" className="size-5" />
-                WhatsApp
-              </a>
-              <a href={mailHref} className="menu-item">
-                <ContactIcon id="email" className="size-5" />
-                {t.contacts.email}
-              </a>
-            </PopoverMenu>
-          ) : whatsappHref ? (
-            <ExternalButtonLink
-              variant="primary"
-              size="lg"
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t.work.write}
-            </ExternalButtonLink>
-          ) : (
-            mailHref && (
-              <ExternalButtonLink variant="primary" size="lg" href={mailHref}>
-                {t.work.write}
-              </ExternalButtonLink>
-            )
-          )}
-
+        {/*
+          Две плитки рядом — «Примерить на стену» и «Поделиться», значок над
+          подписью (заказчик, 12.10.2026). Прежде под описанием стояли три
+          кнопки-таблетки разной длины одна под другой и занимали почти
+          столько же места, сколько текст. Плитки одной ширины помещаются
+          в одну строку и в узкой колонке, и на телефоне.
+        */}
+        <div className="action-pair">
           {/*
             Примерка — одна кнопка, хотя режима два: стена с рамой (/room)
             и камера телефона (/ar). Две кнопки рядом заставляли выбирать
@@ -296,6 +258,36 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
 
           <ShareButton url={pageUrl} title={work.title} />
         </div>
+
+        {/*
+          Большой кнопки «Написать художнице» больше нет — заказчик попросил
+          убрать (12.10.2026). Но спросить о картине должно быть можно прямо
+          отсюда: только здесь сообщение уходит со ссылкой на работу, и
+          художнице не нужно переспрашивать, о какой речь. Поэтому вместо
+          кнопки — тихая строка текстовых ссылок. Ссылка появляется, только
+          когда номер или почта заполнены в переменных окружения.
+        */}
+        {(whatsappHref || mailHref) && (
+          <p className="text-ink-soft mt-4 mb-0 text-[14px]">
+            {t.work.ask}{" "}
+            {whatsappHref && (
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink underline-offset-4 hover:underline"
+              >
+                WhatsApp
+              </a>
+            )}
+            {whatsappHref && mailHref && " · "}
+            {mailHref && (
+              <a href={mailHref} className="text-ink underline-offset-4 hover:underline">
+                {t.contacts.email}
+              </a>
+            )}
+          </p>
+        )}
 
         {/* Картина закрывает экран целиком, и без подсказки не видно, что ниже
             есть ещё содержимое. Ссылка, а не рисованная стрелка: она работает
