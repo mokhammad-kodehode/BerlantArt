@@ -235,8 +235,8 @@
 }
 
 :root {
-  /* Высота шапки (HeaderBar): 73px на телефоне и планшете, 144px с 1024px,
-     где она в две строки. Нужна главной: первый экран там идёт под липкой
+  /* Высота шапки (HeaderBar): 73px на телефоне и планшете, 72px с 1024px
+     (одна строка с 12.10.2026; прежде было 144px, две строки). Нужна главной: первый экран там идёт под липкой
      шапкой и должен уложиться в окно вместе с ней. Меняется шапка —
      меняется и это число; замерено в браузере 12.10.2026. */
   --header-h: 73px;
@@ -259,7 +259,7 @@
 
 @media (min-width: 1024px) {
   :root {
-    --header-h: 144px;
+    --header-h: 72px;
   }
 }
 
@@ -713,6 +713,54 @@
     }
   }
 
+  /* На компьютере меню — не весь экран, а панель справа шириной 440px
+     (заказчик, 12.10.2026): страница за ней видна и затемнена, панель
+     выезжает справа, со стороны бургера, и уезжает туда же. Растекание
+     кругом здесь не нужно — оно для экрана целиком. */
+  @media (min-width: 1024px) {
+    .mobile-nav {
+      inset: 0 0 0 auto;
+      width: min(440px, 100vw);
+      height: 100dvh;
+      border-left: 1px solid var(--color-divider);
+      box-shadow: -24px 0 60px rgb(20 18 17 / 0.18);
+    }
+    .mobile-nav::backdrop {
+      background: rgb(20 18 17 / 0.35);
+      animation: mobile-nav-fade-in 0.3s ease-out;
+    }
+    .mobile-nav[data-closing]::backdrop {
+      animation: mobile-nav-fade-out 0.42s ease-in forwards;
+    }
+    .mobile-nav[open] {
+      animation: mobile-nav-slide-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .mobile-nav[data-closing] {
+      animation: mobile-nav-slide-out 0.42s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    }
+    .mobile-nav[open] .mobile-nav-item {
+      animation-delay: calc(var(--i) * 50ms + 120ms);
+    }
+  }
+  @keyframes mobile-nav-slide-in {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes mobile-nav-slide-out {
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+    .mobile-nav[open] {
+      animation: mobile-nav-fade-in 0.25s ease-out;
+    }
+    .mobile-nav[data-closing] {
+      animation: mobile-nav-fade-out 0.25s ease-in forwards;
+    }
+  }
+
   /* Кнопка меню — два мазка (HeaderBar). При наведении мазки тянутся
      влево, будто кисть протянула краску дальше: короткий нижний почти
      догоняет верхний, верхний удлиняется чуть-чуть (заказчик, 9.10.2026).
@@ -852,53 +900,43 @@
     }
   }
 
-  /* Пара плиток под описанием работы (components/pages/ArtworkPage.tsx):
-     «Примерить на стену» и «Поделиться». Две колонки одной ширины,
-     значок над подписью — так обе помещаются в строку и в узкой колонке
-     подписи на компьютере, и на телефоне 375px. Это те же кнопки (.btn),
-     здесь только переставлено их устройство: селектор длиннее, чем у
-     .btn и .btn-soft, поэтому побеждает без !important. */
+  /* Пара кнопок под описанием работы (components/pages/ArtworkPage.tsx):
+     «Примерить на стену» и «Поделиться». Невысокие таблетки 40px, значок
+     слева, текст 14px, тонкая рамка (заказчик, 12.10.2026: плитки 84px
+     со значком сверху были красивыми, но слишком крупными для колонки
+     подписи). Не влезают в строку — вторая переносится, а не сжимается.
+     Это те же кнопки (.btn): селектор длиннее, чем у .btn и .btn-soft,
+     поэтому побеждает без !important. «Поделиться» — кругом со значком
+     (.btn-icon): с текстом обе не помещались в строку на 1280–1440. */
   .action-pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
-    max-width: 400px;
   }
   .action-pair > .btn {
-    flex-direction: column;
-    gap: 8px;
-    min-height: 84px;
-    padding: 14px 10px;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 13px 8px 11px;
     font-size: 14px;
-    line-height: 1.25;
-    white-space: normal;
-    text-align: center;
+    line-height: 1.2;
     background: var(--color-surface);
     border-color: var(--color-divider);
-    border-radius: var(--radius-tile);
     transition:
       background-color 0.18s ease,
       border-color 0.18s ease;
   }
   .action-pair > .btn svg {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.18s ease;
+    width: 18px;
+    height: 18px;
+  }
+  /* «Поделиться» — круг того же роста, только значок. */
+  .action-pair > .btn-icon {
+    width: 40px;
+    padding: 0;
   }
   .action-pair > .btn:hover {
     background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
     border-color: var(--color-ink-faint);
-  }
-  .action-pair > .btn:hover svg {
-    transform: translateY(-2px);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .action-pair > .btn svg {
-      transition: none;
-    }
-    .action-pair > .btn:hover svg {
-      transform: none;
-    }
   }
 
   /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
@@ -1254,12 +1292,9 @@
 
      Карточка — тон чернил на 10%, как скелет галереи (loading.tsx), и то
      же мерцание: стена при загрузке и стена при подгрузке фото выглядят
-     одинаково. Палитра — в центре карточки, только на странице работы.
-     Цвета нет и здесь: краски на палитре — оттенки чернил, а не охра. */
+     одинаково. Палитра с мазком по кругу в центре карточки была и
+     убрана (заказчик, 12.10.2026): выглядела дёшево рядом с живописью. */
   .image-loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
     height: 100%;
     background: color-mix(in srgb, var(--color-ink) 8%, transparent);
@@ -1278,66 +1313,13 @@
     height: auto;
     aspect-ratio: var(--loader-ratio);
   }
-  .image-loader-palette {
-    width: 64px;
-    height: 64px;
-    overflow: visible;
-  }
-  .image-loader-board {
-    fill: none;
-    stroke: var(--color-ink-faint);
-    stroke-width: 1.5;
-    stroke-linejoin: round;
-  }
-  .image-loader-dot {
-    fill: var(--color-ink-faint);
-    animation: image-loader-dot 1.5s ease-in-out infinite;
-  }
-  .image-loader-dot:nth-of-type(2) {
-    animation-delay: 0.15s;
-  }
-  .image-loader-dot:nth-of-type(3) {
-    animation-delay: 0.3s;
-  }
-  .image-loader-dot:nth-of-type(4) {
-    animation-delay: 0.45s;
-  }
-  .image-loader-dot:nth-of-type(5) {
-    animation-delay: 0.6s;
-  }
-  /* Мазок по кругу: дуга в треть окружности с круглыми концами. */
-  .image-loader-ring {
-    fill: none;
-    stroke: var(--color-ink-soft);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-dasharray: 60 122;
-    transform-origin: 32px 32px;
-    animation: image-loader-spin 1.4s linear infinite;
-  }
   @keyframes image-loader-pulse {
     50% {
       opacity: 0.6;
     }
   }
-  @keyframes image-loader-dot {
-    0%,
-    100% {
-      opacity: 0.35;
-    }
-    40% {
-      opacity: 1;
-    }
-  }
-  @keyframes image-loader-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
-    .image-loader,
-    .image-loader-dot,
-    .image-loader-ring {
+    .image-loader {
       animation: none;
     }
   }

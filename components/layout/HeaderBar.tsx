@@ -41,15 +41,16 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  *   текст берётся из темы — в белом зале светлые надписи исчезли бы;
  * - `solid` — на остальных страницах: плашка цвета стены, липнет к верху.
  *
- * Ниже 1024px пункты убираются под кнопку-бургер. В макете навигация просто
- * переносилась по словам и занимала на телефоне три строки (148px) — почти
- * четверть первого экрана. Граница была 768px, но с переключателем языка
- * и английскими подписями строка меню на 768px вылезала за экран.
+ * Пункты меню везде под кнопкой-бургером. На телефоне — с самого начала:
+ * в макете навигация переносилась по словам и занимала три строки (148px).
+ * На компьютере — с 12.10.2026 (заказчик): шапка в одну строку вместо двух,
+ * 72px вместо 144px, — картина и фото на первом экране крупнее.
  *
- * Меню бургера — на весь экран (заказчик, 8.10.2026): прежде оно
- * выпадало плашкой на полэкрана, и под ним торчала страница. Теперь
- * в нём крупные пункты, кнопка «Написать художнице», все способы связи
- * и переключатели зала и языка.
+ * Меню бургера на телефоне — на весь экран (заказчик, 8.10.2026), на
+ * компьютере — панель справа (12.10.2026): на экране 1900px четыре пункта
+ * посреди пустого поля выглядели бы потерянными. В меню крупные пункты,
+ * кнопка «Написать художнице», все способы связи и — на телефоне —
+ * переключатели зала и языка (на компьютере они в шапке).
  *
  * Язык — по адресу страницы (`/en/…` — английский). Переключатель
  * ведёт на ту же страницу другого языка, а не на главную: человек,
@@ -150,47 +151,42 @@ export function HeaderBar({
     </Link>
   );
 
-  return (
-    /*
-      На компьютере шапка в две строки (вариант «Б», заказчик 9.10.2026):
-      сверху имя по центру, как название на обложке, под тонкой линией —
-      меню: зал и язык слева, пункты по центру, «Написать художнице»
-      справа. Пункты крупнее прежнего — 17px вместо 14.
+  // Бургер один и тот же на телефоне и на компьютере — разметка общая.
+  const burgerButton = (
+    <button
+      type="button"
+      onClick={openMenu}
+      aria-expanded={isMenuOpen}
+      aria-controls="mobile-nav"
+      aria-label={t.nav.openMenu}
+      className="burger flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
+    >
+      {/* Два мазка вместо трёх ровных полосок (заказчик, 9.10.2026,
+          вариант «Б»): неровные края и сужение к концу — как у мазка
+          под пунктом меню, разной длины — нижний короче. При наведении
+          мазки тянутся (globals.css, .burger-stroke). Крестик в открытом
+          меню нарисован теми же мазками. */}
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="26" height="26" fill="currentColor">
+        <path
+          className="burger-stroke burger-stroke-top"
+          d="M3 8.3C8 6.9 15 7.9 21 7.2l.1 2.1c-6 .7-12.6.2-18 1.1Z"
+        />
+        <path
+          className="burger-stroke burger-stroke-bottom"
+          d="M8 14.6c4-1.1 9-.3 13-.8l-.3 2.1c-4.3.6-8.6 0-12.8.9Z"
+        />
+      </svg>
+    </button>
+  );
 
-      Липкая шапка сдвинута вверх на высоту строки с именем (lg:-top-[72px]):
-      при прокрутке имя уезжает, у верха остаётся только меню. Две строки
-      у верха экрана — около 140px, многовато для страницы, которую читают.
-      72px — та же высота, что задана строке с именем (lg:h-[72px]):
-      разойдутся — у верха останется полоска имени или срежется меню.
-    */
+  return (
     <header
       className={cn(
-        variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
+        variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20",
         variant === "plain" && "header-line bg-wall text-ink relative z-20",
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
-      {/* Компьютер, строка 1: имя. */}
-      {/* По центру строки и крупнее (заказчик, 12.10.2026): прижатое к низу
-          имя читалось подписью над линией, а не названием. Высота строки
-          та же 72px — на ней держатся lg:-top-[72px] и --header-h.
-
-          Линия под именем — шире имени на 20%, по 10% с каждой стороны, а не
-          во всю ширину окна (заказчик, 12.10.2026): так она подчёркивает
-          имя, а не делит шапку пополам. Считается от ширины самого имени,
-          поэтому длина верна и в английской версии. */}
-      <div className="hidden h-[72px] items-center justify-center px-[clamp(20px,5vw,64px)] lg:flex">
-        <div className="relative flex h-full items-center">
-          <Link
-            href={localePath(lang, "/")}
-            className="font-heading text-[clamp(30px,2.6vw,38px)] leading-none no-underline"
-          >
-            {t.site.artist}
-          </Link>
-          <span aria-hidden className="bg-divider absolute bottom-0 left-[-10%] h-px w-[120%]" />
-        </div>
-      </div>
-
       <nav className="px-[clamp(20px,5vw,64px)]">
         {/* Телефон и планшет: имя по центру, бургер справа — продолжение
             варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
@@ -213,67 +209,35 @@ export function HeaderBar({
           >
             {t.site.artist}
           </Link>
-          <button
-            type="button"
-            onClick={openMenu}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav"
-            aria-label={t.nav.openMenu}
-            className="burger flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-current"
-          >
-            {/* Два мазка вместо трёх ровных полосок (заказчик, 9.10.2026,
-                вариант «Б»): неровные края и сужение к концу — как у мазка
-                под пунктом меню, разной длины — нижний короче. При наведении
-                мазки тянутся (globals.css, .burger-stroke). Крестик в открытом
-                меню нарисован теми же мазками. */}
-            <svg viewBox="0 0 24 24" aria-hidden="true" width="26" height="26" fill="currentColor">
-              <path
-                className="burger-stroke burger-stroke-top"
-                d="M3 8.3C8 6.9 15 7.9 21 7.2l.1 2.1c-6 .7-12.6.2-18 1.1Z"
-              />
-              <path
-                className="burger-stroke burger-stroke-bottom"
-                d="M8 14.6c4-1.1 9-.3 13-.8l-.3 2.1c-4.3.6-8.6 0-12.8.9Z"
-              />
-            </svg>
-          </button>
+          {burgerButton}
         </div>
 
-        {/* Компьютер, строка 2: три колонки 1fr · auto · 1fr — пункты стоят
-            ровно по центру окна, как имя над ними, какой бы ширины ни были
-            края. Верхний отступ на 1px больше нижнего — вместо прежней
-            линии во всю ширину: высота шапки (--header-h) не меняется. */}
-        <div className="hidden grid-cols-[1fr_auto_1fr] items-center pt-[15px] pb-3.5 lg:grid">
+        {/* Компьютер: одна строка, три колонки 1fr · auto · 1fr — имя ровно
+            по центру окна, какой бы ширины ни были края. Слева зал и язык,
+            справа бургер; пункты меню и «Написать художнице» — в панели,
+            которая выезжает справа (заказчик, 12.10.2026). Прежде шапка
+            была в две строки, 144px: имя сверху, меню под ним. Одна строка
+            — 72px, и первый экран отдаёт картине на 72px больше. */}
+        <div className="hidden h-[72px] grid-cols-[1fr_auto_1fr] items-center lg:grid">
           <div className="flex items-center gap-3">
             <ThemeSwitch />
             {languageLink("lang-switch")}
           </div>
-          <div className="flex items-center gap-x-[26px]">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={localePath(lang, item.href)}
-                aria-current={isCurrent(item.href) ? "page" : undefined}
-                className="nav-link text-[17px]"
-              >
-                {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
-                <span className="nav-link-label">{t.nav[item.key]}</span>
-              </Link>
-            ))}
-          </div>
-          <div className="flex justify-end">
-            <ButtonLink href={localePath(lang, navCta.href)} variant="primary">
-              {t.nav[navCta.key]}
-            </ButtonLink>
-          </div>
+          <Link
+            href={localePath(lang, "/")}
+            className="font-heading text-[clamp(30px,2.6vw,38px)] leading-none no-underline"
+          >
+            {t.site.artist}
+          </Link>
+          <div className="flex justify-end">{burgerButton}</div>
         </div>
       </nav>
 
       {/*
-        Меню на весь экран. Без lg:hidden намеренно: если телефон повернуть
-        и окно станет шире 1024px, открытое меню не должно стать невидимым —
-        страница под ним осталась бы неактивной, и выйти было бы нельзя.
-        Открыть его на широком экране всё равно нечем: бургер там скрыт.
+        Меню. На телефоне — на весь экран, на компьютере — панель справа
+        шириной 440px, страница за ней затемняется (globals.css,
+        .mobile-nav). Справа — потому что там бургер: панель выезжает
+        оттуда, куда человек только что нажал.
       */}
       <dialog
         ref={menuRef}
@@ -283,18 +247,24 @@ export function HeaderBar({
         tabIndex={-1}
         onClose={() => setIsMenuOpen(false)}
         onCancel={handleCancel}
+        // Клик по затемнённой странице рядом с панелью (компьютер) приходит
+        // в само окно, а не в его содержимое: так и отличаем «мимо».
+        onClick={(event) => event.target === event.currentTarget && dismissMenu()}
         className="mobile-nav"
       >
-        <div className="flex min-h-full flex-col px-[clamp(20px,5vw,64px)]">
+        <div className="flex min-h-full flex-col px-[clamp(20px,5vw,64px)] lg:px-10">
           {/* Верхняя строка повторяет шапку: имя по центру, крестик на месте
               бургера — меню читается как та же шапка, раскрытая вниз.
               Всё содержимое меню тоже по центру, как шапка. */}
-          <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4">
+          {/* На компьютере имени в панели нет: оно и так стоит в шапке
+              рядом, а в узкой панели повторялось бы. Клетка остаётся,
+              чтобы крестик стоял там же, где был бургер. */}
+          <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4 lg:h-[72px] lg:py-0">
             <span aria-hidden="true" />
             <Link
               href={localePath(lang, "/")}
               onClick={closeMenu}
-              className="font-heading text-center text-[20px] leading-tight no-underline"
+              className="font-heading text-center text-[20px] leading-tight no-underline lg:invisible"
             >
               {t.site.artist}
             </Link>
@@ -322,7 +292,7 @@ export function HeaderBar({
           {/* Пункты — крупно, шрифтом заголовков: на весь экран мелкий
               список выглядел бы потерянным. Появляются друг за другом
               (--i — номер пункта для задержки, globals.css). */}
-          <div className="mt-[clamp(16px,6vh,48px)] flex flex-col items-center gap-1">
+          <div className="mt-[clamp(16px,6vh,48px)] flex flex-col items-center gap-1 lg:items-start">
             {navItems.map((item, index) => (
               <Link
                 key={item.href}
@@ -330,7 +300,7 @@ export function HeaderBar({
                 onClick={closeMenu}
                 aria-current={isCurrent(item.href) ? "page" : undefined}
                 style={itemDelay(index)}
-                className="mobile-nav-item nav-link font-heading py-1 text-[clamp(34px,10vw,46px)] leading-[1.15]"
+                className="mobile-nav-item nav-link font-heading py-1 text-[clamp(34px,10vw,46px)] leading-[1.15] lg:text-[40px]"
               >
                 {isCurrent(item.href) && <BrushStroke className="nav-stroke" />}
                 <span className="nav-link-label">{t.nav[item.key]}</span>
@@ -342,7 +312,7 @@ export function HeaderBar({
             href={localePath(lang, navCta.href)}
             variant="primary"
             size="lg"
-            className="mt-8 self-center"
+            className="mt-8 self-center lg:self-start"
             onClick={closeMenu}
           >
             {t.nav[navCta.key]}
@@ -350,13 +320,13 @@ export function HeaderBar({
 
           {/* mt-auto прижимает контакты и переключатели к низу экрана:
               пункты сверху, всё служебное — под большим пальцем. */}
-          <div className="mt-auto pt-10">
+          <div className="mt-auto pt-10 lg:pb-10">
             {contacts.length > 0 && (
               <>
-                <p className="text-accent mt-0 mb-3 text-center text-[13px] font-semibold tracking-[0.1em] uppercase">
+                <p className="text-accent mt-0 mb-3 text-center text-[13px] font-semibold tracking-[0.1em] uppercase lg:text-left">
                   {t.nav.contacts}
                 </p>
-                <ul className="m-0 flex list-none flex-wrap justify-center gap-2.5 p-0">
+                <ul className="m-0 flex list-none flex-wrap justify-center gap-2.5 p-0 lg:justify-start">
                   {contacts.map((contact) => {
                     const name = contactName(contact.id, t.contacts);
                     return (
@@ -379,7 +349,8 @@ export function HeaderBar({
               </>
             )}
 
-            <div className="border-divider mt-6 flex items-center justify-center gap-5 border-t py-5">
+            {/* На компьютере зал и язык и так в шапке, слева от имени. */}
+            <div className="border-divider mt-6 flex items-center justify-center gap-5 border-t py-5 lg:hidden">
               <ThemeSwitch />
               {languageLink("lang-switch")}
             </div>

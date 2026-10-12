@@ -22,6 +22,12 @@ import { useDictionary } from "@/lib/i18n/client";
  *
  * Подпись до нажатия одна для всех: сервер не знает, какое устройство
  * у посетителя, и разная подпись разошлась бы с разметкой при гидратации.
+ *
+ * Кнопка круглая, только со значком (заказчик, 12.10.2026): две кнопки
+ * с текстом не помещались в строку под описанием работы. Значок
+ * «поделиться» узнаётся без подписи; название — в подсказке при
+ * наведении и для скринридера. Ссылка скопирована — значок сменяется
+ * галочкой.
  */
 export function ShareButton({ url, title }: { url: string; title: string }) {
   const t = useDictionary();
@@ -85,6 +91,8 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
   return (
     <PopoverMenu
       onTriggerClick={handleTrigger}
+      triggerClassName="btn-icon"
+      triggerTitle={t.work.share}
       label={
         <>
           <svg
@@ -97,11 +105,15 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1" />
+            {isCopied ? (
+              <path d="m5 12.5 4.5 4.5L19 7.5" />
+            ) : (
+              <path d="M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1" />
+            )}
           </svg>
-          {isCopied ? t.work.shareCopied : t.work.share}
-          {/* Смена подписи на кнопке скринридер не зачитывает — для него
-              отдельная живая область. */}
+          <span className="sr-only">{t.work.share}</span>
+          {/* Смена значка скринридеру не видна — для него отдельная
+              живая область. */}
           <span role="status" className="sr-only">
             {isCopied ? t.work.shareCopied : ""}
           </span>

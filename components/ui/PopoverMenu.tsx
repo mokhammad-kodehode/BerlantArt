@@ -28,9 +28,15 @@ export function PopoverMenu({
   variant = "soft",
   size = "lg",
   onTriggerClick,
+  triggerClassName,
+  triggerTitle,
   children,
 }: {
   label: ReactNode;
+  /** Класс кнопки — например, `btn-icon` для круглой кнопки со значком. */
+  triggerClassName?: string;
+  /** Всплывающая подсказка — нужна кнопке без текста. */
+  triggerTitle?: string;
   variant?: ButtonVariant;
   size?: "md" | "lg";
   /**
@@ -62,6 +68,8 @@ export function PopoverMenu({
         size={size}
         popoverTarget={popoverId}
         onClick={onTriggerClick}
+        className={triggerClassName}
+        title={triggerTitle}
         style={{ anchorName: anchor }}
       >
         {label}

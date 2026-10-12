@@ -87,7 +87,7 @@ export function ArtworkStage({
       fit="contain"
       priority={priority}
       sizes="100vw"
-      loader="palette"
+      loader
       aspect={aspect}
       className="stage-art"
     />
