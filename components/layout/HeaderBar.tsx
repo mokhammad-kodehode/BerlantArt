@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type MouseEvent,
-  type SyntheticEvent,
-} from "react";
+import { useRef, useState, type CSSProperties, type MouseEvent, type SyntheticEvent } from "react";
 
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
@@ -78,43 +71,9 @@ export function HeaderBar({
   const { lang, path } = splitLocale(usePathname());
   const t = useDictionary();
   const menuRef = useRef<HTMLDialogElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
   // Только для подписи кнопки и aria-expanded: открыто ли окно, знает
   // само окно, но React должен перерисовать кнопку.
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  /*
-    Линия под липкой шапкой — только когда шапка прилипла (заказчик,
-    12.10.2026): у верха страницы она лишняя, а при прокрутке шапка того же
-    цвета, что секции под ней, и сливалась с ними. Прилипла — значит её
-    верх дошёл до своего `top`: 0 на телефоне, −72px на компьютере, где
-    уезжает строка с именем. Пишется атрибутом прямо в DOM, а не состоянием:
-    перерисовывать шапку на каждый кадр прокрутки незачем.
-  */
-  useEffect(() => {
-    const header = headerRef.current;
-    if (variant !== "solid" || header === null) return;
-
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const stuckAt = parseFloat(getComputedStyle(header).top) || 0;
-      const isStuck = window.scrollY > 0 && header.getBoundingClientRect().top <= stuckAt + 0.5;
-      header.toggleAttribute("data-stuck", isStuck);
-    };
-    const onScroll = () => {
-      if (frame === 0) frame = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [variant]);
 
   const isCurrent = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const otherLang = lang === "ru" ? "en" : "ru";
@@ -205,33 +164,48 @@ export function HeaderBar({
       разойдутся — у верха останется полоска имени или срежется меню.
     */
     <header
-      ref={headerRef}
       className={cn(
-        variant === "solid" && "header-solid bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
-        variant === "plain" && "bg-wall text-ink relative z-20",
+        variant === "solid" && "header-line bg-wall text-ink sticky top-0 z-20 lg:-top-[72px]",
+        variant === "plain" && "header-line bg-wall text-ink relative z-20",
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
       {/* Компьютер, строка 1: имя. */}
       {/* По центру строки и крупнее (заказчик, 12.10.2026): прижатое к низу
           имя читалось подписью над линией, а не названием. Высота строки
-          та же 72px — на ней держатся lg:-top-[72px] и --header-h. */}
+          та же 72px — на ней держатся lg:-top-[72px] и --header-h.
+
+          Линия под именем — шире имени на 20%, по 10% с каждой стороны, а не
+          во всю ширину окна (заказчик, 12.10.2026): так она подчёркивает
+          имя, а не делит шапку пополам. Считается от ширины самого имени,
+          поэтому длина верна и в английской версии. */}
       <div className="hidden h-[72px] items-center justify-center px-[clamp(20px,5vw,64px)] lg:flex">
-        <Link
-          href={localePath(lang, "/")}
-          className="font-heading text-[clamp(30px,2.6vw,38px)] leading-none no-underline"
-        >
-          {t.site.artist}
-        </Link>
+        <div className="relative flex h-full items-center">
+          <Link
+            href={localePath(lang, "/")}
+            className="font-heading text-[clamp(30px,2.6vw,38px)] leading-none no-underline"
+          >
+            {t.site.artist}
+          </Link>
+          <span aria-hidden className="bg-divider absolute bottom-0 left-[-10%] h-px w-[120%]" />
+        </div>
       </div>
 
       <nav className="px-[clamp(20px,5vw,64px)]">
         {/* Телефон и планшет: имя по центру, бургер справа — продолжение
             варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
             клетка шириной с бургер: без неё имя стояло бы по центру
-            остатка строки, а не окна. Линия снизу — та же, что на
-            компьютере между именем и меню. */}
-        <div className="border-divider grid grid-cols-[40px_1fr_40px] items-center border-b py-4 lg:hidden">
+            остатка строки, а не окна.
+
+            Линия снизу своя только у прозрачной шапки на странице работы:
+            у остальных её рисует .header-line, и рамка дала бы двойную
+            линию. Вместо рамки — лишний 1px снизу, высота та же 73px. */}
+        <div
+          className={cn(
+            "grid grid-cols-[40px_1fr_40px] items-center pt-4 lg:hidden",
+            variant === "stage" ? "border-divider border-b pb-4" : "pb-[17px]",
+          )}
+        >
           <span aria-hidden="true" />
           <Link
             href={localePath(lang, "/")}
@@ -267,8 +241,9 @@ export function HeaderBar({
 
         {/* Компьютер, строка 2: три колонки 1fr · auto · 1fr — пункты стоят
             ровно по центру окна, как имя над ними, какой бы ширины ни были
-            края. */}
-        <div className="border-divider hidden grid-cols-[1fr_auto_1fr] items-center border-t py-3.5 lg:grid">
+            края. Верхний отступ на 1px больше нижнего — вместо прежней
+            линии во всю ширину: высота шапки (--header-h) не меняется. */}
+        <div className="hidden grid-cols-[1fr_auto_1fr] items-center pt-[15px] pb-3.5 lg:grid">
           <div className="flex items-center gap-3">
             <ThemeSwitch />
             {languageLink("lang-switch")}

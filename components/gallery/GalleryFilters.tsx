@@ -47,6 +47,11 @@ export function GalleryFilters({
 
   if (categories.length === 0) return null;
 
+  // Текст чипов 14px, а не 16px, как у обычных кнопок (заказчик,
+  // 12.10.2026): десяток категорий кеглем кнопки читался крупнее поиска
+  // над ними и оттягивал внимание от стены.
+  const chipClass = "flex-none text-[14px]";
+
   return (
     <div
       className="filter-rail mb-2 flex gap-2.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0"
@@ -57,7 +62,7 @@ export function GalleryFilters({
         href={galleryHref(lang, { q: current.q })}
         variant={!current.category ? "primary" : "soft"}
         aria-current={!current.category ? "page" : undefined}
-        className="flex-none"
+        className={chipClass}
       >
         {t.categoryAll}
       </ButtonLink>
@@ -69,7 +74,7 @@ export function GalleryFilters({
             href={galleryHref(lang, { category, q: current.q })}
             variant={active ? "primary" : "soft"}
             aria-current={active ? "page" : undefined}
-            className="flex-none"
+            className={chipClass}
           >
             {artworkCategory(category, lang)}
           </ButtonLink>

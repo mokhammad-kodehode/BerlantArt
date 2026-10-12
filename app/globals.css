@@ -1201,6 +1201,98 @@
     display: none;
   }
 
+  /* Заглушка на время загрузки фото (components/ui/ArtworkImage.tsx).
+
+     Карточка — тон чернил на 10%, как скелет галереи (loading.tsx), и то
+     же мерцание: стена при загрузке и стена при подгрузке фото выглядят
+     одинаково. Палитра — в центре карточки, только на странице работы.
+     Цвета нет и здесь: краски на палитре — оттенки чернил, а не охра. */
+  .image-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+    animation: image-loader-pulse 1.8s ease-in-out infinite;
+  }
+  /* По контуру картины: блок — контейнер размеров, рамка вписана в него
+     по пропорциям фото, как object-contain вписывает само фото. */
+  .image-loader-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    container-type: size;
+  }
+  .image-loader-frame .image-loader {
+    width: min(100cqw, 100cqh * var(--loader-ratio));
+    height: auto;
+    aspect-ratio: var(--loader-ratio);
+  }
+  .image-loader-palette {
+    width: 64px;
+    height: 64px;
+    overflow: visible;
+  }
+  .image-loader-board {
+    fill: none;
+    stroke: var(--color-ink-faint);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .image-loader-dot {
+    fill: var(--color-ink-faint);
+    animation: image-loader-dot 1.5s ease-in-out infinite;
+  }
+  .image-loader-dot:nth-of-type(2) {
+    animation-delay: 0.15s;
+  }
+  .image-loader-dot:nth-of-type(3) {
+    animation-delay: 0.3s;
+  }
+  .image-loader-dot:nth-of-type(4) {
+    animation-delay: 0.45s;
+  }
+  .image-loader-dot:nth-of-type(5) {
+    animation-delay: 0.6s;
+  }
+  /* Мазок по кругу: дуга в треть окружности с круглыми концами. */
+  .image-loader-ring {
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 60 122;
+    transform-origin: 32px 32px;
+    animation: image-loader-spin 1.4s linear infinite;
+  }
+  @keyframes image-loader-pulse {
+    50% {
+      opacity: 0.6;
+    }
+  }
+  @keyframes image-loader-dot {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+  @keyframes image-loader-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .image-loader,
+    .image-loader-dot,
+    .image-loader-ring {
+      animation: none;
+    }
+  }
+
   /* Тень под холстом — из темы: в тёмном зале глубокая, в светлом мягкая. */
   .stage-art {
     filter: var(--theme-shadow-art);
@@ -1220,42 +1312,51 @@
      экране она только мешает, — а правый край растворяется, чтобы было
      видно: лента продолжается за краем. Маска только ниже 768px: с этой
      ширины чипы снова переносятся по строкам и прятать нечего. */
-  /* Поле поиска в галерее: таблетка, как кнопки-фильтры рядом, лупа
-     слева, крестик справа. Встроенный крестик браузера у type="search"
-     спрятан — у нас свой, одинаковый во всех браузерах. */
+  /* Поле поиска в галерее — над категориями, на телефоне во всю ширину,
+     на компьютере до 720px (заказчик,
+     12.10.2026). Не таблетка, как кнопки-фильтры, а строка с линией
+     снизу, текст — антиквой заголовков: поле выглядит частью страницы,
+     как строка в каталоге выставки, а не ещё одной серой кнопкой рядом
+     с категориями. Встроенный крестик браузера у type="search" спрятан —
+     у нас свой, одинаковый во всех браузерах. */
   .search-field {
     position: relative;
     display: flex;
     align-items: center;
     width: 100%;
-    max-width: 100%;
-    height: 44px;
+    height: 56px;
+    /* Мазок ожидания (::after) выезжает за края — обрезаем его здесь. */
+    overflow: clip;
     color: var(--color-ink);
-    background: var(--color-surface);
-    border: 1px solid transparent;
-    border-radius: var(--radius-pill);
-    transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+    border-bottom: 1px solid var(--color-divider);
+    transition: border-color 0.2s ease;
   }
   @media (min-width: 768px) {
     .search-field {
-      width: 340px;
+      max-width: 720px;
+      height: 64px;
     }
   }
+  /* Линия под полем темнеет при наведении и становится чернилами при
+     вводе. Обводка фокуса браузера не нужна: поле и так меняется заметно,
+     а курсор стоит в нём. */
+  .search-field:hover {
+    border-color: var(--color-ink-faint);
+  }
   .search-field:focus-within {
-    background: var(--color-bg);
-    border-color: var(--color-accent);
+    border-color: var(--color-ink);
   }
   .search-field input {
     flex: 1;
     min-width: 0;
     height: 100%;
-    padding: 0 44px 0 46px;
-    font: inherit;
-    /* 16px, а не меньше: мельче мобильный Safari приближает страницу
-       при касании поля. */
-    font-size: 16px;
+    padding: 0 48px 0 40px;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    /* Не меньше 16px: мельче мобильный Safari приближает страницу при
+       касании поля. Здесь заведомо крупнее — это строка-заголовок. */
+    font-size: clamp(22px, 2.4vw, 30px);
+    letter-spacing: -0.01em;
     color: inherit;
     background: transparent;
     border: 0;
@@ -1270,12 +1371,12 @@
   }
   .search-field-icon {
     position: absolute;
-    left: 17px;
-    width: 19px;
-    height: 19px;
+    left: 0;
+    width: 24px;
+    height: 24px;
     fill: none;
     stroke: var(--color-ink-soft);
-    stroke-width: 1.8;
+    stroke-width: 1.5;
     stroke-linecap: round;
     pointer-events: none;
   }
@@ -1288,9 +1389,32 @@
       opacity: 0.35;
     }
   }
+  /* И по линии под полем бежит тонкий мазок чернил. */
+  .search-field::after {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 30%;
+    height: 1px;
+    content: "";
+    background: var(--color-ink);
+    opacity: 0;
+  }
+  .search-field[data-pending]::after {
+    opacity: 1;
+    animation: search-sweep 1.1s ease-in-out infinite;
+  }
+  @keyframes search-sweep {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(340%);
+    }
+  }
   .search-field-clear {
     position: absolute;
-    right: 6px;
+    right: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1315,7 +1439,8 @@
     stroke-linecap: round;
   }
   @media (prefers-reduced-motion: reduce) {
-    .search-field[data-pending] .search-field-icon {
+    .search-field[data-pending] .search-field-icon,
+    .search-field[data-pending]::after {
       animation: none;
     }
   }
@@ -1341,17 +1466,22 @@
 
   /* Листание работ «‹ 3 / 32 ›» (components/gallery/ArtworkStage.tsx).
 
-     Тонкие шевроны без кругов и плашек: ряд стоит в подписи, рядом с
-     текстом, и должен читаться как её часть, а не как кнопки поверх
-     картины. Поле нажатия 44px — пальцем попасть удобно, хотя сам
-     значок мелкий. Цифры — моноширинными (tabular-nums): иначе при
+     Тонкие шевроны без кругов и плашек: ряд стоит под холстом, как
+     подпись на стене музея, и не должен спорить с картиной. Поле
+     нажатия 44px — пальцем попасть удобно, хотя сам значок мелкий. Цифры — моноширинными (tabular-nums): иначе при
      переходе с «1 / 5» на «4 / 5» ряд подрагивал бы. */
   .stage-pager {
     display: flex;
     flex: none;
     align-items: center;
-    margin-right: -12px;
     color: var(--color-ink);
+  }
+  /* На телефоне ряд прижат вправо: шеврон встаёт ровно по краю колонки,
+     пустое поле кнопки уходит за него. */
+  @media (max-width: 1023px) {
+    .stage-pager {
+      margin-right: -12px;
+    }
   }
   .stage-pager a {
     display: flex;
@@ -1505,8 +1635,9 @@
    а тёмный зал заказчик просил не трогать.
    ═════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
+  /* Не меньше 100px: в этом поле стоит ряд «‹ 3 / 32 ›» (ArtworkStage). */
   :root[data-theme="paper"] .stage-art-area {
-    padding-bottom: clamp(40px, 8vh, 96px);
+    padding-bottom: clamp(100px, 11vh, 120px);
   }
 }
 
@@ -1526,13 +1657,12 @@
   display: none;
 }
 
-/* Линия под липкой шапкой — когда шапка прилипла (data-stuck ставит
-   HeaderBar). Тенью, а не рамкой: рамка прибавила бы шапке 1px высоты,
-   и первый экран главной (--header-h) разошёлся бы с окном. */
-.header-solid {
-  transition: box-shadow 0.2s ease;
-}
-.header-solid[data-stuck] {
+/* Линия под шапкой — всегда (заказчик, 12.10.2026; прежде появлялась
+   только при прокрутке). Шапка того же цвета, что секции под ней, и без
+   линии сливалась с ними. Тенью, а не рамкой: рамка прибавила бы шапке
+   1px высоты, и первый экран главной (--header-h) разошёлся бы с окном.
+   На странице работы шапки-плашки нет (вариант stage) — там и линии нет. */
+.header-line {
   box-shadow: 0 1px 0 var(--color-divider);
 }
 

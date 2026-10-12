@@ -98,12 +98,10 @@ export const en: Dictionary = {
   },
 
   gallery: {
-    title: "Works",
     metaTitle: "Oil paintings — gallery of works",
     metaDescription:
       "Oil paintings by Chechen artist Berlant Dzhabrailova: mountains, towers, villages and rivers of Chechnya. Open any work full screen or try it on a wall.",
     kicker: "Gallery",
-    lead: "Oil painting. Tap a work to open it full screen.",
     emptyFilteredTitle: "Nothing matches this filter",
     emptyFilteredText: "Try another category.",
     emptyTitle: "No works yet",

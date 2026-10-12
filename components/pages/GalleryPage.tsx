@@ -85,24 +85,21 @@ export async function GalleryPage({
 
   return (
     <main className="flex flex-1 flex-col">
-      <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
-        <div>
-          <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">
-            {t.kicker}
-          </span>
-          <h1 className="text-ink mt-0 mb-1.5 text-[clamp(26px,3.2vw,38px)]">{t.title}</h1>
-          {/* На телефоне абзац скрыт: вместе с тремя рядами фильтров он
-                отодвигал стену почти на половину экрана, а тапнуть по работе
-                и так очевидно. На десктопе места хватает. */}
-          <p className="text-ink-soft m-0 hidden max-w-[46ch] text-[14px] leading-relaxed md:block">
-            {t.lead}
-          </p>
-        </div>
-
-        {/* Поиск над категориями: на телефоне — во всю ширину, на компьютере
-            — справа, той же колонкой, что и переключатели. */}
-        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
-          <GallerySearch lang={lang} category={current.category} query={filters.q} />
+      {/*
+        Шапка галереи — надстрочник, под ним поиск, под ним категории
+        (заказчик, 12.10.2026). Поле на компьютере длиной 720px, а не во
+        всю ширину: строка с линией через весь экран в 1440px выглядела
+        пустой полосой, а запрос длиннее пары слов никто не набирает. Заголовок «Работы» и абзац «Нажмите на
+        работу…» убраны: они повторяли пункт меню и отодвигали стену вниз,
+        а что работу можно открыть, видно и так. Единственный h1 страницы —
+        «Галерея», оформленный надстрочником, как и был.
+      */}
+      <div className="px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+        <h1 className="text-accent font-body mt-0 mb-3 text-[13px] font-semibold tracking-[0.1em] uppercase md:mb-4">
+          {t.kicker}
+        </h1>
+        <GallerySearch lang={lang} category={current.category} query={filters.q} />
+        <div className="mt-4 md:mt-5">
           <GalleryFilters lang={lang} current={current} categories={categories} />
         </div>
       </div>

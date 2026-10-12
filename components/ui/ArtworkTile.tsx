@@ -55,6 +55,7 @@ export function ArtworkTile({
           src={primaryImageUrl(work)}
           alt={artworkSeo(work, lang).imageAlt}
           sizes={sizes}
+          loader="card"
         />
 
         <span className="wall-caption absolute inset-x-0 bottom-0 block bg-linear-to-t from-[rgb(20_18_17/0.85)] to-transparent p-4">

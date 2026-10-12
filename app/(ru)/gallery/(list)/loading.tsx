@@ -24,10 +24,17 @@ export default function GalleryLoading() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <div className="px-[clamp(20px,5vw,64px)] pt-7 pb-5">
-        <div className="bg-ink/15 mb-3 h-3 w-20 rounded-full" />
-        <div className="bg-ink/20 mb-3 h-9 w-48 rounded-lg" />
-        <div className="bg-ink/10 h-3.5 w-full max-w-[420px] rounded-full" />
+      {/* Шапка — как в GalleryPage: надстрочник, строка поиска, ряд категорий. */}
+      <div aria-hidden className="px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+        <div className="bg-ink/15 mb-3 h-3 w-20 rounded-full md:mb-4" />
+        <div className="border-divider flex h-14 max-w-[720px] items-center border-b md:h-16">
+          <div className="bg-ink/10 h-5 w-40 rounded-full" />
+        </div>
+        <div className="mt-4 flex gap-2.5 md:mt-5">
+          {[120, 80, 120, 70].map((width, index) => (
+            <div key={index} className="bg-ink/10 h-11 rounded-full" style={{ width }} />
+          ))}
+        </div>
       </div>
 
       <ul
