@@ -57,8 +57,12 @@ export function Hero({ lang }: { lang: Locale }) {
         так что вместе стоят по центру колонки. Строки пополам (1fr 1fr)
         не годились: нижний блок выше верхнего, и текст съезжал на 56px вниз.
         minmax(4rem, …) — поля сверху и снизу на невысоком окне.
+
+        Шире --page-max hero не растёт и стоит по центру (заказчик,
+        12.10.2026): на экране 2560px фото становилось огромным, а текст
+        терялся у левого края.
       */}
-      <div className="grid flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
+      <div className="mx-auto grid w-full max-w-(--page-max) flex-1 grid-cols-1 grid-rows-[auto_1fr_auto] [grid-template-areas:'title'_'photo'_'rest'] min-[900px]:grid-cols-[41fr_59fr] min-[900px]:grid-rows-[minmax(4rem,1fr)_auto_auto_minmax(4rem,1fr)] min-[900px]:[grid-template-areas:'._photo'_'title_photo'_'rest_photo'_'._photo']">
         <div className="px-[clamp(20px,5vw,64px)] pt-6 pb-6 [grid-area:title] min-[900px]:py-0">
           {/*
             Заголовок — девиз, а не имя (вариант 2, заказчик 9.10.2026):
@@ -101,7 +105,7 @@ export function Hero({ lang }: { lang: Locale }) {
             alt={t.hero.photoAlt}
             fill
             preload
-            sizes="(min-width: 900px) 59vw, 100vw"
+            sizes="(min-width: 1680px) 992px, (min-width: 900px) 59vw, 100vw"
             className="object-cover object-[80%_center] min-[900px]:object-[72%_center]"
           />
         </div>

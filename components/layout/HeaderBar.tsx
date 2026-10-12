@@ -190,7 +190,9 @@ export function HeaderBar({
         variant === "stage" && "stage-header text-ink relative z-10 bg-transparent",
       )}
     >
-      <nav className="px-[clamp(20px,5vw,64px)]">
+      {/* Шире --page-max содержимое шапки не растягивается — края стоят
+          над краями hero и сцены работы (globals.css, --page-max). */}
+      <nav className="mx-auto max-w-(--page-max) px-[clamp(20px,5vw,64px)]">
         {/* Телефон и планшет: имя по центру, бургер справа — продолжение
             варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
             клетка шириной с бургер: без неё имя стояло бы по центру
