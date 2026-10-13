@@ -12,7 +12,6 @@ import { createArtwork, deleteArtwork, updateArtwork } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
 import { deleteObject } from "@/lib/r2";
 import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
-import { variantKeys } from "@/lib/image-variants";
 import { isOwnObjectKey } from "@/lib/upload-limits";
 
 /**
@@ -113,8 +112,7 @@ export async function removeArtwork(formData: FormData): Promise<void> {
 
   // Часть ключей — пути внутри public/ у пяти старых работ. Файл
   // из репозитория удалять нечем и незачем.
-  // С каждым фото уходят и его уменьшенные копии (тикет И-1).
-  const stored = keys.filter(isOwnObjectKey).flatMap((key) => [key, ...variantKeys(key)]);
+  const stored = keys.filter(isOwnObjectKey);
 
   // allSettled, а не all: один неудавшийся объект не должен мешать
   // убрать остальные. База уже не ссылается ни на один из них, поэтому

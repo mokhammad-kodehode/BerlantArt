@@ -6,7 +6,7 @@ import { objectKey } from "@/lib/r2";
 describe("objectKey", () => {
   it("транслитерирует кириллицу и приводит имя к латинице", () => {
     expect(objectKey("Башни в тумане.JPG", "image/jpeg")).toMatch(
-      /^artworks\/v2\/[0-9a-f-]{36}-bashni-v-tumane\.jpg$/,
+      /^artworks\/[0-9a-f-]{36}-bashni-v-tumane\.jpg$/,
     );
   });
 
@@ -24,7 +24,7 @@ describe("objectKey", () => {
   });
 
   it("обходится без имени, когда после очистки не осталось ни одного символа", () => {
-    expect(objectKey("。。。.webp", "image/webp")).toMatch(/^artworks\/v2\/[0-9a-f-]{36}\.webp$/);
+    expect(objectKey("。。。.webp", "image/webp")).toMatch(/^artworks\/[0-9a-f-]{36}\.webp$/);
   });
 });
 

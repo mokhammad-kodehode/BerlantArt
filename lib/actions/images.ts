@@ -14,8 +14,6 @@ import {
 import { assertAdmin } from "@/lib/auth";
 import { describeConfigError } from "@/lib/env";
 import { readImageSize } from "@/lib/image-size";
-import { hasVariants, variantKeys } from "@/lib/image-variants";
-import { makeVariants } from "@/lib/make-variants";
 import {
   createUploadUrl,
   deleteObject,
@@ -141,25 +139,9 @@ export async function attachImage(input: {
     return { ok: false, error: "Файл не открывается как изображение — загрузите другой." };
   }
 
-  // Уменьшенные копии (тикет И-1) — до записи в базу: запись с ключом
-  // в папке v2 обещает сайту полный набор копий. Не вышло — ни файла,
-  // ни записи, человек загрузит фото ещё раз.
-  if (bytes !== null && hasVariants(key)) {
-    try {
-      await makeVariants(key, bytes);
-    } catch (error) {
-      console.error("Не удалось нарезать копии фото:", error);
-      await deleteObject(key);
-      return {
-        ok: false,
-        error: "Не удалось подготовить уменьшенные копии фото — попробуйте загрузить его ещё раз.",
-      };
-    }
-  }
-
   if (!(await addImage({ artworkId, key, alt, size }))) {
     // Работы нет — файл уже лежит в бакете и никому не нужен.
-    await Promise.allSettled([key, ...variantKeys(key)].map(deleteObject));
+    await deleteObject(key);
     return { ok: false, error: "Работа не найдена — возможно, её удалили в другом окне." };
   }
 
@@ -191,8 +173,7 @@ export async function removeImage(imageId: string): Promise<ImageResult> {
 
   // У пяти старых работ в поле лежит путь внутри public/, а не ключ
   // объекта. Файл из репозитория удалять нечем и незачем.
-  // С фото уходят и его уменьшенные копии (тикет И-1).
-  if (isOwnObjectKey(key)) await Promise.all([key, ...variantKeys(key)].map(deleteObject));
+  if (isOwnObjectKey(key)) await deleteObject(key);
 
   revalidateAdminArtwork(artworkId);
   revalidatePublicPages();
