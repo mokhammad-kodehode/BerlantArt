@@ -284,9 +284,14 @@ export function ArtworkForm({
         {/* Сообщение об успехе живёт в потоке документа, а не всплывашкой:
             всплывашка исчезает раньше, чем её заметят. */}
         {state.saved === true && !isPending && (
-          <p role="status" className="text-accent-2-700 text-sm">
-            Сохранено. Изменения уже видны на сайте.
-          </p>
+          <div role="status">
+            <p className="text-accent-2-700 m-0 text-sm">
+              Сохранено. Изменения уже видны на сайте.
+            </p>
+            {state.warmWords !== undefined && (
+              <p className="font-heading text-accent m-0 mt-1 text-xl">{state.warmWords} ♥</p>
+            )}
+          </div>
         )}
       </div>
     </form>

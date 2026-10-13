@@ -6,10 +6,12 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { OpenGalleryLink } from "@/components/admin/OpenGalleryLink";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { logout } from "@/lib/actions/auth";
+import { greeting } from "@/lib/admin-cheer";
 import { adminArtworksHref } from "@/lib/admin-filters";
 import { artworkStatusNames, artworkStatuses } from "@/lib/artwork-form";
 import { getAdminSummary, primaryImageUrl, type ArtworkStatus } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Панель управления",
@@ -49,7 +51,11 @@ export default async function AdminPage() {
 
   return (
     <AdminShell
-      title="Панель управления"
+      // Приветствие вместо «Панели управления» — подарок художнице
+      // (lib/admin-cheer.ts). Время считается при каждом входе: страница
+      // за паролем и в кеш не попадает.
+      title={`${greeting(new Date())}, Берлант!`}
+      lead={site.slogan}
       actions={
         <form action={logout}>
           <Button type="submit" variant="ghost">

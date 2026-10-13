@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { pickWarmWords } from "@/lib/admin-cheer";
 import {
   parseArtworkForm,
   readArtworkForm,
@@ -33,6 +34,8 @@ export type ArtworkFormState = {
   values?: ArtworkFormRaw;
   /** Показать «сохранено» под формой редактирования. */
   saved?: boolean;
+  /** Тёплая фраза к «сохранено» — подарок художнице (lib/admin-cheer.ts). */
+  warmWords?: string;
   /** Ошибка, не относящаяся к конкретному полю. */
   error?: string;
 };
@@ -51,7 +54,7 @@ export type ArtworkFormState = {
  * проверять владение нечем и незачем.
  */
 export async function saveArtwork(
-  _state: ArtworkFormState,
+  state: ArtworkFormState,
   formData: FormData,
 ): Promise<ArtworkFormState> {
   await assertAdmin();
@@ -86,7 +89,7 @@ export async function saveArtwork(
   revalidateAdminArtwork(id);
   revalidatePublicPages();
 
-  return { values: raw, saved: true };
+  return { values: raw, saved: true, warmWords: pickWarmWords(state.warmWords) };
 }
 
 /**

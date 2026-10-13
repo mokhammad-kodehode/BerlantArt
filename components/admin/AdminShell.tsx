@@ -14,11 +14,14 @@ import { Container } from "@/components/ui/Container";
  */
 export function AdminShell({
   title,
+  lead,
   back,
   actions,
   children,
 }: {
   title: string;
+  /** Строка под заголовком. */
+  lead?: string;
   /** Куда ведёт ссылка «назад» и как она подписана. */
   back?: { href: string; label: string };
   actions?: ReactNode;
@@ -40,7 +43,12 @@ export function AdminShell({
         )}
 
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl">{title}</h1>
+          <div>
+            <h1 className="text-3xl">{title}</h1>
+            {lead !== undefined && (
+              <p className="font-heading text-accent m-0 mt-1 text-lg">{lead}</p>
+            )}
+          </div>
           {actions}
         </div>
 
