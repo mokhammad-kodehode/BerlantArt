@@ -1,6 +1,7 @@
 import { AwsClient } from "aws4fetch";
 
 import { clientEnv, r2Env } from "@/lib/env";
+import { variantPrefix } from "@/lib/image-variants";
 import { allowedTypes, checkUpload, isAllowedType, type AllowedType } from "@/lib/upload-limits";
 
 /**
@@ -77,7 +78,7 @@ const translit: Record<string, string> = {
 };
 
 /**
- * Ключ объекта: `artworks/<uuid>-<имя-латиницей>.<расширение>`.
+ * Ключ объекта: `artworks/v2/<uuid>-<имя-латиницей>.<расширение>`.
  *
  * Имя файла приходит из браузера, поэтому чистится по белому списку
  * `[a-z0-9-]`, а не вырезанием плохих символов: «../» в имени — классический
@@ -98,7 +99,9 @@ export function objectKey(fileName: string, contentType: AllowedType): string {
     .replace(/-+$/, "");
 
   const id = crypto.randomUUID();
-  return `artworks/${slug ? `${id}-${slug}` : id}.${allowedTypes[contentType]}`;
+  // В папке v2: рядом с таким ключом сервер кладёт уменьшенные копии
+  // (lib/image-variants.ts), и сайт отдаёт их вместо исходника.
+  return `${variantPrefix}${slug ? `${id}-${slug}` : id}.${allowedTypes[contentType]}`;
 }
 
 export type UploadTarget = {
@@ -240,5 +243,32 @@ export async function deleteObject(key: string): Promise<void> {
   // 204 — удалили, 404 — удалять было нечего. Оба исхода нас устраивают.
   if (!response.ok && response.status !== 404) {
     throw new Error(`Не удалось удалить объект «${key}»: хранилище ответило ${response.status}.`);
+  }
+}
+
+/**
+ * Кладёт объект с сервера — уменьшенные копии фото (тикет И-1). Файлы
+ * от посетителя сюда не идут: они летят в бакет из браузера по подписи.
+ *
+ * Кэш на год и `immutable`: у каждой копии свой ключ с uuid, а замена
+ * фото — это новый ключ, а не новый файл по старому.
+ */
+export async function putObject(
+  key: string,
+  body: Uint8Array<ArrayBuffer>,
+  contentType: string,
+): Promise<void> {
+  const env = r2Env();
+  const response = await client(env).fetch(objectUrl(env, key), {
+    method: "PUT",
+    body,
+    headers: {
+      "Content-Type": contentType,
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Не удалось записать объект «${key}»: хранилище ответило ${response.status}.`);
   }
 }

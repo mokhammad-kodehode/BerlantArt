@@ -117,7 +117,8 @@ export function checkUpload(file: { type: string; size: number }): string | null
 // `png` остаётся, хотя новые PNG не выдаются: по этой же проверке удаление
 // работы решает, какие файлы убрать из бакета, и PNG, залитые до Э5-2,
 // иначе остались бы в нём навсегда.
-const keyPattern = /^artworks\/[0-9a-f-]{36}(-[a-z0-9-]{1,40})?\.(jpg|png|webp)$/;
+// `v2/` — ключи с уменьшенными копиями рядом (тикет И-1); без него — старые.
+const keyPattern = /^artworks\/(v2\/)?[0-9a-f-]{36}(-[a-z0-9-]{1,40})?\.(jpg|png|webp)$/;
 
 export function isOwnObjectKey(key: string): boolean {
   return keyPattern.test(key);

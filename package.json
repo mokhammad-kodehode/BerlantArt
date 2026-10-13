@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/make-image-variants.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -14,13 +14,15 @@
     "test": "vitest run",
     "hash-password": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/hash-password.mjs",
     "auth-secret": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/hash-password.mjs --secret",
-    "backfill-image-sizes": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/backfill-image-sizes.ts"
+    "backfill-image-sizes": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/backfill-image-sizes.ts",
+    "make-image-variants": "node scripts/make-image-variants.mjs --run"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "aws4fetch": "^1.0.20",
     "next": "16.3.1",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sharp": "^0.35.3",
