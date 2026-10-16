@@ -6,6 +6,7 @@ import { ArtworkSwipe } from "@/components/gallery/ArtworkSwipe";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
+import { tileAnchor } from "@/components/ui/ArtworkTile";
 import type { ArtworkNeighbours } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
@@ -82,6 +83,9 @@ export function ArtworkStage({
   const currentId = works[position - 1]?.id;
   const prevHref = prev ? localePath(lang, `/gallery/${prev.id}`) : undefined;
   const nextHref = next ? localePath(lang, `/gallery/${next.id}`) : undefined;
+  // Назад в галерею — к плитке этой работы, а не в начало стены: у работы
+  // из конца галереи иначе приходилось листать до неё заново.
+  const galleryHref = localePath(lang, "/gallery") + (currentId ? `#${tileAnchor(currentId)}` : "");
   const artBoxStyle: (CSSProperties & { "--art-ratio": number }) | undefined =
     aspect === undefined ? undefined : { "--art-ratio": aspect };
   const stageArt = (
@@ -238,7 +242,7 @@ export function ArtworkStage({
             className="relative z-[2] flex items-center justify-between gap-4 pt-3 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0 lg:justify-center lg:px-12 lg:pt-0 lg:pb-7 lg:pl-[36%]"
           >
             <Link
-              href={localePath(lang, "/gallery")}
+              href={galleryHref}
               className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
             >
               {t.backToAll}
@@ -277,7 +281,7 @@ export function ArtworkStage({
         <div className="stage-caption relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:w-[30%] lg:self-end lg:pt-8 lg:pr-10 lg:[grid-area:1/1]">
           {/* На телефоне эта ссылка стоит в ряду со стрелками, под картиной. */}
           <Link
-            href={localePath(lang, "/gallery")}
+            href={galleryHref}
             className="text-ink-soft hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
           >
             {t.backToAll}

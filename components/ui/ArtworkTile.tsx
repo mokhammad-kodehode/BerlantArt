@@ -10,6 +10,11 @@ import {
 import { cn } from "@/lib/cn";
 import { localePath, type Locale } from "@/lib/i18n";
 
+/** Якорь плитки на стене: `/gallery#work-<id>` прокручивает к этой работе. */
+export function tileAnchor(workId: string): string {
+  return `work-${workId}`;
+}
+
 /**
  * Плитка работы: репродукция и название, вся целиком — ссылка на страницу
  * работы.
@@ -38,7 +43,9 @@ export function ArtworkTile({
   const caption = artworkCaption(work, lang);
 
   return (
-    <li className={cn("wall-tile list-none", className)}>
+    // id — якорь: «← Все работы» на странице работы ведёт сюда,
+    // к той же плитке, а не в начало стены (заказчик, 16.10.2026).
+    <li id={tileAnchor(work.id)} className={cn("wall-tile list-none", className)}>
       {/*
         Ссылка растянута на всю плитку: кликается и репродукция, и подпись,
         а с клавиатуры это одна остановка, а не три.
