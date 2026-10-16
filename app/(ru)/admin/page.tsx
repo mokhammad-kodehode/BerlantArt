@@ -10,7 +10,13 @@ import { logout } from "@/lib/actions/auth";
 import { birthdayCardYear, greeting } from "@/lib/admin-cheer";
 import { adminArtworksHref } from "@/lib/admin-filters";
 import { artworkStatusNames, artworkStatuses } from "@/lib/artwork-form";
-import { getAdminSummary, getFeatured, primaryImageUrl, type ArtworkStatus } from "@/lib/artworks";
+import {
+  getAdminSummary,
+  getArtworkById,
+  getFeatured,
+  primaryImageUrl,
+  type ArtworkStatus,
+} from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 import { site } from "@/lib/site";
 
@@ -35,11 +41,22 @@ const countLabels: Record<ArtworkStatus, string> = {
  * Два запроса в базу при любом числе работ.
  */
 /**
- * Картина для открытки: случайная из тех, что художница выбрала для
- * главной, — значит, их она и сама считает лучшими. Запрос уходит только
- * в те дни, когда открытка ждёт, в остальные — ни одного лишнего.
+ * Картина для открытки — «Цветы» с бирюзовой вазой, её выбрал заказчик
+ * (16.10.2026). Работу ищем по адресу на сайте: название может
+ * повториться, а адрес — нет.
+ */
+const birthdayPaintingId = "cmuzk76yl000006jsbqv3weyj";
+
+/**
+ * Если «Цветы» удалят или у работы не будет фото — случайная из тех, что
+ * художница выбрала для главной: открытка без картины выглядела бы
+ * пустой. Запросы уходят только в те дни, когда открытка ждёт.
  */
 async function pickBirthdayPainting(): Promise<{ src: string; title: string } | undefined> {
+  const chosen = await getArtworkById(birthdayPaintingId);
+  const chosenSrc = chosen === null ? undefined : primaryImageUrl(chosen);
+  if (chosen !== null && chosenSrc !== undefined) return { src: chosenSrc, title: chosen.title };
+
   const works = await getFeatured(12);
   const withPhoto = works.flatMap((work) => {
     const src = primaryImageUrl(work);
