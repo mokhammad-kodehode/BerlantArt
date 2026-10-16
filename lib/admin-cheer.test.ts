@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { greeting, pickWarmWords, warmWords } from "@/lib/admin-cheer";
+import { birthdayCardYear, greeting, pickWarmWords, warmWords } from "@/lib/admin-cheer";
 
 /** Сервер живёт по Гринвичу, художница — по Москве: разница три часа. */
 describe("greeting", () => {
@@ -31,5 +31,25 @@ describe("pickWarmWords", () => {
   it("без прошлой фразы выбирает из всех", () => {
     expect(pickWarmWords(undefined, () => 0)).toBe(warmWords[0]);
     expect(pickWarmWords(undefined, () => 0.999)).toBe(warmWords.at(-1));
+  });
+});
+
+/** Открытка ждёт с 26 марта по Грозному, а не по Гринвичу, и месяц после. */
+describe("birthdayCardYear", () => {
+  it("с 26 марта — ждёт, 25-го — ещё нет", () => {
+    expect(birthdayCardYear(new Date("2027-03-26T09:00:00Z"))).toBe(2027);
+    expect(birthdayCardYear(new Date("2027-03-25T09:00:00Z"))).toBeNull();
+  });
+
+  it("день начинается в полночь по Москве: 21:00 по Гринвичу 25-го — уже 26-е", () => {
+    expect(birthdayCardYear(new Date("2027-03-25T21:00:00Z"))).toBe(2027);
+    expect(birthdayCardYear(new Date("2027-03-25T20:59:00Z"))).toBeNull();
+  });
+
+  it("не зашла 26-го — дождётся и в апреле, но не через полгода", () => {
+    expect(birthdayCardYear(new Date("2027-04-10T09:00:00Z"))).toBe(2027);
+    expect(birthdayCardYear(new Date("2027-04-24T09:00:00Z"))).toBe(2027);
+    expect(birthdayCardYear(new Date("2027-04-25T09:00:00Z"))).toBeNull();
+    expect(birthdayCardYear(new Date("2027-12-01T09:00:00Z"))).toBeNull();
   });
 });

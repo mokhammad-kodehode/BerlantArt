@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AdminShell } from "@/components/admin/AdminShell";
+import { BirthdayCard } from "@/components/admin/BirthdayCard";
 import { OpenGalleryLink } from "@/components/admin/OpenGalleryLink";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { logout } from "@/lib/actions/auth";
-import { greeting } from "@/lib/admin-cheer";
+import { birthdayCardYear, greeting } from "@/lib/admin-cheer";
 import { adminArtworksHref } from "@/lib/admin-filters";
 import { artworkStatusNames, artworkStatuses } from "@/lib/artwork-form";
-import { getAdminSummary, primaryImageUrl, type ArtworkStatus } from "@/lib/artworks";
+import { getAdminSummary, getFeatured, primaryImageUrl, type ArtworkStatus } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 import { site } from "@/lib/site";
 
@@ -33,12 +34,35 @@ const countLabels: Record<ArtworkStatus, string> = {
  * и не иметь возможности открыть эти работы одним нажатием — лишний шаг.
  * Два запроса в базу при любом числе работ.
  */
-export default async function AdminPage() {
+/**
+ * Картина для открытки: случайная из тех, что художница выбрала для
+ * главной, — значит, их она и сама считает лучшими. Запрос уходит только
+ * в те дни, когда открытка ждёт, в остальные — ни одного лишнего.
+ */
+async function pickBirthdayPainting(): Promise<{ src: string; title: string } | undefined> {
+  const works = await getFeatured(12);
+  const withPhoto = works.flatMap((work) => {
+    const src = primaryImageUrl(work);
+    return src === undefined ? [] : [{ src, title: work.title }];
+  });
+
+  return withPhoto[Math.floor(Math.random() * withPhoto.length)];
+}
+
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   // Второй рубеж: proxy.ts уже отсеял чужих, но полагаться на него одного
   // нельзя — так прямо сказано в документации Next.
   await requireAdmin();
 
-  const { counts, total, recent } = await getAdminSummary();
+  const now = new Date();
+  // `/admin?card` — посмотреть открытку в любой день, не дожидаясь марта.
+  const isCardPreview = (await searchParams).card !== undefined;
+  const cardYear = birthdayCardYear(now) ?? (isCardPreview ? now.getFullYear() : null);
+
+  const [{ counts, total, recent }, painting] = await Promise.all([
+    getAdminSummary(),
+    cardYear === null ? undefined : pickBirthdayPainting(),
+  ]);
 
   const tiles = [
     { label: "Всего работ", count: total, href: adminArtworksHref({}) },
@@ -54,7 +78,7 @@ export default async function AdminPage() {
       // Приветствие вместо «Панели управления» — подарок художнице
       // (lib/admin-cheer.ts). Время считается при каждом входе: страница
       // за паролем и в кеш не попадает.
-      title={`${greeting(new Date())}, Берлант!`}
+      title={`${greeting(now)}, Берлант!`}
       lead={site.slogan}
       actions={
         <form action={logout}>
@@ -84,6 +108,9 @@ export default async function AdminPage() {
         </ButtonLink>
         <ButtonLink href="/admin/artworks">Все работы</ButtonLink>
         <OpenGalleryLink />
+        {cardYear !== null && (
+          <BirthdayCard year={cardYear} isPreview={isCardPreview} painting={painting} />
+        )}
       </div>
 
       <h2 className="mb-4 text-2xl">Добавлены последними</h2>

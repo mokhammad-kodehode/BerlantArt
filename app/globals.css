@@ -4047,6 +4047,160 @@
   }
 }
 
+/* Открытка ко дню рождения художницы в админке (components/admin/BirthdayCard.tsx).
+   Отдельный блок: всё про неё в одном месте, удалить — тоже одним куском. */
+@layer components {
+  .bday {
+    width: min(880px, calc(100vw - 24px));
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    margin: auto;
+    padding: 0;
+    color: var(--color-ink);
+    background: transparent;
+    border: 0;
+    overflow: visible;
+  }
+  .bday[open] {
+    animation: bday-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .bday::backdrop {
+    background: rgb(20 18 17 / 0.55);
+    backdrop-filter: blur(3px);
+  }
+  .bday:focus-visible {
+    outline: none;
+  }
+  @keyframes bday-in {
+    from {
+      opacity: 0;
+      transform: translateY(28px) scale(0.97);
+    }
+  }
+  .bday-card {
+    position: relative;
+    display: grid;
+    max-height: calc(100dvh - 24px);
+    overflow: hidden auto;
+    background:
+      radial-gradient(
+        120% 80% at 100% 0%,
+        color-mix(in srgb, var(--color-accent-300) 28%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        90% 70% at 0% 100%,
+        color-mix(in srgb, var(--color-accent-2-300) 24%, transparent),
+        transparent 65%
+      ),
+      var(--color-bg);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-lg);
+  }
+  /* Без картины (ни у одной работы для главной нет фото) — одна колонка. */
+  @media (min-width: 768px) {
+    .bday-card:has(.bday-art) {
+      grid-template-columns: 5fr 6fr;
+    }
+  }
+  /* Картина — без своего скругления, как везде на сайте: у холста прямые
+     углы. Округляет её только край самой открытки. */
+  .bday-art {
+    position: relative;
+    min-height: 34dvh;
+    background: var(--color-wall);
+  }
+  .bday-body {
+    position: relative;
+    z-index: 1;
+    padding: 32px 28px;
+  }
+  @media (min-width: 768px) {
+    .bday-body {
+      padding: 56px 48px 48px;
+    }
+  }
+  .bday-date {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  /* Через .bday: правило админки (.admin-ui h2) ставит заголовкам
+     текстовый шрифт, а открытке нужна антиква, как на публичном сайте. */
+  .bday .bday-title {
+    margin: 0 0 24px;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: clamp(36px, 6vw, 54px);
+    line-height: 1.05;
+  }
+  /* Ниже, чем в hero: тонкая антиква на открытке под мазком на полбуквы
+     читалась зачёркнутой. */
+  .bday-stroke {
+    color: var(--color-stroke);
+    left: -0.12em;
+    top: 86%;
+    width: calc(100% + 0.24em);
+    height: 0.45em;
+    transform: translateY(-50%);
+  }
+  .bday-line {
+    margin: 0 0 12px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+  }
+  .bday-sign {
+    margin: 20px 0 0;
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    font-size: 26px;
+    color: var(--color-accent);
+  }
+  /* Капли краски падают сверху и тают внизу — медленно, чтобы не мешать
+     читать. Тому, кто отключил движение на экране, их не показываем. */
+  .bday-drops {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .bday-drops span {
+    position: absolute;
+    top: -24px;
+    left: var(--x);
+    width: var(--size);
+    height: calc(var(--size) * 1.25);
+    background: var(--tone);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    opacity: 0;
+    animation: bday-drop 7s var(--delay) ease-in infinite;
+  }
+  @keyframes bday-drop {
+    10% {
+      opacity: 0.85;
+    }
+    80% {
+      opacity: 0.6;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(min(110dvh, 900px)) rotate(25deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bday[open] {
+      animation: none;
+    }
+    .bday-drops {
+      display: none;
+    }
+  }
+}
+
 /* Размеры в примерочной объявлены длинами, чтобы их можно было
    анимировать: обычную переменную браузер меняет скачком, он не знает,
    что внутри число. Вне @layer — @property слоёв не признаёт. Браузер без
