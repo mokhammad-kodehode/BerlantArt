@@ -123,6 +123,7 @@ export const en: Dictionary = {
     "Деревья и лес": "Trees and forest",
     Село: "Village",
     "Река и мост": "Rivers and bridges",
+    Море: "Sea",
     Цветы: "Flowers",
     "Старая архитектура": "Old architecture",
     Натюрморт: "Still life",
