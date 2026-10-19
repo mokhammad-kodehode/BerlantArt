@@ -124,6 +124,7 @@ export const en: Dictionary = {
     Село: "Village",
     "Река и мост": "Rivers and bridges",
     Море: "Sea",
+    Корабли: "Ships",
     Цветы: "Flowers",
     "Старая архитектура": "Old architecture",
     Натюрморт: "Still life",
