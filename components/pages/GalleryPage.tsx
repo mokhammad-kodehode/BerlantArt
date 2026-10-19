@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
 import { GallerySearch } from "@/components/gallery/GallerySearch";
+import { ReturnToTile } from "@/components/gallery/ReturnToTile";
 import { ButtonLink } from "@/components/ui/Button";
 import { artworkCategories } from "@/lib/artwork-form";
 import { artworkCategory, getArtworks, getCategories } from "@/lib/artworks";
@@ -138,11 +139,14 @@ export async function GalleryPage({
       ) : (
         /* `flex-1` держит подвал внизу, когда по фильтру работ мало
              и стена не дотягивает до конца экрана. */
-        <ArtworkCollage
-          works={works}
-          lang={lang}
-          className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
-        />
+        <>
+          <ArtworkCollage
+            works={works}
+            lang={lang}
+            className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+          />
+          <ReturnToTile />
+        </>
       )}
     </main>
   );
