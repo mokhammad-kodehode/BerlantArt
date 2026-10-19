@@ -274,7 +274,7 @@ export const en: Dictionary = {
       "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
     subjectsTitle: "What she paints",
     subjects: [
-      "In oils — with a brush and a palette knife. Her subjects: Chechen towers, old architecture, things with a story behind them. She doesn't paint still lifes.",
+      "In oils — with a brush and a palette knife. Her subjects: Chechen towers, old architecture, things with a story behind them.",
       "She has her own studio and works there every day: ideas come in waves, and then she paints for hours on end, not stopping until she lets go of what she has begun.",
     ],
     motto:
