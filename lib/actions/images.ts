@@ -7,6 +7,7 @@ import {
   artworkIdOfImage,
   deleteImage,
   moveImage,
+  primaryImageId,
   setPrimaryImage,
   updateImageAlt,
   type ImageDirection,
@@ -21,7 +22,12 @@ import {
   headObject,
   type UploadTarget,
 } from "@/lib/r2";
-import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
+import {
+  revalidateAdminArtwork,
+  revalidateAfterImageChange,
+  revalidateArtworkPage,
+  revalidatePublicPages,
+} from "@/lib/revalidate";
 import { checkUpload, isOwnObjectKey } from "@/lib/upload-limits";
 
 /**
@@ -139,6 +145,7 @@ export async function attachImage(input: {
     return { ok: false, error: "Файл не открывается как изображение — загрузите другой." };
   }
 
+  const primaryBefore = await primaryImageId(artworkId);
   if (!(await addImage({ artworkId, key, alt, size }))) {
     // Работы нет — файл уже лежит в бакете и никому не нужен.
     await deleteObject(key);
@@ -146,7 +153,7 @@ export async function attachImage(input: {
   }
 
   revalidateAdminArtwork(artworkId);
-  revalidatePublicPages();
+  revalidateAfterImageChange(artworkId, primaryBefore, await primaryImageId(artworkId));
 
   return { ok: true };
 }
@@ -165,6 +172,7 @@ export async function removeImage(imageId: string): Promise<ImageResult> {
   if (!idSchema.safeParse(imageId).success) return { ok: false, error: "Некорректный запрос." };
 
   const artworkId = await artworkIdOfImage(imageId);
+  const primaryBefore = artworkId === null ? null : await primaryImageId(artworkId);
   const key = await deleteImage(imageId);
 
   if (key === null || artworkId === null) {
@@ -176,7 +184,7 @@ export async function removeImage(imageId: string): Promise<ImageResult> {
   if (isOwnObjectKey(key)) await deleteObject(key);
 
   revalidateAdminArtwork(artworkId);
-  revalidatePublicPages();
+  revalidateAfterImageChange(artworkId, primaryBefore, await primaryImageId(artworkId));
 
   return { ok: true };
 }
@@ -197,12 +205,15 @@ export async function reorderImage(
   const artworkId = await artworkIdOfImage(imageId);
   if (artworkId === null) return { ok: false, error: "Изображение уже удалено." };
 
+  // Первое в списке — главное: сдвиг на первое место или с него меняет
+  // главное фото, остальные сдвиги видны только на странице работы.
+  const primaryBefore = await primaryImageId(artworkId);
   if (!(await moveImage(imageId, parsed.data.direction))) {
     return { ok: false, error: "Двигать некуда." };
   }
 
   revalidateAdminArtwork(artworkId);
-  revalidatePublicPages();
+  revalidateAfterImageChange(artworkId, primaryBefore, await primaryImageId(artworkId));
 
   return { ok: true };
 }
@@ -252,8 +263,10 @@ export async function saveImageAlt(imageId: string, alt: string): Promise<ImageR
 
   await updateImageAlt(imageId, parsed.data.alt);
 
+  // Подпись видна только на странице работы: в галерее и в миниатюрах
+  // подпись собирается из названия (artworkSeo).
   revalidateAdminArtwork(artworkId);
-  revalidatePublicPages();
+  revalidateArtworkPage(artworkId);
 
   return { ok: true };
 }

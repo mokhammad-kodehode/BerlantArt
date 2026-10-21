@@ -5,7 +5,7 @@ import { z } from "zod";
 import { artworkStatuses } from "@/lib/artwork-form";
 import { setArtworkStatus } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
-import { revalidateAdminArtwork, revalidatePublicPages } from "@/lib/revalidate";
+import { revalidateAdminArtwork, revalidateArtworkPage } from "@/lib/revalidate";
 
 /**
  * Быстрая смена статуса прямо из списка работ.
@@ -28,5 +28,8 @@ export async function changeStatus(formData: FormData): Promise<void> {
   if (!(await setArtworkStatus(parsed.data.id, parsed.data.status))) return;
 
   revalidateAdminArtwork(parsed.data.id);
-  revalidatePublicPages();
+  // Продажа выключена: статуса нет ни на стене, ни в галерее, ни на главной —
+  // только на странице работы. Вернётся продажа с меткой «продана» на
+  // плитке — здесь снова нужен revalidatePublicPages.
+  revalidateArtworkPage(parsed.data.id);
 }

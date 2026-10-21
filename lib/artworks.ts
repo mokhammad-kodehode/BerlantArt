@@ -503,6 +503,22 @@ async function renumber(tx: Prisma.TransactionClient, ids: string[]): Promise<vo
   );
 }
 
+/**
+ * Главное фото работы — первое в показе — или `null`, если фото нет.
+ * Экшены сверяют его до и после правки: от главного фото зависят плитки
+ * галереи, главная и миниатюры на всех страницах работ, от остальных —
+ * только страница самой работы (lib/revalidate.ts).
+ */
+export async function primaryImageId(artworkId: string): Promise<string | null> {
+  const image = await db.image.findFirst({
+    where: { artworkId },
+    select: { id: true },
+    orderBy: withImages.images.orderBy,
+  });
+
+  return image?.id ?? null;
+}
+
 /** Идентификаторы изображений работы в текущем порядке показа. */
 async function orderedIds(tx: Prisma.TransactionClient, artworkId: string): Promise<string[]> {
   const rows = await tx.image.findMany({

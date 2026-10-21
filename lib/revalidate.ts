@@ -1,5 +1,7 @@
 import { revalidatePath } from "next/cache";
 
+import { localePath, locales } from "@/lib/i18n/config";
+
 /**
  * Сброс кеша публичных страниц после правки в админке.
  *
@@ -39,6 +41,11 @@ export const publicPaths = [
 export const artworkPagePatterns = ["/(ru)/gallery/[id]", "/(en)/en/gallery/[id]"] as const;
 
 export function revalidatePublicPages(): void {
+  // Сбрасывает ВСЕ страницы работ (~400 на двух языках), и каждая потом
+  // собирается заново при первом заходе — это записи в кеш Vercel, на
+  // бесплатном тарифе они ограничены (21.10.2026: 367 тысяч за месяц).
+  // Правка, которая не видна за пределами своей работы, зовёт
+  // revalidateArtworkPage — она обновляет две страницы, а не четыреста.
   for (const path of publicPaths) revalidatePath(path);
   // Путь с динамическим сегментом требует второго аргумента: без него
   // вызов не находит, какие именно страницы обновлять.
@@ -52,4 +59,31 @@ export function revalidateAdminArtwork(artworkId: string): void {
   // Список работ показывает статус и превью — после правки он устареет
   // вместе со страницей работы, поэтому обновляется тем же вызовом.
   revalidatePath("/admin/artworks");
+}
+
+/**
+ * Только страница одной работы, на обоих языках. Для правок, которых
+ * не видно больше нигде: подпись к фото, порядок дополнительных фото,
+ * статус (продажа выключена, на стене и в галерее его нет). Главное
+ * фото к таким не относится — оно стоит в галерее, на главной и в
+ * миниатюрах «Всех работ» на каждой странице.
+ */
+export function revalidateArtworkPage(artworkId: string): void {
+  for (const lang of locales) revalidatePath(localePath(lang, `/gallery/${artworkId}`));
+}
+
+/**
+ * Поменялось главное фото — сбросить всё, иначе только свою страницу.
+ * `before` и `after` — главное фото до и после правки (`primaryImageId`).
+ */
+export function revalidateAfterImageChange(
+  artworkId: string,
+  before: string | null,
+  after: string | null,
+): void {
+  if (before === after) {
+    revalidateArtworkPage(artworkId);
+    return;
+  }
+  revalidatePublicPages();
 }
