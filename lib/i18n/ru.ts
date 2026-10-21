@@ -189,6 +189,9 @@ export const ru = {
     pickerOpen: "Все работы",
     pickerTitle: (count: number) => `Все работы · ${count}`,
     pickerClose: "Закрыть",
+    /** Список для панели не загрузился — текст и кнопка повтора. */
+    pickerError: "Не удалось загрузить список работ.",
+    pickerRetry: "Попробовать ещё раз",
     openFullscreen: (title: string) => `Открыть «${title}» во весь экран`,
     fullscreen: "Во весь экран",
     closeViewer: "Закрыть просмотр",

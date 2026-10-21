@@ -155,6 +155,8 @@ export const en: Dictionary = {
     pickerOpen: "All works",
     pickerTitle: (count) => `All works · ${count}`,
     pickerClose: "Close",
+    pickerError: "Couldn’t load the list of works.",
+    pickerRetry: "Try again",
     openFullscreen: (title) => `Open “${title}” full screen`,
     fullscreen: "Full screen",
     closeViewer: "Close viewer",

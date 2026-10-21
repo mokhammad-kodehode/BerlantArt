@@ -1122,6 +1122,31 @@
   .picker-thumb:hover {
     transform: scale(1.04);
   }
+  /* Пока список работ грузится — серые плитки с тем же мерцанием, что
+     у заглушки фото (.image-loader): лента сразу нужной высоты. */
+  .picker-thumb-loading {
+    background: rgb(255 255 255 / 0.08);
+    animation: image-loader-pulse 1.8s ease-in-out infinite;
+  }
+  .picker-thumb-loading:hover {
+    transform: none;
+  }
+  .picker-error {
+    margin: 0;
+    padding: 24px 4px;
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.75);
+  }
+  .picker-retry {
+    padding: 0;
+    font: inherit;
+    color: var(--color-neutral-100);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    background: none;
+    border: 0;
+  }
   .picker-thumb[aria-current="page"] {
     outline: 2px solid var(--color-neutral-100);
     outline-offset: 2px;

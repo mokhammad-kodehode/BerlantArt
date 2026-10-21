@@ -310,8 +310,8 @@ export type ArtworkNeighbours = {
   /** Номер работы в порядке галереи, с единицы; 0 — работы в списке нет. */
   position: number;
   total: number;
-  /** Все работы в порядке галереи — для панели «Все работы» (ArtworkPicker). */
-  works: ArtworkThumb[];
+  /** Сама работа, если она в списке, — для якоря «← Все работы» и панели выбора. */
+  currentId: string | null;
 };
 
 /**
@@ -322,15 +322,45 @@ export type ArtworkNeighbours = {
  * не решается: курсор по дате путается на работах, добавленных в одну
  * секунду (пачкой через seed или импорт), — а ошибку такого рода на глаз
  * не видно, стрелка просто ведёт не туда. Тот же список даёт и номер
- * для счётчика, и панель «Все работы» с миниатюрами: у каждой работы
- * берётся одно главное фото, только адрес. Один запрос на страницу при
- * любом числе работ; на 112 работах это около 15 КБ в разметке.
+ * для счётчика. Один запрос на страницу при любом числе работ.
+ *
+ * Миниатюр для панели «Все работы» здесь больше нет — они в
+ * `getArtworkThumbs` и грузятся одним общим файлом, только когда панель
+ * открыли. Внутри каждой страницы список из 203 работ делал её в разы
+ * тяжелее, а Vercel считает записи в кеш по 8 КБ (21.10.2026).
  *
  * Листание замкнуто в кольцо: с последней работы вперёд — на первую.
  * Так у стрелок нет выключенного состояния, а тупик в конце на галерее
  * из пяти работ раздражал бы сильнее, чем возврат к началу.
  */
 export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbours> {
+  const works: ArtworkLink[] = await db.artwork.findMany({
+    select: { id: true, title: true },
+    orderBy: galleryOrder,
+  });
+  const index = works.findIndex((work) => work.id === id);
+  const currentId = index === -1 ? null : id;
+
+  // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
+  if (index === -1 || works.length < 2) {
+    return { prev: null, next: null, position: index + 1, total: works.length, currentId };
+  }
+
+  return {
+    prev: works[(index - 1 + works.length) % works.length],
+    next: works[(index + 1) % works.length],
+    position: index + 1,
+    total: works.length,
+    currentId,
+  };
+}
+
+/**
+ * Все работы в порядке галереи с одной миниатюрой — для панели «Все
+ * работы» (ArtworkPicker). Отдаётся файлом /api/artwork-thumbs, общим
+ * для всех страниц: у каждой работы — только адрес главного фото.
+ */
+export async function getArtworkThumbs(): Promise<ArtworkThumb[]> {
   const rows = await db.artwork.findMany({
     select: {
       id: true,
@@ -340,25 +370,10 @@ export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbour
     orderBy: galleryOrder,
   });
 
-  const works: ArtworkThumb[] = rows.map((row) => {
+  return rows.map((row) => {
     const stored = row.images[0]?.url;
     return { id: row.id, title: row.title, src: stored ? imageUrl(stored) : undefined };
   });
-  const index = works.findIndex((work) => work.id === id);
-
-  // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
-  if (index === -1 || works.length < 2) {
-    return { prev: null, next: null, position: index + 1, total: works.length, works };
-  }
-
-  const link = ({ id, title }: ArtworkThumb): ArtworkLink => ({ id, title });
-  return {
-    prev: link(works[(index - 1 + works.length) % works.length]),
-    next: link(works[(index + 1) % works.length]),
-    position: index + 1,
-    total: works.length,
-    works,
-  };
 }
 
 /**

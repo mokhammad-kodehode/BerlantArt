@@ -38,6 +38,9 @@ export const publicPaths = [
  * Тест сверяет шаблоны с файлами, чтобы при следующем переезде это упало
  * сразу.
  */
+/** Общий список миниатюр для панели «Все работы» (app/api/artwork-thumbs). */
+export const artworkThumbsPath = "/api/artwork-thumbs";
+
 export const artworkPagePatterns = ["/(ru)/gallery/[id]", "/(en)/en/gallery/[id]"] as const;
 
 export function revalidatePublicPages(): void {
@@ -50,6 +53,7 @@ export function revalidatePublicPages(): void {
   // Путь с динамическим сегментом требует второго аргумента: без него
   // вызов не находит, какие именно страницы обновлять.
   for (const pattern of artworkPagePatterns) revalidatePath(pattern, "page");
+  revalidatePath(artworkThumbsPath);
 }
 
 /** Страница работы в админке — её тоже надо обновить, иначе список

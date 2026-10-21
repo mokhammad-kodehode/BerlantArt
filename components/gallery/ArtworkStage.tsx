@@ -79,8 +79,7 @@ export function ArtworkStage({
   children: ReactNode;
 }) {
   const t = getDictionary(lang).work;
-  const { prev, next, position, total, works } = neighbours;
-  const currentId = works[position - 1]?.id;
+  const { prev, next, position, total, currentId } = neighbours;
   const prevHref = prev ? localePath(lang, `/gallery/${prev.id}`) : undefined;
   const nextHref = next ? localePath(lang, `/gallery/${next.id}`) : undefined;
   // Назад в галерею — к плитке этой работы, а не в начало стены: у работы
@@ -265,7 +264,7 @@ export function ArtworkStage({
                   </svg>
                 </Link>
                 {/* «Все работы» — панель с миниатюрами поверх страницы. */}
-                {currentId && <ArtworkPicker works={works} currentId={currentId} />}
+                {currentId && <ArtworkPicker total={total} currentId={currentId} />}
               </div>
             )}
           </nav>

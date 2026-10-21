@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 
 import {
   artworkPagePatterns,
+  artworkThumbsPath,
   publicPaths,
   revalidateAfterImageChange,
   revalidateArtworkPage,
@@ -41,6 +42,13 @@ describe("revalidatePublicPages", () => {
     for (const pattern of artworkPagePatterns) {
       expect(existsSync(path.join(appDir, pattern, "page.tsx")), pattern).toBe(true);
     }
+  });
+
+  it("общий список миниатюр — существующий адрес и сбрасывается вместе со страницами", () => {
+    expect(existsSync(path.join(appDir, artworkThumbsPath, "route.ts"))).toBe(true);
+    vi.mocked(revalidatePath).mockClear();
+    revalidatePublicPages();
+    expect(vi.mocked(revalidatePath).mock.calls.map(([p]) => p)).toContain(artworkThumbsPath);
   });
 
   it("у каждого готового адреса есть страница", () => {
