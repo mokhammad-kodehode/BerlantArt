@@ -1,0 +1,54 @@
+# Проверки на каждый пуш и пул-реквест (тикет О-10, docs/obzor-proekta.md §3).
+#
+# До этого линтер, типы и тесты запускались только руками, а Vercel при
+# выкладке их не гоняет — только собирает сайт. Правка, ломающая расчёт
+# соседей или проверку загрузки, уехала бы на сайт, если забыть прогнать
+# тесты перед пушем.
+#
+# Сборки (next build) здесь нет: ей нужна база, а сайт и так собирает
+# Vercel. Переменные для тестов задаёт vitest.config.ts, `prisma generate`
+# база не нужна — проверено без .env.local.
+name: Проверки
+
+on:
+  push:
+  pull_request:
+
+# Новый пуш в ту же ветку отменяет недоделанную проверку прошлого:
+# результат по устаревшему коммиту никому не нужен.
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Формат, линтер, типы, тесты
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Та же версия, на которой проект проверяется у разработчика.
+          node-version: 22
+          cache: npm
+
+      # postinstall сам запускает `prisma generate`: без сгенерированного
+      # клиента не прошла бы проверка типов.
+      - run: npm ci
+
+      - name: Формат (Prettier)
+        run: npm run format:check
+
+      - name: Линтер (ESLint)
+        run: npm run lint
+
+      - name: Типы (TypeScript)
+        run: npm run typecheck
+
+      - name: Тесты (Vitest)
+        run: npm test
