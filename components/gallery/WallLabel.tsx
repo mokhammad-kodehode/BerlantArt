@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { ShareButton } from "@/components/gallery/ShareButton";
@@ -11,18 +9,17 @@ import type { ArtworkFeedItem } from "@/lib/artworks";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
 import { localePath } from "@/lib/i18n/config";
 
-type SceneStyle = CSSProperties & { "--ratio": number };
-
 /**
  * Табличка у картины, как в музее (заказчик, 22.10.2026): название,
  * имя художницы, «Холст, масло · 50 × 50 см · 2023», описание, если
  * оно не повторяет название, и под линией — примерка и «Поделиться».
  *
- * Примерка — не строчка текста, а маленькая комната: эта же картина
- * на стене над диваном и подпись «как она будет смотреться у вас»
- * (заказчик: «чтобы было интересно нажать»). Сразу видно, что за
- * ссылкой, — ради этого её и открывают. Строки «Спросить о картине»
- * нет по просьбе заказчика: написать художнице можно из меню в шапке.
+ * Примерка — со своим значком: рамка на гвоздике, которая качается при
+ * наведении, как только что повешенная картина (заказчик: «чтобы было
+ * интересно нажать», «иконку или что-то оригинальное»). Прежде здесь
+ * была маленькая комната с этой картиной над диваном — заказчик её
+ * отклонил. Строки «Спросить о картине» нет по просьбе заказчика:
+ * написать художнице можно из меню в шапке.
  *
  * Цены и статуса нет: продажа на сайте выключена (ARCHITECTURE.md,
  * «Продажа выключена»).
@@ -50,7 +47,6 @@ export function WallLabel({
   const pageUrl = `${siteUrl}${localePath(lang, `/gallery/${work.id}`)}`;
   // Описание вводится только по-русски (решение заказчика от 4.10.2026).
   const description = lang === "ru" ? work.description : null;
-  const sceneStyle: SceneStyle = { "--ratio": work.ratio ?? 1 };
 
   return (
     <div className="wall-label-col">
@@ -64,27 +60,19 @@ export function WallLabel({
           {/* Без фотографии примерять нечего — примерки нет. */}
           {work.src && (
             <Link href={localePath(lang, `/gallery/${work.id}/room`)} className="tryon">
-              <span aria-hidden className="tryon-scene" style={sceneStyle}>
-                <span className="tryon-art">
-                  <Image src={work.src} alt="" fill sizes="48px" className="object-cover" />
-                </span>
-                {/* Тот же диван, что в примерочной, — уменьшенная копия
-                    240px, 2.8 КБ вместо 57 (public/room/sofa-mini.webp). */}
-                <Image
-                  src="/room/sofa-mini.webp"
-                  alt=""
-                  width={240}
-                  height={98}
-                  className="tryon-sofa"
-                />
-              </span>
-              <span className="tryon-text">
-                <span className="tryon-title">{t.work.tryOnWall}</span>
-                <span className="tryon-hint">{t.work.tryOnHint}</span>
-              </span>
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="tryon-arrow">
-                <path d="M5 12h13m-5-5 5 5-5 5" />
+              {/* Рамка на гвоздике: петля, холст с пейзажем внутри. При
+                  наведении рамка качается на гвозде, как только что
+                  повешенная картина (globals.css, .tryon-frame). */}
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="tryon-icon">
+                <g className="tryon-frame">
+                  <path d="M12 2.6 6.4 8.6M12 2.6l5.6 6" />
+                  <rect x="3.5" y="8.6" width="17" height="12.4" rx="0.6" />
+                  <path d="m6.5 18 3.4-3.6 2.4 2.3 2-1.9 3.2 3.2" />
+                  <circle cx="15.6" cy="12" r="1.1" />
+                </g>
+                <circle cx="12" cy="2.6" r="1.2" className="tryon-nail" />
               </svg>
+              {t.work.tryOnWall}
             </Link>
           )}
           {isNear && <ShareButton url={pageUrl} title={work.title} showLabel />}

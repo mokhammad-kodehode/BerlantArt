@@ -1414,96 +1414,72 @@
     padding-top: 10px;
     border-top: 1px solid var(--color-divider);
   }
-  /* Примерка — маленькая комната: эта картина на стене над диваном из
-     примерочной и подпись «как она будет смотреться у вас дома»
-     (WallLabel). Заказчик: «чтобы было интересно нажать» — строчка
-     текстом терялась, а комната сразу показывает, что за ссылкой.
-     При наведении картина в комнате чуть подаётся вперёд, стрелка —
-     вправо. Комната — иллюстрация, а не репродукция, поэтому у неё
-     лёгкое скругление; у самой картины углы прямые. */
+  /* Примерка — главное действие таблички: чернилами и плотнее, чем
+     «Поделиться». Значок — рамка на гвоздике (WallLabel). При наведении
+     рамка качается на гвозде, как только что повешенная картина, и холст
+     в ней наливается тёплым светом (заказчик, 22.10.2026: «иконку или
+     что-то очень оригинальное»; маленькую комнату с диваном отклонил).
+     Свет — не движение, его видят и те, у кого анимации выключены. */
   .tryon {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    width: calc(100% + 16px);
-    margin: 0 -8px;
-    padding: 8px;
+    gap: 8px;
+    min-height: 36px;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--color-ink);
     text-decoration: none;
-    border-radius: var(--radius-soft);
-    transition: background-color 0.2s ease;
   }
   .tryon:hover {
-    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 4px;
   }
-  .tryon-scene {
-    position: relative;
+  .tryon-icon {
     flex: none;
-    width: 84px;
-    height: 60px;
-    overflow: hidden;
-    border-radius: var(--radius-soft);
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-accent) 14%, var(--color-surface)) 0 74%,
-      color-mix(in srgb, var(--color-ink) 12%, var(--color-surface)) 74% 100%
-    );
-  }
-  .tryon-art {
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    width: min(40px, calc(22px * var(--ratio)));
-    aspect-ratio: var(--ratio);
-    box-shadow: 0 1px 3px rgb(43 37 31 / 0.35);
-    transform: translateX(-50%);
-    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-  .tryon-sofa {
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    width: 64px;
-    height: auto;
-    transform: translateX(-50%);
-  }
-  .tryon:hover .tryon-art {
-    transform: translateX(-50%) scale(1.12);
-  }
-  .tryon-text {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-  .tryon-title {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.25;
-  }
-  .tryon-hint {
-    font-size: 12px;
-    line-height: 1.35;
-    color: var(--color-ink-soft);
-  }
-  .tryon-arrow {
-    flex: none;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
+    overflow: visible;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.6;
+    stroke-width: 1.4;
     stroke-linecap: round;
     stroke-linejoin: round;
-    color: var(--color-ink-soft);
-    transition:
-      transform 0.2s ease,
-      color 0.2s ease;
   }
-  .tryon:hover .tryon-arrow {
-    color: var(--color-ink);
-    transform: translateX(3px);
+  .tryon-nail {
+    fill: currentColor;
+    stroke: none;
+  }
+  /* Ось поворота — гвоздь (12, 2.6 в единицах рисунка). */
+  .tryon-frame {
+    transform-box: view-box;
+    transform-origin: 12px 2.6px;
+  }
+  .tryon-frame rect {
+    transition: fill 0.3s ease;
+  }
+  .tryon:hover .tryon-frame rect,
+  .tryon:focus-visible .tryon-frame rect {
+    fill: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
+  .tryon:hover .tryon-frame,
+  .tryon:focus-visible .tryon-frame {
+    animation: tryon-sway 1.2s ease-in-out;
+  }
+  /* Затухающее качание: каждый взмах меньше прежнего. */
+  @keyframes tryon-sway {
+    18% {
+      transform: rotate(10deg);
+    }
+    40% {
+      transform: rotate(-7deg);
+    }
+    60% {
+      transform: rotate(4deg);
+    }
+    80% {
+      transform: rotate(-1.5deg);
+    }
   }
   /* «Поделиться» — та же кнопка с меню (ShareButton), её вид кнопки здесь
      снят: тихая ссылка текстом, чтобы не спорить с примеркой. */
@@ -1680,26 +1656,13 @@
        столбика миниатюр и таблички. */
     .feed-art {
       --art-max-h: calc(100svh - 120px);
-      --art-max-w: min(calc(100vw - var(--thumbs-w) - 560px), 820px);
+      --art-max-w: min(calc(100vw - var(--thumbs-w) - 530px), 820px);
       align-self: auto;
       width: min(var(--art-max-w), calc(var(--art-max-h) * var(--ratio)));
     }
-    /* 300px — рядом с комнатой примерки «Примерить на стену» встаёт
-       одной строкой; при 280 она переносилась на две. */
     .wall-label-col {
       flex: none;
-      width: 300px;
-    }
-    .tryon-scene {
-      width: 72px;
-      height: 52px;
-    }
-    .tryon-art {
-      top: 7px;
-      width: min(34px, calc(19px * var(--ratio)));
-    }
-    .tryon-sofa {
-      width: 56px;
+      width: 270px;
     }
     .wall-label {
       padding: 20px 22px 18px;
@@ -1820,11 +1783,10 @@
     .feed-thumb:hover img {
       transform: none;
     }
-    .tryon:hover .tryon-art {
-      transform: translateX(-50%);
-    }
-    .tryon:hover .tryon-arrow {
-      transform: none;
+    /* Рамка не качается — остаётся свет в холсте. */
+    .tryon:hover .tryon-frame,
+    .tryon:focus-visible .tryon-frame {
+      animation: none;
     }
   }
 
