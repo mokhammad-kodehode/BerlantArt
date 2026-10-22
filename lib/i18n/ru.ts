@@ -461,7 +461,6 @@ export const ru = {
 
   room: {
     title: (title: string) => `Примерочная: «${title}»`,
-    cameraTitle: (title: string) => `Через камеру: «${title}»`,
     tabs: { painting: "Картина", frame: "Рама", wall: "Стена" },
     cm: "см",
     canvas: "Холст",
@@ -469,13 +468,10 @@ export const ru = {
     canvasSize: (size: string) => `Холст ${size}`,
     framedSize: (size: string) => `в раме ${size}`,
     noSize: "Размер картины не указан — показать её рядом с диваном нельзя",
-    /** Переключатель режимов наверху примерочной. */
-    modes: "Режим примерки",
-    modeCamera: "Камера",
-    modeWall: "На стене",
+    /** Кнопка наверху примерочной: камера телефона с той же рамой. */
+    tryCamera: "Примерить через камеру",
     label: (title: string) => `Примерочная: «${title}»`,
     back: "К работе",
-    howItWorks: "Как это работает",
     otherPainting: "Другая картина",
     about: "О картине",
     writeWhatsapp: "Написать о картине в WhatsApp",
@@ -484,7 +480,6 @@ export const ru = {
     otherWorks: "Другие работы",
     settingsLabel: "Настройки примерочной",
     hideSettings: "Скрыть настройки",
-    kickerCamera: "Примерка через камеру",
     kicker: "Примерочная",
     eveningLabel: "Вечерний свет, лампа над картиной",
     eveningTitle: "Вечер, лампа",
@@ -499,9 +494,6 @@ export const ru = {
     frameColor: "Цвет рамы",
     noCarving: "Резьбы на раме в камере не будет — только форма и цвет.",
     wall: "Стена",
-    openCamera: "Открыть камеру",
-    cameraLead:
-      "Картина встанет на вашу стену в настоящем размере — перед камерой покажем, как навести телефон.",
     write: "Написать о картине",
     toolbar: "Примерочная",
     eveningToDay: "Вечер, включить день",

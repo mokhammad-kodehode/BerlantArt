@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  arFileUrl,
-  arPageUrl,
-  isArFile,
-  quickLookUrl,
-  roomPageUrl,
-  sceneViewerUrl,
-} from "@/lib/ar-links";
+import { arFileUrl, isArFile, quickLookUrl, roomPageUrl, sceneViewerUrl } from "@/lib/ar-links";
+import { parseRoomOptions } from "@/lib/room-options";
 
 describe("адрес модели", () => {
   it("пишет выбор всегда и в одном порядке", () => {
@@ -25,16 +19,21 @@ describe("адрес модели", () => {
 });
 
 describe("адреса страниц", () => {
-  it("не пишут умолчаний и переносят раму между камерой и примерочной", () => {
-    expect(arPageUrl("w1", { frame: "none", finish: "gold" })).toBe("/gallery/w1/ar");
-    expect(arPageUrl("w1", { frame: "classic", finish: "gold" })).toBe(
-      "/gallery/w1/ar?frame=classic",
-    );
-    expect(arPageUrl("w1", { frame: "thin", finish: "white" })).toBe(
-      "/gallery/w1/ar?frame=thin&finish=white",
-    );
+  it("примерочная не пишет умолчаний", () => {
+    expect(roomPageUrl("w1", { frame: "none", finish: "gold" })).toBe("/gallery/w1/room");
     expect(roomPageUrl("w1", { frame: "thin", finish: "black" })).toBe(
       "/gallery/w1/room?frame=thin",
+    );
+  });
+
+  it("старая ссылка на камеру открывает примерочную с той же рамой", () => {
+    // Так страница /gallery/[id]/ar перенаправляет с 22.10.2026.
+    const query = { frame: "thin", finish: "white" };
+    expect(roomPageUrl("w1", parseRoomOptions(query))).toBe(
+      "/gallery/w1/room?frame=thin&finish=white",
+    );
+    expect(roomPageUrl("w1", parseRoomOptions(query), "en")).toBe(
+      "/en/gallery/w1/room?frame=thin&finish=white",
     );
   });
 });
@@ -44,7 +43,7 @@ describe("открытие камеры", () => {
     const url = sceneViewerUrl({
       glbUrl: "https://site.test/gallery/w1/ar/model.glb?v=abc&frame=classic&finish=gold",
       title: "Башни в тумане",
-      fallbackUrl: "https://site.test/gallery/w1/ar#no-ar",
+      fallbackUrl: "https://site.test/gallery/w1/room#no-ar",
     });
     const [address, intent] = url.split("#");
     const query = new URL(address.replace("intent://", "https://")).searchParams;
@@ -59,14 +58,14 @@ describe("открытие камеры", () => {
     expect(query.get("title")).toBe("Башни в тумане");
     expect(intent).toContain("package=com.google.ar.core;");
     expect(intent).toContain(
-      `S.browser_fallback_url=${encodeURIComponent("https://site.test/gallery/w1/ar#no-ar")};`,
+      `S.browser_fallback_url=${encodeURIComponent("https://site.test/gallery/w1/room#no-ar")};`,
     );
     expect(intent.endsWith(";end;")).toBe(true);
   });
 
   it("iPhone: Quick Look без масштаба, делится страницей", () => {
-    expect(quickLookUrl("/m.usdz?v=1", { pageUrl: "https://site.test/gallery/w1/ar" })).toBe(
-      "/m.usdz?v=1#allowsContentScaling=0&canonicalWebPageURL=https%3A%2F%2Fsite.test%2Fgallery%2Fw1%2Far",
+    expect(quickLookUrl("/m.usdz?v=1", { pageUrl: "https://site.test/gallery/w1/room" })).toBe(
+      "/m.usdz?v=1#allowsContentScaling=0&canonicalWebPageURL=https%3A%2F%2Fsite.test%2Fgallery%2Fw1%2Froom",
     );
   });
 

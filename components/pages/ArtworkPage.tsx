@@ -7,7 +7,6 @@ import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { cameraTarget } from "@/lib/ar";
 import {
   artworkCategory,
   artworkDimensions,
@@ -188,64 +187,31 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
         */}
         <div className="action-pair">
           {/*
-            Примерка — одна кнопка, хотя режима два: стена с рамой (/room)
-            и камера телефона (/ar). Две кнопки рядом заставляли выбирать
-            ещё до того, как человек понял, что это такое (заказчик,
-            8.10.2026). Внутри режимы переключаются наверху.
-
-            Куда ведёт кнопка, решает тип экрана: с пальца — в камеру, с мыши —
-            на стену, на компьютере камеры нет. Это две ссылки, и одна из них
-            скрыта CSS (pointer: coarse), а не одна ссылка с адресом из скрипта:
-            так адрес верный с первой отрисовки, без подмены после загрузки.
-            iPad считается сенсорным — и это верно, камера на нём есть.
-            Работу нельзя показать в камере (lib/ar.ts, cameraTarget) —
-            кнопка везде ведёт на стену. Без фотографии кнопки нет.
+            Примерка — одна кнопка: со стены в раме (/room) камера телефона
+            открывается кнопкой «Примерить через камеру» наверху. Две кнопки
+            рядом заставляли выбирать ещё до того, как человек понял, что
+            это такое (заказчик, 8.10.2026). Без фотографии кнопки нет.
           */}
           {primaryImageUrl(work) && (
-            <>
-              <ButtonLink
-                href={localePath(lang, `/gallery/${work.id}/room`)}
-                variant="soft"
-                size="lg"
-                className={cameraTarget(work) === null ? undefined : "pointer-coarse:hidden"}
+            <ButtonLink
+              href={localePath(lang, `/gallery/${work.id}/room`)}
+              variant="soft"
+              size="lg"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinejoin="round"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.6}
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="1.5" />
-                  <rect x="7" y="7" width="10" height="10" />
-                </svg>
-                {t.work.tryOnWall}
-              </ButtonLink>
-              {cameraTarget(work) !== null && (
-                <ButtonLink
-                  href={localePath(lang, `/gallery/${work.id}/ar`)}
-                  variant="soft"
-                  size="lg"
-                  className="hidden pointer-coarse:inline-flex"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.6}
-                    strokeLinejoin="round"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="1.5" />
-                    <rect x="7" y="7" width="10" height="10" />
-                  </svg>
-                  {t.work.tryOnWall}
-                </ButtonLink>
-              )}
-            </>
+                <rect x="3" y="3" width="18" height="18" rx="1.5" />
+                <rect x="7" y="7" width="10" height="10" />
+              </svg>
+              {t.work.tryOnWall}
+            </ButtonLink>
           )}
 
           <ShareButton url={pageUrl} title={work.title} />

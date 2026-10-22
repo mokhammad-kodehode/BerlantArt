@@ -2441,51 +2441,38 @@
     outline-offset: 2px;
   }
 
-  /* Переключатель «Камера | На стене»: таблетка с двумя половинами,
-     выбранная залита светлым. На телефоне — своей строкой во всю ширину. */
-  .room-modes {
+  /* «Примерить через камеру»: светлая таблетка в тёмном кольце — кольцо
+     держит кнопку и на белой стене, и на графитовой. Высота 44px, как у
+     прежнего переключателя «Камера | На стене»: под неё рассчитана
+     картина на телефоне (.room[data-camera]). На телефоне — своей
+     строкой во всю ширину. */
+  .room-camera {
     display: inline-flex;
-    gap: 2px;
-    padding: 4px;
-    background: var(--room-panel);
-    border-radius: 999px;
-    backdrop-filter: blur(10px);
-  }
-  .room-mode {
-    display: inline-flex;
-    min-height: 36px;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 7px;
-    padding: 0 16px;
+    padding: 0 20px;
     font-size: 15px;
-    color: var(--room-ink);
-    text-decoration: none;
-    border-radius: 999px;
-    opacity: 0.78;
-    transition:
-      background-color 0.2s ease,
-      opacity 0.2s ease;
-  }
-  .room-mode:hover {
-    opacity: 1;
-  }
-  .room-mode[aria-current="page"] {
     color: var(--room-night);
     background: var(--room-ink);
-    opacity: 1;
+    background-clip: padding-box;
+    border: 4px solid var(--room-panel);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: filter 0.2s ease;
   }
-  .room-mode:focus-visible {
+  .room-camera:hover {
+    filter: brightness(1.06);
+  }
+  .room-camera:focus-visible {
     outline: 2px solid var(--room-light-warm);
     outline-offset: 2px;
   }
   @media (max-width: 1023px) {
-    .room-modes {
+    .room-camera {
       order: 1;
       width: 100%;
-    }
-    .room-mode {
-      flex: 1;
     }
   }
 
@@ -3811,9 +3798,9 @@
       height: 100svh;
       min-height: 0;
     }
-    /* Строка переключателя режимов: 44px таблетки и 12px отступа. Без
-       поправки картина с рамой не помещалась бы над строкой инструментов. */
-    .room[data-modes] {
+    /* Строка кнопки камеры: 44px таблетки и 12px отступа. Без поправки
+       картина с рамой не помещалась бы над строкой инструментов. */
+    .room[data-camera] {
       --v-art: calc(100svh - var(--sheet-space) - 206px);
       --v-room: calc(100svh - var(--sheet-space) - 186px);
     }
@@ -3827,13 +3814,6 @@
     }
     .room[data-tool="frame"][data-frame="none"] {
       --tray-h: 112px;
-    }
-    /* В камере у резных рам третья строка — что резьбы там не будет. */
-    .room[data-variant="camera"][data-tool="frame"]:is(
-        [data-frame="classic"],
-        [data-frame="baroque"]
-      ) {
-      --tray-h: 230px;
     }
 
     .room-scene {

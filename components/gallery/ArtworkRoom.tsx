@@ -9,7 +9,7 @@ import { ArQuickLookLink, useArCamera, type ArCameraModel } from "@/components/g
 import { ArGuide, hasSeenArGuide, rememberArGuide } from "@/components/gallery/ArGuide";
 import { PictureLamp } from "@/components/gallery/PictureLamp";
 import { ContactIcon } from "@/components/ui/ContactIcon";
-import { arFileUrl, arPageUrl, roomPageUrl } from "@/lib/ar-links";
+import { arFileUrl, roomPageUrl } from "@/lib/ar-links";
 import {
   finishFor,
   frameFinish,
@@ -59,8 +59,7 @@ type IconName =
   | "wall"
   | "info"
   | "close"
-  | "camera"
-  | "help";
+  | "camera";
 
 /**
  * Иконки примерочной: солнце — день, луна — вечер, лупа с минусом —
@@ -125,12 +124,6 @@ function ViewIcon({ name, className = "size-[18px]" }: { name: IconName; classNa
         </>
       )}
       {name === "close" && <path d="M6 6l12 12M18 6 6 18" />}
-      {name === "help" && (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01" />
-        </>
-      )}
       {name === "camera" && (
         <>
           <path d="M4 8h3l2-3h6l2 3h3v11H4Z" />
@@ -167,14 +160,13 @@ export type RoomThumb = { id: string; title: string; src: string };
  * выбором в адресе. Компонент при этом не пересоздаётся: выбор и свет
  * остаются, а рама перестраивается, когда загрузится новая фотография.
  *
- * Режим `camera` — примерка через камеру телефона (AR-4, TICKETS-ar.md):
- * та же рама и тот же выбор, но стены, дивана и вечера нет — стена
- * в камере настоящая, и свет даёт сама комната. Главная кнопка —
- * «Открыть камеру». Отдельный компонент повторил бы всю раму, панель
- * и строку инструментов, и они разошлись бы при первой правке.
+ * Отсюда же — примерка через камеру телефона (AR-4, TICKETS-ar.md):
+ * кнопка «Примерить через камеру» наверху передаёт просмотрщику телефона
+ * картину в выбранной раме. До 22.10.2026 камера была отдельной страницей
+ * с вкладками «Камера | На стене», и саму камеру открывала ещё одна
+ * кнопка внизу — заказчик не понял, что нажимать (ARCHITECTURE.md, AR).
  */
 export function ArtworkRoom({
-  variant = "room",
   work,
   works,
   initialOptions,
@@ -182,7 +174,6 @@ export function ArtworkRoom({
   whatsappPhone,
   siteUrl,
 }: {
-  variant?: "room" | "camera";
   work: {
     id: string;
     title: string;
@@ -199,17 +190,12 @@ export function ArtworkRoom({
   whatsappPhone?: string;
   siteUrl: string;
 }) {
-  const isCamera = variant === "camera";
   const dictionary = useDictionary();
   const t = dictionary.room;
   const tSite = dictionary.site;
   const lang = useLocale();
   const pathname = usePathname();
-  // В камере вечера и дивана нет: пришедшие в адресе, они бы только
-  // затемнили картину в превью.
-  const [options, setOptions] = useState<RoomOptions>(
-    isCamera ? { ...initialOptions, light: "day", hasSofa: false } : initialOptions,
-  );
+  const [options, setOptions] = useState<RoomOptions>(initialOptions);
   const [aspect, setAspect] = useState<number | null>(null);
   const [isLampOn, setIsLampOn] = useState(false);
   const [isStripOpen, setIsStripOpen] = useState(false);
@@ -330,25 +316,18 @@ export function ArtworkRoom({
   const toggleTool = (id: RoomTool) => setTool((current) => (current === id ? null : id));
 
   const query = roomQuery(options);
-  const message = isCamera
-    ? roomMessage(
-        work.title,
-        options,
-        `${siteUrl}${arPageUrl(work.id, options, lang)}`,
-        "camera",
-        lang,
-      )
-    : roomMessage(
-        work.title,
-        options,
-        `${siteUrl}${roomPageUrl(work.id, options, lang)}`,
-        "room",
-        lang,
-      );
+  const pageUrl = `${siteUrl}${roomPageUrl(work.id, options, lang)}`;
 
-  const whatsappUrl = whatsappPhone
-    ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
-    : undefined;
+  // Две ссылки WhatsApp с готовым текстом: кнопка примерочной называет
+  // нарисованную стену, а кнопка внутри камеры — «у себя на стене»:
+  // там стена настоящая.
+  const whatsappLink = (place: "room" | "camera") =>
+    whatsappPhone
+      ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+          roomMessage(work.title, options, pageUrl, place, lang),
+        )}`
+      : undefined;
+  const whatsappUrl = whatsappLink("room");
 
   // Модель зависит только от рамы: адрес меняется вместе с выбором.
   // Подпись плашки в камере — размер: по нему человек сверяет картину
@@ -366,18 +345,26 @@ export function ArtworkRoom({
           ]
             .filter(Boolean)
             .join(" · "),
-          contactUrl: whatsappUrl,
+          contactUrl: whatsappLink("camera"),
         };
 
   const arCamera = useArCamera(camera, showHint);
 
+  // Упрощение рамы в камере (решение 5): резьбы и лепнины там нет.
+  const isCarvedFrame = options.frame === "classic" || options.frame === "baroque";
+
+  // Камеру телефона браузер открывает только из нажатия, поэтому её
+  // запускает само нажатие на кнопку, без перехода на другую страницу.
+  //
   // Экран подготовки — при первом открытии камеры на этом телефоне: без
   // него на iPhone было непонятно, почему картина полупрозрачная и куда
-  // вести телефон. Где камеры нет, сразу объясняем словами почему.
+  // вести телефон. И каждый раз с резной рамой: в камере резьбы не будет,
+  // и сказать об этом нужно до камеры, а не после. Где камеры нет, сразу
+  // объясняем словами почему.
   function requestCamera() {
     const platform = arCamera.detect();
     const canOpen = platform === "ios" || platform === "android";
-    if (canOpen && !hasSeenArGuide()) {
+    if (canOpen && (!hasSeenArGuide() || isCarvedFrame)) {
       setIsGuideOpen(true);
       return;
     }
@@ -390,35 +377,9 @@ export function ArtworkRoom({
     arCamera.launch(arCamera.detect());
   }
 
-  // Режимы с той же рамой: камера и стена. Переключатель есть, только если
-  // работу можно показать в камере, — иначе режим один.
-  const modes =
-    camera === null
-      ? null
-      : [
-          {
-            id: "camera",
-            href: arPageUrl(work.id, options, lang),
-            label: t.modeCamera,
-            icon: "camera" as const,
-            isCurrent: isCamera,
-          },
-          {
-            id: "wall",
-            href: roomPageUrl(work.id, options, lang),
-            label: t.modeWall,
-            icon: "frame" as const,
-            isCurrent: !isCamera,
-          },
-        ];
-
-  // Упрощение рамы в камере (решение 5): резьбы и лепнины там нет.
-  const isCarvedFrame = options.frame === "classic" || options.frame === "baroque";
-
   return (
     <section
       className="room"
-      data-variant={variant}
       style={style}
       data-ready={isReady}
       data-mode={options.light}
@@ -431,7 +392,7 @@ export function ArtworkRoom({
       data-has-size={sides !== null}
       data-panel={isPanelOpen ? "open" : "closed"}
       data-tool={tool ?? undefined}
-      data-modes={modes !== null || undefined}
+      data-camera={camera !== null || undefined}
       aria-label={t.label(work.title)}
     >
       <div className="room-bar flex flex-wrap items-center justify-between gap-3 px-[clamp(12px,4vw,48px)] pt-4 md:pt-6 lg:pr-[calc(var(--panel-w)+24px)]">
@@ -453,55 +414,29 @@ export function ArtworkRoom({
         </p>
 
         {/*
-          Переключатель режимов — крупно и с подписями: со страницы работы
-          ведёт одна кнопка, и второй режим можно найти только здесь.
-          Прежде это был значок в 40px, на телефоне его не замечали.
-          На телефоне — отдельной строкой во всю ширину (order-last
-          и flex-wrap у строки): в одну строку с названием он не влезает.
+          Камера — крупно и с подписью: со страницы работы ведёт одна кнопка,
+          и найти камеру можно только здесь. Прежде это был значок в 40px,
+          на телефоне его не замечали. На телефоне — отдельной строкой во
+          всю ширину (order и flex-wrap у строки): в одну строку с названием
+          она не влезает.
         */}
-        {modes !== null && (
-          <nav className="room-modes" aria-label={t.modes}>
-            {modes.map((mode) => (
-              <Link
-                key={mode.id}
-                href={mode.href}
-                className="room-mode"
-                aria-current={mode.isCurrent ? "page" : undefined}
-                replace
-              >
-                <ViewIcon name={mode.icon} />
-                {mode.label}
-              </Link>
-            ))}
-          </nav>
+        {camera !== null && (
+          <button type="button" className="room-camera" onClick={requestCamera}>
+            <ViewIcon name="camera" />
+            {t.tryCamera}
+          </button>
         )}
 
         <div className="flex gap-2">
-          {isCamera && camera !== null && (
-            <button
-              type="button"
-              className="room-pill text-[15px] max-lg:w-10 max-lg:justify-center max-lg:px-0"
-              aria-label={t.howItWorks}
-              aria-haspopup="dialog"
-              onClick={() => setIsGuideOpen(true)}
-            >
-              <ViewIcon name="help" />
-              <span className="max-lg:hidden">{t.howItWorks}</span>
-            </button>
-          )}
-
-          {/* Другую картину в камере не предлагаем: у многих работ её нет. */}
-          {!isCamera && (
-            <button
-              type="button"
-              className="room-pill text-[15px] max-lg:hidden"
-              aria-expanded={isStripOpen}
-              aria-controls="room-strip"
-              onClick={() => setIsStripOpen((value) => !value)}
-            >
-              {t.otherPainting}
-            </button>
-          )}
+          <button
+            type="button"
+            className="room-pill text-[15px] max-lg:hidden"
+            aria-expanded={isStripOpen}
+            aria-controls="room-strip"
+            onClick={() => setIsStripOpen((value) => !value)}
+          >
+            {t.otherPainting}
+          </button>
 
           <button
             type="button"
@@ -692,7 +627,7 @@ export function ArtworkRoom({
         </button>
 
         <header className="room-panel-head">
-          <p className="room-kicker">{isCamera ? t.kickerCamera : t.kicker}</p>
+          <p className="room-kicker">{t.kicker}</p>
           <h1 className="room-panel-title">{work.title}</h1>
         </header>
 
@@ -703,34 +638,32 @@ export function ArtworkRoom({
           при любой стене. На телефоне этого раздела нет: там те же кнопки
           в нижней строке инструментов.
         */}
-        {!isCamera && (
-          <section className="room-section max-lg:hidden">
-            {/* Свет — переключателем с солнцем и луной, без заголовка
-                раздела: по просьбе заказчика заголовок «Вид» и две
-                кнопки с подписями были лишними, значки говорят сами. */}
-            <button
-              type="button"
-              role="switch"
-              className="room-daynight"
-              aria-checked={options.light === "evening"}
-              aria-label={t.eveningLabel}
-              title={options.light === "evening" ? t.eveningTitle : t.dayTitle}
-              onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
-            >
-              <ViewIcon name="sun" />
-              <ViewIcon name="moon" />
-            </button>
-            <button
-              type="button"
-              className="room-far"
-              aria-pressed={isSofaShown}
-              onClick={toggleFarView}
-            >
-              <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
-              {isSofaShown ? t.backToPainting : t.viewFromAfar}
-            </button>
-          </section>
-        )}
+        <section className="room-section max-lg:hidden">
+          {/* Свет — переключателем с солнцем и луной, без заголовка
+              раздела: по просьбе заказчика заголовок «Вид» и две
+              кнопки с подписями были лишними, значки говорят сами. */}
+          <button
+            type="button"
+            role="switch"
+            className="room-daynight"
+            aria-checked={options.light === "evening"}
+            aria-label={t.eveningLabel}
+            title={options.light === "evening" ? t.eveningTitle : t.dayTitle}
+            onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
+          >
+            <ViewIcon name="sun" />
+            <ViewIcon name="moon" />
+          </button>
+          <button
+            type="button"
+            className="room-far"
+            aria-pressed={isSofaShown}
+            onClick={toggleFarView}
+          >
+            <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} />
+            {isSofaShown ? t.backToPainting : t.viewFromAfar}
+          </button>
+        </section>
 
         <section className="room-section" data-active={tool === "frame"}>
           <h2 className="room-section-title" id="room-frame-title">
@@ -796,39 +729,33 @@ export function ArtworkRoom({
               </div>
             </div>
           )}
-
-          {/* В разделе рамы, а не у кнопки: на телефоне низ панели скрыт,
-              а раздел рамы открывается и там. */}
-          {isCamera && isCarvedFrame && <p className="room-note mt-3">{t.noCarving}</p>}
         </section>
 
-        {!isCamera && (
-          <section className="room-section" data-active={tool === "wall"}>
-            <h2 className="room-section-title" id="room-wall-title">
-              <span className="room-section-name">{t.wall}</span>
-              <span className="room-section-value">{wallLabel}</span>
-            </h2>
-            <div className="room-swatches" role="radiogroup" aria-labelledby="room-wall-title">
-              {roomWalls.map((wall) => (
-                <label
-                  key={wall.id}
-                  title={t.walls[wall.id].label}
-                  className="room-swatch"
-                  style={{ background: `var(--wall-${wall.id})` }}
-                >
-                  <input
-                    type="radio"
-                    name="room-wall"
-                    value={wall.id}
-                    aria-label={t.walls[wall.id].label}
-                    checked={options.wall === wall.id}
-                    onChange={() => update({ wall: wall.id })}
-                  />
-                </label>
-              ))}
-            </div>
-          </section>
-        )}
+        <section className="room-section" data-active={tool === "wall"}>
+          <h2 className="room-section-title" id="room-wall-title">
+            <span className="room-section-name">{t.wall}</span>
+            <span className="room-section-value">{wallLabel}</span>
+          </h2>
+          <div className="room-swatches" role="radiogroup" aria-labelledby="room-wall-title">
+            {roomWalls.map((wall) => (
+              <label
+                key={wall.id}
+                title={t.walls[wall.id].label}
+                className="room-swatch"
+                style={{ background: `var(--wall-${wall.id})` }}
+              >
+                <input
+                  type="radio"
+                  name="room-wall"
+                  value={wall.id}
+                  aria-label={t.walls[wall.id].label}
+                  checked={options.wall === wall.id}
+                  onChange={() => update({ wall: wall.id })}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
 
         <footer className="room-summary">
           {sides !== null && (
@@ -844,24 +771,8 @@ export function ArtworkRoom({
             </dl>
           )}
 
-          {isCamera && camera !== null && (
-            <>
-              <button type="button" className="room-cta" onClick={requestCamera}>
-                <ViewIcon name="camera" className="size-5" />
-                {t.openCamera}
-              </button>
-              <p className="room-note">{t.cameraLead}</p>
-            </>
-          )}
-
           {whatsappPhone && (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="room-cta"
-              data-secondary={isCamera || undefined}
-            >
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="room-cta">
               <ContactIcon id="whatsapp" className="size-5" />
               {t.write}
             </a>
@@ -876,57 +787,40 @@ export function ArtworkRoom({
         iPhone 15).
       */}
       <nav className="room-toolbar" aria-label={t.toolbar}>
-        {/* В камере из инструментов остаётся только рама — стена и свет там настоящие. */}
-        {roomTools
-          .filter((item) => !isCamera || item.id === "frame")
-          .map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="room-tool"
-              aria-pressed={tool === item.id}
-              onClick={() => toggleTool(item.id)}
-            >
-              <ViewIcon name={item.icon} className="size-[22px]" />
-              {t.tabs[item.id]}
-            </button>
-          ))}
-
-        {isCamera && camera !== null && (
-          <button type="button" className="room-tool" onClick={requestCamera}>
-            <ViewIcon name="camera" className="size-[22px]" />
-            {t.openCamera}
+        {roomTools.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className="room-tool"
+            aria-pressed={tool === item.id}
+            onClick={() => toggleTool(item.id)}
+          >
+            <ViewIcon name={item.icon} className="size-[22px]" />
+            {t.tabs[item.id]}
           </button>
-        )}
+        ))}
 
-        {!isCamera && (
-          <>
-            <button
-              type="button"
-              className="room-tool"
-              aria-pressed={options.light === "evening"}
-              aria-label={options.light === "evening" ? t.eveningToDay : t.dayToEvening}
-              onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
-            >
-              <ViewIcon
-                name={options.light === "evening" ? "moon" : "sun"}
-                className="size-[22px]"
-              />
-              {options.light === "evening" ? t.evening : t.day}
-            </button>
+        <button
+          type="button"
+          className="room-tool"
+          aria-pressed={options.light === "evening"}
+          aria-label={options.light === "evening" ? t.eveningToDay : t.dayToEvening}
+          onClick={() => update({ light: options.light === "evening" ? "day" : "evening" })}
+        >
+          <ViewIcon name={options.light === "evening" ? "moon" : "sun"} className="size-[22px]" />
+          {options.light === "evening" ? t.evening : t.day}
+        </button>
 
-            <button
-              type="button"
-              className="room-tool"
-              aria-pressed={isSofaShown}
-              aria-label={isSofaShown ? t.closer : t.afar}
-              onClick={toggleFarView}
-            >
-              <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} className="size-[22px]" />
-              {isSofaShown ? t.closerShort : t.afarShort}
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          className="room-tool"
+          aria-pressed={isSofaShown}
+          aria-label={isSofaShown ? t.closer : t.afar}
+          onClick={toggleFarView}
+        >
+          <ViewIcon name={isSofaShown ? "zoom-in" : "zoom-out"} className="size-[22px]" />
+          {isSofaShown ? t.closerShort : t.afarShort}
+        </button>
       </nav>
 
       {/* Лицензия CC BY 4.0 требует указать, что модель создана в Meshy.
@@ -941,7 +835,7 @@ export function ArtworkRoom({
         </p>
       )}
 
-      {isCamera && camera !== null && (
+      {camera !== null && (
         <>
           <ArQuickLookLink linkRef={arCamera.linkRef} href={camera.usdzUrl} />
           <ArGuide
@@ -949,6 +843,7 @@ export function ArtworkRoom({
             photo={work.src}
             title={work.title}
             size={camera.subtitle}
+            note={isCarvedFrame ? t.noCarving : undefined}
             onStart={startFromGuide}
             onClose={() => setIsGuideOpen(false)}
           />

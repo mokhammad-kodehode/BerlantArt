@@ -36,12 +36,10 @@ export function arFileUrl(
   return `/gallery/${workId}/ar/${file}?${query}`;
 }
 
-/** Страница примерки через камеру с той же рамой. Умолчания в адрес не пишутся, как в примерочной. */
-export function arPageUrl(workId: string, options: ArOptions, lang: Locale = "ru"): string {
-  return `${localePath(lang, `/gallery/${workId}/ar`)}${roomQuery({ ...defaultRoomOptions, ...options })}`;
-}
-
-/** Примерочная без камеры с той же рамой. */
+/**
+ * Примерочная с той же рамой. Умолчания в адрес не пишутся. Сюда же ведут
+ * старые ссылки на страницу камеры /gallery/[id]/ar (до 22.10.2026).
+ */
 export function roomPageUrl(workId: string, options: ArOptions, lang: Locale = "ru"): string {
   return `${localePath(lang, `/gallery/${workId}/room`)}${roomQuery({ ...defaultRoomOptions, ...options })}`;
 }

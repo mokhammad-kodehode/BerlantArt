@@ -128,6 +128,7 @@ export function ArGuide({
   photo,
   title,
   size,
+  note,
   onStart,
   onClose,
 }: {
@@ -137,6 +138,8 @@ export function ArGuide({
   title: string;
   /** «Холст 60 × 60 см · в раме 74 × 74 см». */
   size: string;
+  /** Чем модель в камере отличается от примерочной: у резных рам — нет резьбы. */
+  note?: string;
   onStart: () => void;
   onClose: () => void;
 }) {
@@ -192,6 +195,7 @@ export function ArGuide({
         </ol>
 
         <p className="ar-guide-tip">{t.plainWall}</p>
+        {note && <p className="ar-guide-tip">{note}</p>}
 
         <div className="ar-guide-actions">
           <button type="button" className="room-cta" onClick={onStart}>

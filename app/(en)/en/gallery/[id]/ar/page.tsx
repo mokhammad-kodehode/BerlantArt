@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { CameraPage, cameraMetadata } from "@/components/pages/CameraPage";
+import { roomPageUrl } from "@/lib/ar-links";
+import { parseRoomOptions } from "@/lib/room-options";
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/en/gallery/[id]/ar">): Promise<Metadata> {
-  const { id } = await params;
-  return cameraMetadata("en", id);
-}
-
+/**
+ * Камера была здесь отдельной страницей до 22.10.2026, теперь это кнопка
+ * в примерочной (ARCHITECTURE.md, примерка через камеру). Старые ссылки —
+ * их пересылали в WhatsApp — открывают примерочную с той же рамой.
+ */
 export default async function Page({ params, searchParams }: PageProps<"/en/gallery/[id]/ar">) {
-  const { id } = await params;
-  return <CameraPage lang="en" id={id} searchParams={searchParams} />;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  redirect(roomPageUrl(id, parseRoomOptions(query), "en"));
 }
