@@ -1308,9 +1308,9 @@
      табличка ложится к самому холсту, а не к пустому полю вокруг, и место
      под картину занято ещё до загрузки фото — ничего не прыгает.
      На телефоне холст во всю ширину, но не выше остатка экрана: шапка
-     48px, полоса миниатюр ~140px и место под название на табличке. */
+     48px, полоса миниатюр ~124px и место под табличку с кнопками. */
   .feed-art {
-    --art-max-h: max(220px, calc(100svh - 360px));
+    --art-max-h: max(220px, calc(100svh - 400px));
     position: relative;
     flex: none;
     align-self: center;
@@ -1403,16 +1403,110 @@
     overflow: hidden;
     background: var(--color-surface);
   }
-  /* Тихая строка под табличкой: ссылки текстом, не кнопками — кнопки
-     наравне с табличкой спорили бы с картиной. «Поделиться» — та же
-     кнопка с меню (ShareButton), её вид кнопки здесь снят. */
+  /* Примерка и «Поделиться» — в самой табличке, под тонкой линией
+     (заказчик, 22.10.2026). */
   .label-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
     margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-divider);
   }
-  .label-link,
+  /* Примерка — маленькая комната: эта картина на стене над диваном из
+     примерочной и подпись «как она будет смотреться у вас дома»
+     (WallLabel). Заказчик: «чтобы было интересно нажать» — строчка
+     текстом терялась, а комната сразу показывает, что за ссылкой.
+     При наведении картина в комнате чуть подаётся вперёд, стрелка —
+     вправо. Комната — иллюстрация, а не репродукция, поэтому у неё
+     лёгкое скругление; у самой картины углы прямые. */
+  .tryon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: calc(100% + 16px);
+    margin: 0 -8px;
+    padding: 8px;
+    color: var(--color-ink);
+    text-decoration: none;
+    border-radius: var(--radius-soft);
+    transition: background-color 0.2s ease;
+  }
+  .tryon:hover {
+    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  }
+  .tryon-scene {
+    position: relative;
+    flex: none;
+    width: 84px;
+    height: 60px;
+    overflow: hidden;
+    border-radius: var(--radius-soft);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-accent) 14%, var(--color-surface)) 0 74%,
+      color-mix(in srgb, var(--color-ink) 12%, var(--color-surface)) 74% 100%
+    );
+  }
+  .tryon-art {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: min(40px, calc(22px * var(--ratio)));
+    aspect-ratio: var(--ratio);
+    box-shadow: 0 1px 3px rgb(43 37 31 / 0.35);
+    transform: translateX(-50%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tryon-sofa {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    width: 64px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+  .tryon:hover .tryon-art {
+    transform: translateX(-50%) scale(1.12);
+  }
+  .tryon-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .tryon-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .tryon-hint {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--color-ink-soft);
+  }
+  .tryon-arrow {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    color: var(--color-ink-soft);
+    transition:
+      transform 0.2s ease,
+      color 0.2s ease;
+  }
+  .tryon:hover .tryon-arrow {
+    color: var(--color-ink);
+    transform: translateX(3px);
+  }
+  /* «Поделиться» — та же кнопка с меню (ShareButton), её вид кнопки здесь
+     снят: тихая ссылка текстом, чтобы не спорить с примеркой. */
   .label-actions .btn {
     display: inline-flex;
     align-items: center;
@@ -1422,79 +1516,71 @@
     font-size: 13px;
     font-weight: 400;
     color: var(--color-ink-soft);
-    text-decoration: none;
     background: none;
     border: 0;
     border-radius: 0;
     transition: color 0.18s ease;
   }
-  .label-link:hover,
   .label-actions .btn:hover {
     color: var(--color-ink);
     background: none;
   }
-  .label-link svg {
-    width: 15px;
-    height: 15px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.6;
-    stroke-linejoin: round;
-  }
-  .label-ask {
-    margin: 4px 0 0;
-    font-size: 13px;
+
+  /* «← Все работы» и номер — в полосе шапки (заказчик, 22.10.2026).
+     Лежат поверх шапки, а не в ней: шапка общая для всех страниц и не
+     знает, какая картина сейчас в ленте. Полоса пропускает нажатия
+     насквозь — бургер справа остаётся доступен. На телефоне ссылка
+     слева, номер по центру. */
+  .feed-top {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 11;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 20px;
+    font-size: 14px;
     color: var(--color-ink-soft);
+    pointer-events: none;
   }
-  .label-ask a {
+  .feed-top > * {
+    pointer-events: auto;
+  }
+  .feed-top-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--color-ink);
     text-decoration: none;
   }
-  .label-ask a:hover {
+  .feed-top-link:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+  .feed-top-count {
+    position: absolute;
+    left: 50%;
+    font-variant-numeric: tabular-nums;
+    transform: translateX(-50%);
+  }
 
-  /* Низ ленты на телефоне: номер над полосой миниатюр, прилипает к низу
-     экрана, пока лента на виду, и уходит вместе с ней к подвалу. */
+  /* Низ ленты на телефоне — только миниатюры: прилипает к низу экрана,
+     пока лента на виду, и уходит вместе с ней к подвалу. */
   .feed-dock {
     position: sticky;
     bottom: 0;
     z-index: 2;
-    padding-top: 10px;
     background: var(--color-wall);
     box-shadow: 0 -1px 0 var(--color-divider);
-  }
-  .feed-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0;
-    padding: 0 20px 6px;
-    font-size: 13px;
-    color: var(--color-ink-soft);
-  }
-  .feed-bar-link {
-    color: inherit;
-    text-decoration: none;
-  }
-  .feed-bar-link:hover {
-    color: var(--color-ink);
-  }
-  .feed-bar-dot {
-    display: none;
-  }
-  .feed-bar-count {
-    min-width: 8.5ch;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
   }
   .feed-thumbs-list {
     position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 80px;
+    height: 124px;
     margin: 0;
     padding: 0 20px;
     overflow-x: auto;
@@ -1509,27 +1595,41 @@
     flex: none;
   }
   /* Миниатюра — в пропорциях картины: на телефоне одной высоты, на
-     компьютере одной ширины. Без скругления — это холст. */
+     компьютере одной ширины. Без скругления — это холст. Текущая
+     заметно крупнее остальных (заказчик, 22.10.2026): одинаковые
+     миниатюры с одной обводкой у текущей читались ровным рядом.
+     Размер меняется плавно — миниатюра «вырастает», когда её картина
+     встаёт на экран. */
   .feed-thumb {
+    --thumb-h: 72px;
     position: relative;
     display: block;
-    width: clamp(44px, calc(64px * var(--ratio)), 96px);
-    height: 64px;
+    width: clamp(
+      calc(var(--thumb-h) * 0.7),
+      calc(var(--thumb-h) * var(--ratio)),
+      calc(var(--thumb-h) * 1.5)
+    );
+    height: var(--thumb-h);
     padding: 0;
     overflow: hidden;
     cursor: pointer;
     background: var(--color-surface);
     border: 0;
+    box-shadow: 0 2px 6px rgb(43 37 31 / 0.14);
+    transition:
+      width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      height 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .feed-thumb[aria-current] {
+    --thumb-h: 100px;
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
   }
   .feed-thumb img {
     transition: transform 0.2s ease;
   }
   .feed-thumb:hover img {
     transform: scale(1.04);
-  }
-  .feed-thumb[aria-current] {
-    outline: 2px solid var(--color-ink);
-    outline-offset: 3px;
   }
   .feed-thumb-empty {
     display: flex;
@@ -1542,11 +1642,11 @@
   }
 
   /* Компьютер: зал ровно в экран, лента внутри листается вниз. Слева
-     столбик миниатюр, номер — внизу по центру под картинами; части низа
-     ленты расходятся по своим местам (display: contents). Картина с
-     табличкой стоят рядом, табличка прижата к низу холста. */
+     столбик миниатюр, над ним — «← Все работы · 12 / 203». Картина
+     с табличкой стоят рядом, табличка прижата к низу холста. */
   @media (min-width: 1024px) {
     .feed-stage {
+      --thumbs-w: 220px;
       height: 100svh;
       overflow: hidden;
     }
@@ -1565,7 +1665,7 @@
       height: 100%;
       flex-direction: row;
       justify-content: center;
-      padding: 48px clamp(40px, 6vw, 120px) 92px calc(var(--thumbs-w) + 40px);
+      padding: 48px clamp(40px, 6vw, 120px) 56px calc(var(--thumbs-w) + 40px);
       content-visibility: auto;
       contain-intrinsic-size: auto 100svh;
     }
@@ -1579,48 +1679,57 @@
     /* Не выше экрана без полей и не шире места, что остаётся от
        столбика миниатюр и таблички. */
     .feed-art {
-      --art-max-h: calc(100svh - 160px);
-      --art-max-w: min(calc(100vw - var(--thumbs-w) - 520px), 820px);
+      --art-max-h: calc(100svh - 120px);
+      --art-max-w: min(calc(100vw - var(--thumbs-w) - 560px), 820px);
       align-self: auto;
       width: min(var(--art-max-w), calc(var(--art-max-h) * var(--ratio)));
     }
+    /* 300px — рядом с комнатой примерки «Примерить на стену» встаёт
+       одной строкой; при 280 она переносилась на две. */
     .wall-label-col {
       flex: none;
-      width: 260px;
+      width: 300px;
+    }
+    .tryon-scene {
+      width: 72px;
+      height: 52px;
+    }
+    .tryon-art {
+      top: 7px;
+      width: min(34px, calc(19px * var(--ratio)));
+    }
+    .tryon-sofa {
+      width: 56px;
     }
     .wall-label {
       padding: 20px 22px 18px;
     }
 
+    /* Шапка на компьютере спрятана — «Все работы» и номер стоят в левом
+       верхнем углу, над столбиком миниатюр. Выехавшая шапка ложится
+       поверх них. */
+    .feed-top {
+      right: auto;
+      z-index: 3;
+      gap: 16px;
+      height: 64px;
+      padding: 0 0 0 24px;
+    }
+    .feed-top-count {
+      position: static;
+      transform: none;
+    }
+
     .feed-dock {
       display: contents;
     }
-    .feed-bar {
-      position: absolute;
-      left: var(--thumbs-w);
-      right: 0;
-      bottom: 26px;
-      z-index: 2;
-      justify-content: center;
-      gap: 22px;
-      padding: 0;
-      font-size: 14px;
-      pointer-events: none;
-    }
-    .feed-bar > * {
-      pointer-events: auto;
-    }
-    .feed-bar-dot {
-      display: inline;
-    }
-    .feed-bar-count {
-      min-width: 0;
-    }
     /* Столбик миниатюр со сдвигами вбок (FeedThumbs, --shift). Края
        растворяются — видно, что столбик продолжается. */
+    /* Столбик начинается под «← Все работы» — иначе миниатюры при
+       прокрутке проходили бы под надписью. */
     .feed-thumbs {
       position: absolute;
-      top: 0;
+      top: 56px;
       bottom: 0;
       left: 0;
       z-index: 2;
@@ -1653,16 +1762,68 @@
       margin-left: var(--shift);
     }
     .feed-thumb {
-      width: 96px;
-      height: clamp(72px, calc(96px / var(--ratio)), 136px);
+      --thumb-w: 112px;
+      width: var(--thumb-w);
+      height: clamp(
+        calc(var(--thumb-w) * 0.75),
+        calc(var(--thumb-w) / var(--ratio)),
+        calc(var(--thumb-w) * 1.4)
+      );
+    }
+    .feed-thumb[aria-current] {
+      --thumb-w: 148px;
     }
   }
 
+  /* Анимация листания (заказчик, 22.10.2026): уходящая картина гаснет
+     и чуть отступает вглубь стены, новая проявляется на своё место,
+     табличка всплывает следом — как свет, который зажигают над работой.
+     Срабатывает, когда картина становится текущей (data-current,
+     ArtworkFeed) — на середине жеста, а не по его концу. */
+  .feed-art,
+  .wall-label-col {
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .feed-slide[data-current] .wall-label-col {
+    transition-delay: 0.12s;
+  }
+  .feed-slide:not([data-current]) .feed-art {
+    opacity: 0.3;
+    transform: scale(0.94);
+  }
+  .feed-slide:not([data-current]) .wall-label-col {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  /* Тем, кто попросил у системы меньше движения, — только проявление:
+     картины не сдвигаются и не меняют размер, миниатюры растут сразу.
+     Проявление не движение, просьбу оно не нарушает, а без него смена
+     картины выглядела бы рывком. */
   @media (prefers-reduced-motion: reduce) {
+    .feed-art,
+    .wall-label-col {
+      transition: opacity 0.4s ease;
+    }
+    .feed-slide:not([data-current]) .feed-art,
+    .feed-slide:not([data-current]) .wall-label-col {
+      transform: none;
+    }
+    .feed-thumb {
+      transition: none;
+    }
     .feed-thumb img {
       transition: none;
     }
     .feed-thumb:hover img {
+      transform: none;
+    }
+    .tryon:hover .tryon-art {
+      transform: translateX(-50%);
+    }
+    .tryon:hover .tryon-arrow {
       transform: none;
     }
   }

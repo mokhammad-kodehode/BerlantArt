@@ -6,7 +6,7 @@ import type { CSSProperties } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { FeedThumbs } from "@/components/gallery/FeedThumbs";
-import { WallLabel, type FeedContacts } from "@/components/gallery/WallLabel";
+import { WallLabel } from "@/components/gallery/WallLabel";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { tileAnchor } from "@/components/ui/ArtworkTile";
 import { fetchArtworkFeed, positionOf } from "@/lib/artwork-thumbs";
@@ -85,12 +85,10 @@ type SlideStyle = CSSProperties & { "--ratio": number };
 export function ArtworkFeed({
   initial,
   siteUrl,
-  contacts,
 }: {
   /** Работа, ради которой открыли страницу, — с неё лента начинается. */
   initial: ArtworkFeedItem;
   siteUrl: string;
-  contacts: FeedContacts;
 }) {
   const t = useDictionary();
   const lang = useLocale();
@@ -240,7 +238,15 @@ export function ArtworkFeed({
           );
 
           return (
-            <section key={item.id} aria-label={item.title} style={style} className="feed-slide">
+            <section
+              key={item.id}
+              aria-label={item.title}
+              // По этой пометке CSS проявляет текущую картину и гасит
+              // уходящую (globals.css, «Лента работ», анимация).
+              data-current={index === current || undefined}
+              style={style}
+              className="feed-slide"
+            >
               {/* Размытая копия картины — фон тёмного зала; в светлом её
                   нет (CSS), и спрятанное ленивое фото не грузится. */}
               {isNear && item.src && (
@@ -266,39 +272,34 @@ export function ArtworkFeed({
                   )}
                 </div>
 
-                <WallLabel
-                  work={item}
-                  isMain={isMain}
-                  isNear={isNear}
-                  siteUrl={siteUrl}
-                  contacts={contacts}
-                />
+                <WallLabel work={item} isMain={isMain} isNear={isNear} siteUrl={siteUrl} />
               </div>
             </section>
           );
         })}
       </div>
 
-      {/* Низ ленты: на телефоне — полоса, прилипшая к низу экрана (номер
-          над миниатюрами), на компьютере её части расходятся — столбик
-          миниатюр слева, номер внизу по центру (globals.css, .feed-dock). */}
+      {/* «← Все работы» и номер — наверху, в полосе шапки (заказчик,
+          22.10.2026): снизу освободилось место, и миниатюры стали крупнее.
+          На телефоне — слева от бургера, номер по центру; на компьютере,
+          где шапка спрятана, — в левом верхнем углу над столбиком. */}
+      <div className="feed-top">
+        <Link href={galleryHref} className="feed-top-link">
+          {t.work.backToAll}
+        </Link>
+        {works.length > 1 && (
+          <>
+            <span aria-hidden className="feed-top-count">
+              {current + 1} / {works.length}
+            </span>
+            <span className="sr-only">{t.work.position(current + 1, works.length)}</span>
+          </>
+        )}
+      </div>
+
+      {/* Миниатюры: на телефоне — полоса, прилипшая к низу экрана; на
+          компьютере — столбик слева (globals.css, .feed-dock). */}
       <div className="feed-dock">
-        <p className="feed-bar">
-          <Link href={galleryHref} className="feed-bar-link">
-            {t.work.backToAll}
-          </Link>
-          {works.length > 1 && (
-            <>
-              <span aria-hidden className="feed-bar-dot">
-                ·
-              </span>
-              <span aria-hidden className="feed-bar-count">
-                {current + 1} / {works.length}
-              </span>
-              <span className="sr-only">{t.work.position(current + 1, works.length)}</span>
-            </>
-          )}
-        </p>
         <FeedThumbs works={works} current={current} onPick={scrollToIndex} />
       </div>
     </>

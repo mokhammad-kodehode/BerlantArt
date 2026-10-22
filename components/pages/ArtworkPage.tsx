@@ -11,7 +11,6 @@ import {
   getArtworkById,
   primaryImageUrl,
 } from "@/lib/artworks";
-import { contactEmail } from "@/lib/contacts";
 import { clientEnv } from "@/lib/env";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { pageAlternates } from "@/lib/page-metadata";
@@ -120,14 +119,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
         <div aria-hidden className="stage-header-zone" />
         <Header variant="stage" />
         <main>
-          <ArtworkFeed
-            initial={artworkFeedItem(work)}
-            siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
-            contacts={{
-              whatsappPhone: clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE,
-              email: contactEmail ?? undefined,
-            }}
-          />
+          <ArtworkFeed initial={artworkFeedItem(work)} siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL} />
         </main>
       </div>
     </>
