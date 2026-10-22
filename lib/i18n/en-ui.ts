@@ -59,6 +59,7 @@ export const enUi: UiDictionary = {
     notFound: "Work not found",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
+    tryOnNudge: "Try it on your own wall",
     share: "Share",
     shareCopied: "Link copied",
     shareText: (title, artistGenitive) => `“${title}” — a painting by ${artistGenitive}`,

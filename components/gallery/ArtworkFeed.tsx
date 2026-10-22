@@ -272,7 +272,13 @@ export function ArtworkFeed({
                   )}
                 </div>
 
-                <WallLabel work={item} isMain={isMain} isNear={isNear} siteUrl={siteUrl} />
+                <WallLabel
+                  work={item}
+                  isMain={isMain}
+                  isNear={isNear}
+                  isCurrent={index === current}
+                  siteUrl={siteUrl}
+                />
               </div>
             </section>
           );

@@ -1350,6 +1350,7 @@
     width: 100%;
   }
   .wall-label {
+    position: relative;
     padding: 15px 18px 14px;
     background: var(--color-bg);
     box-shadow:
@@ -1491,6 +1492,54 @@
       transform: rotate(-1.5deg);
     }
   }
+
+  /* Напоминание о примерке (WallLabel, заказчик, 22.10.2026): иногда, пока
+     картину разглядывают, значок оживает — рамка дважды качается, холст
+     теплеет, — а над табличкой всплывает облачко носиком к значку. Цвета
+     обращены (чернила фоном), как у подсказки, а не как у таблички: это
+     реплика, а не часть подписи. Нажатия облачко пропускает насквозь. */
+  .wall-label[data-nudging] .tryon-frame {
+    animation: tryon-sway 1.2s ease-in-out 2;
+  }
+  .wall-label[data-nudging] .tryon-frame rect {
+    fill: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  }
+  .tryon-nudge {
+    position: absolute;
+    right: 28px;
+    bottom: calc(100% + 10px);
+    z-index: 3;
+    padding: 7px 12px;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: nowrap;
+    color: var(--color-bg);
+    pointer-events: none;
+    background: var(--color-ink);
+    border-radius: var(--radius-soft);
+    box-shadow: 0 6px 18px rgb(43 37 31 / 0.22);
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.35s ease,
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Носик — повёрнутый квадрат над значком примерки. */
+  .tryon-nudge::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 34px;
+    width: 10px;
+    height: 10px;
+    background: inherit;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .wall-label[data-nudging] .tryon-nudge {
+    opacity: 1;
+    transform: none;
+  }
+
   /* «Поделиться» — та же кнопка с меню (ShareButton), одним значком; вид
      кнопки здесь снят, чтобы значок не спорил с примеркой. */
   .label-actions .btn {
@@ -1794,10 +1843,16 @@
     .feed-thumb:hover img {
       transform: none;
     }
-    /* Рамка не качается — остаётся свет в холсте. */
+    /* Рамка не качается — остаётся свет в холсте; облачко проявляется на
+       месте, без подъёма. */
     .tryon:hover .tryon-frame,
-    .tryon:focus-visible .tryon-frame {
+    .tryon:focus-visible .tryon-frame,
+    .wall-label[data-nudging] .tryon-frame {
       animation: none;
+    }
+    .tryon-nudge {
+      transform: none;
+      transition: opacity 0.35s ease;
     }
   }
 

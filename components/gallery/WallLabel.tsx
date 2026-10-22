@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { ShareButton } from "@/components/gallery/ShareButton";
@@ -8,6 +9,17 @@ import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { ArtworkFeedItem } from "@/lib/artworks";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
 import { localePath } from "@/lib/i18n/config";
+
+/**
+ * Напоминание о примерке (заказчик, 22.10.2026): иногда, пока картину
+ * разглядывают, значок примерки оживает и над табличкой всплывает
+ * подсказка. Шанс — 10% на картину, не чаще раза за посещение: чаще —
+ * и это стало бы навязчивым, как реклама. Ждём полторы секунды, чтобы
+ * не всплывать посреди листания, держим четыре с половиной.
+ */
+const nudgeChance = 0.1;
+const nudgeDelay = 1500;
+const nudgeDuration = 4500;
 
 /**
  * Табличка у картины, как в музее (заказчик, 22.10.2026): название,
@@ -34,16 +46,41 @@ export function WallLabel({
   work,
   isMain,
   isNear,
+  isCurrent,
   siteUrl,
 }: {
   work: ArtworkFeedItem;
   /** Картина, ради которой открыли страницу: её название — заголовок страницы. */
   isMain: boolean;
   isNear: boolean;
+  /** Картина сейчас на экране — только у неё может всплыть напоминание о примерке. */
+  isCurrent: boolean;
   siteUrl: string;
 }) {
   const t = useDictionary();
   const lang = useLocale();
+  const [isNudging, setIsNudging] = useState(false);
+  // Табличка живёт, пока открыта лента, — «кубик» бросается один раз на
+  // картину за посещение, сколько бы раз к ней ни возвращались.
+  const hasRolled = useRef(false);
+
+  useEffect(() => {
+    if (!isCurrent || !work.src || hasRolled.current) return;
+    let hide: ReturnType<typeof setTimeout> | undefined;
+    const show = setTimeout(() => {
+      hasRolled.current = true;
+      if (Math.random() >= nudgeChance) return;
+      setIsNudging(true);
+      hide = setTimeout(() => setIsNudging(false), nudgeDuration);
+    }, nudgeDelay);
+    // Ушли с картины раньше — не всплываем, а всплывшее прячем.
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+      setIsNudging(false);
+    };
+  }, [isCurrent, work.src]);
+
   const Heading = isMain ? "h1" : "h2";
   const pageUrl = `${siteUrl}${localePath(lang, `/gallery/${work.id}`)}`;
   // Описание вводится только по-русски (решение заказчика от 4.10.2026).
@@ -51,7 +88,16 @@ export function WallLabel({
 
   return (
     <div className="wall-label-col">
-      <div className="wall-label">
+      <div className="wall-label" data-nudging={isNudging || undefined}>
+        {/* Напоминание о примерке — облачко над табличкой, носиком к
+            значку. Видно только при data-nudging (globals.css,
+            .tryon-nudge); скринридеру оно ни к чему — у значка своя
+            подпись, а внезапная фраза посреди чтения сбивала бы. */}
+        {work.src && (
+          <span aria-hidden className="tryon-nudge">
+            {t.work.tryOnNudge}
+          </span>
+        )}
         {/* Название — слева, примерка и «Поделиться» — значками справа, в
             той же строке (заказчик, 22.10.2026): отдельный ряд кнопок под
             линией делал табличку выше, чем ей нужно. Слова у значков —
