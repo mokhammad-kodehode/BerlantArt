@@ -9,6 +9,7 @@ import {
   artworkPagePatterns,
   artworkThumbsPath,
   publicPaths,
+  sitemapPath,
   revalidateAfterImageChange,
   revalidateArtworkPage,
   revalidatePublicPages,
@@ -49,6 +50,14 @@ describe("revalidatePublicPages", () => {
     vi.mocked(revalidatePath).mockClear();
     revalidatePublicPages();
     expect(vi.mocked(revalidatePath).mock.calls.map(([p]) => p)).toContain(artworkThumbsPath);
+  });
+
+  it("карта сайта — существующий файл и сбрасывается вместе со страницами", () => {
+    expect(existsSync(path.join(appDir, "sitemap.ts"))).toBe(true);
+    expect(sitemapPath).toBe("/sitemap.xml");
+    vi.mocked(revalidatePath).mockClear();
+    revalidatePublicPages();
+    expect(vi.mocked(revalidatePath).mock.calls.map(([p]) => p)).toContain(sitemapPath);
   });
 
   it("у каждого готового адреса есть страница", () => {

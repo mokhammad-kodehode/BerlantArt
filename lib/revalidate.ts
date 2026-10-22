@@ -38,6 +38,14 @@ export const publicPaths = [
  * Тест сверяет шаблоны с файлами, чтобы при следующем переезде это упало
  * сразу.
  */
+/**
+ * Карта сайта (app/sitemap.ts): в ней адрес, дата правки и главное фото
+ * каждой работы — всё, что меняет полный сброс. Мелкие правки
+ * (revalidateArtworkPage) её не трогают: дату правки в карте поправит
+ * суточная пересборка, а поисковику она не срочна.
+ */
+export const sitemapPath = "/sitemap.xml";
+
 /** Общий список миниатюр для панели «Все работы» (app/api/artwork-thumbs). */
 export const artworkThumbsPath = "/api/artwork-thumbs";
 
@@ -54,6 +62,7 @@ export function revalidatePublicPages(): void {
   // вызов не находит, какие именно страницы обновлять.
   for (const pattern of artworkPagePatterns) revalidatePath(pattern, "page");
   revalidatePath(artworkThumbsPath);
+  revalidatePath(sitemapPath);
 }
 
 /** Страница работы в админке — её тоже надо обновить, иначе список
