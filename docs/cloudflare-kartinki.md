@@ -1,8 +1,9 @@
 # Картинки через Cloudflare: что сделать в панели
 
-Тикеты О-8 и О-9 ([TICKETS-obzor.md](../TICKETS-obzor.md)). Код уже на месте
-и выключен. Включается, когда в панели Cloudflare сделаны шаги ниже,
-а в Vercel заданы две переменные. Обоснование — [ARCHITECTURE.md](../ARCHITECTURE.md), §8.
+Тикеты О-8 и О-9 ([TICKETS-obzor.md](../TICKETS-obzor.md)). **Сделано
+22.10.2026** — инструкция осталась на случай, если настройку придётся
+повторить (новый аккаунт, переезд домена). Обоснование —
+[ARCHITECTURE.md](../ARCHITECTURE.md), §8.
 
 Что получится:
 
@@ -64,14 +65,27 @@ https://img.berlant-art.com/cdn-cgi/image/width=300/artworks/…
 
 ## Шаг 3. Хранить картинки год (О-8)
 
-**Caching** → **Cache Rules** → **Create rule**:
+**Caching** → **Cache Rules** → **Create rule** (в новом меню — **Rules** →
+**Overview** → **Create rule** → **Cache Rule**):
 
 - имя — «Картинки на год»;
-- условие: **Hostname** equals `img.berlant-art.com`;
+- условие: **Hostname** equals `img.berlant-art.com`. Не `URI Full`:
+  полный адрес картинки длиннее домена, и правило не сработало бы.
+  В **Expression Preview** должно быть `(http.host eq "img.berlant-art.com")`;
 - **Cache eligibility** — Eligible for cache;
 - **Edge TTL** — Ignore cache-control header and use this TTL → 1 year;
+- там же **Status code TTL** → **Add status code setting** → Range, от
+  400 до последнего кода в списке, Duration — **No store**. Без этого
+  Cloudflare хранит год и ошибки: один сбой бакета — и картина пропала
+  с сайта на год. Проверено: без этой строки ответ «не найдено» приходил
+  из кеша;
 - **Browser TTL** — Override origin and use this TTL → 1 year;
 - **Deploy**.
+
+Проверять заголовки обычным запросом (`curl -D - -o /dev/null`), а не
+`curl -I`: на запрос одних заголовков исходник из бакета отвечает
+`DYNAMIC` и без `Cache-Control`, хотя хранится — браузер же просит
+картинку целиком и получает `HIT` и год.
 
 Почему год безопасен: у каждого загруженного фото свой адрес с
 уникальным ключом. Замена фото в админке — новый адрес, а не новый файл
@@ -88,9 +102,14 @@ Vercel → проект → **Settings** → **Environment Variables**:
 | `NEXT_PUBLIC_R2_PUBLIC_URL` | `https://img.berlant-art.com` | изменить старое |
 | `IMAGE_RESIZE`              | `cloudflare`                  | добавить новое  |
 
-Окружения — Production и Preview. Затем **Deployments** → последняя
-выкладка → **⋯** → **Redeploy**: переменные попадают на сайт только при
-сборке.
+Старую переменную менять через **⋯** → **Edit**, а не добавлять вторую
+с тем же именем. Окружение — Production, как у остальных переменных
+проекта. Предупреждение про `NEXT_PUBLIC_` — **Mark as Safe**: адрес
+картинок и так виден в каждой картинке.
+
+Переменные попадают на сайт только при сборке. Если следом идёт пуш
+в `main`, он и соберёт сайт; если нет — **Deployments** → последняя
+выкладка → **⋯** → **Redeploy**.
 
 ## Шаг 5. Проверка на сайте
 
