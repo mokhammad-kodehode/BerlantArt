@@ -12,14 +12,15 @@ import { localePath } from "@/lib/i18n/config";
 /**
  * Табличка у картины, как в музее (заказчик, 22.10.2026): название,
  * имя художницы, «Холст, масло · 50 × 50 см · 2023», описание, если
- * оно не повторяет название, и под линией — примерка и «Поделиться».
+ * оно не повторяет название, а в строке названия справа — значки
+ * примерки и «Поделиться».
  *
- * Примерка — со своим значком: рамка на гвоздике, которая качается при
- * наведении, как только что повешенная картина (заказчик: «чтобы было
- * интересно нажать», «иконку или что-то оригинальное»). Прежде здесь
- * была маленькая комната с этой картиной над диваном — заказчик её
- * отклонил. Строки «Спросить о картине» нет по просьбе заказчика:
- * написать художнице можно из меню в шапке.
+ * Значок примерки — рамка на гвоздике, которая качается при наведении,
+ * как только что повешенная картина (заказчик: «чтобы было интересно
+ * нажать», «иконку или что-то оригинальное»). Прежде здесь была
+ * маленькая комната с этой картиной над диваном — заказчик её отклонил.
+ * Строки «Спросить о картине» нет по просьбе заказчика: написать
+ * художнице можно из меню в шапке.
  *
  * Цены и статуса нет: продажа на сайте выключена (ARCHITECTURE.md,
  * «Продажа выключена»).
@@ -51,32 +52,41 @@ export function WallLabel({
   return (
     <div className="wall-label-col">
       <div className="wall-label">
-        <Heading className="wall-label-title">{work.title}</Heading>
+        {/* Название — слева, примерка и «Поделиться» — значками справа, в
+            той же строке (заказчик, 22.10.2026): отдельный ряд кнопок под
+            линией делал табличку выше, чем ей нужно. Слова у значков —
+            в подсказке при наведении и в подписи для скринридера. */}
+        <div className="wall-label-head">
+          <Heading className="wall-label-title">{work.title}</Heading>
+          <div className="label-actions">
+            {/* Без фотографии примерять нечего — примерки нет. */}
+            {work.src && (
+              <Link
+                href={localePath(lang, `/gallery/${work.id}/room`)}
+                aria-label={t.work.tryOnWall}
+                title={t.work.tryOnWall}
+                className="tryon"
+              >
+                {/* Рамка на гвоздике: петля, холст с пейзажем внутри. При
+                    наведении рамка качается на гвозде, как только что
+                    повешенная картина (globals.css, .tryon-frame). */}
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="tryon-icon">
+                  <g className="tryon-frame">
+                    <path d="M12 2.6 6.4 8.6M12 2.6l5.6 6" />
+                    <rect x="3.5" y="8.6" width="17" height="12.4" rx="0.6" />
+                    <path d="m6.5 18 3.4-3.6 2.4 2.3 2-1.9 3.2 3.2" />
+                    <circle cx="15.6" cy="12" r="1.1" />
+                  </g>
+                  <circle cx="12" cy="2.6" r="1.2" className="tryon-nail" />
+                </svg>
+              </Link>
+            )}
+            {isNear && <ShareButton url={pageUrl} title={work.title} />}
+          </div>
+        </div>
         <p className="wall-label-artist">{t.site.artist}</p>
         {work.label[lang] && <p className="wall-label-meta">{work.label[lang]}</p>}
         {description && <p className="wall-label-text">{description}</p>}
-
-        <div className="label-actions">
-          {/* Без фотографии примерять нечего — примерки нет. */}
-          {work.src && (
-            <Link href={localePath(lang, `/gallery/${work.id}/room`)} className="tryon">
-              {/* Рамка на гвоздике: петля, холст с пейзажем внутри. При
-                  наведении рамка качается на гвозде, как только что
-                  повешенная картина (globals.css, .tryon-frame). */}
-              <svg viewBox="0 0 24 24" aria-hidden="true" className="tryon-icon">
-                <g className="tryon-frame">
-                  <path d="M12 2.6 6.4 8.6M12 2.6l5.6 6" />
-                  <rect x="3.5" y="8.6" width="17" height="12.4" rx="0.6" />
-                  <path d="m6.5 18 3.4-3.6 2.4 2.3 2-1.9 3.2 3.2" />
-                  <circle cx="15.6" cy="12" r="1.1" />
-                </g>
-                <circle cx="12" cy="2.6" r="1.2" className="tryon-nail" />
-              </svg>
-              {t.work.tryOnWall}
-            </Link>
-          )}
-          {isNear && <ShareButton url={pageUrl} title={work.title} showLabel />}
-        </div>
       </div>
 
       {work.extra.length > 0 && (
