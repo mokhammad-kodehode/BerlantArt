@@ -5,28 +5,12 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import type { ArtworkThumb } from "@/lib/artworks";
+import { fetchArtworkThumbs } from "@/lib/artwork-thumbs";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
 import { localePath } from "@/lib/i18n/config";
 
-/** Общий для всех страниц список (app/api/artwork-thumbs). */
-const thumbsUrl = "/api/artwork-thumbs";
-
 /** Сколько серых плиток показать, пока список грузится: две колонки ленты. */
 const placeholderCount = 20;
-
-/** Ответ своего же адреса, но всё равно снаружи кода — проверяем форму. */
-function isThumbList(value: unknown): value is ArtworkThumb[] {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (item) =>
-        typeof item === "object" &&
-        item !== null &&
-        typeof item.id === "string" &&
-        typeof item.title === "string",
-    )
-  );
-}
 
 /**
  * Кнопка «Все работы» и панель с миниатюрами поверх страницы работы
@@ -49,7 +33,7 @@ function isThumbList(value: unknown): value is ArtworkThumb[] {
  * кнопку браузер делает сам. Миниатюры грузятся только видимые в ленте
  * (`loading="lazy"` у next/image).
  */
-export function ArtworkPicker({ total, currentId }: { total: number; currentId: string }) {
+export function ArtworkPicker({ currentId }: { currentId: string }) {
   const t = useDictionary().work;
   const lang = useLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -60,10 +44,9 @@ export function ArtworkPicker({ total, currentId }: { total: number; currentId: 
   async function load(): Promise<void> {
     setHasFailed(false);
     try {
-      const response = await fetch(thumbsUrl);
-      const data: unknown = response.ok ? await response.json() : null;
-      if (!isThumbList(data)) throw new Error(`Список работ не получен: ${response.status}`);
-      setWorks(data);
+      // Тот же запрос, что у счётчика «129 / 203» (lib/artwork-thumbs.ts):
+      // к открытию панели список обычно уже загружен.
+      setWorks(await fetchArtworkThumbs());
     } catch (error) {
       // Без списка панель бесполезна, но страница цела: пишем, что не
       // вышло, и даём повторить — а в консоль уходит причина.
@@ -123,7 +106,7 @@ export function ArtworkPicker({ total, currentId }: { total: number; currentId: 
         className="picker"
       >
         <div className="picker-head">
-          <p className="m-0">{t.pickerTitle(works?.length ?? total)}</p>
+          <p className="m-0">{works === null ? t.pickerOpen : t.pickerTitle(works.length)}</p>
           <button
             type="button"
             onClick={close}
@@ -147,7 +130,7 @@ export function ArtworkPicker({ total, currentId }: { total: number; currentId: 
         ) : (
           <ul ref={stripRef} className="picker-strip" aria-busy={works === null}>
             {works === null
-              ? Array.from({ length: Math.min(total, placeholderCount) }, (_, index) => (
+              ? Array.from({ length: placeholderCount }, (_, index) => (
                   <li key={index} aria-hidden>
                     <span className="picker-thumb picker-thumb-loading" />
                   </li>

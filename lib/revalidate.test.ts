@@ -6,13 +6,13 @@ import { describe, expect, it, vi } from "vitest";
 import { revalidatePath } from "next/cache";
 
 import {
-  artworkPagePatterns,
   artworkThumbsPath,
   publicPaths,
   sitemapPath,
   revalidateAfterImageChange,
   revalidateArtworkPage,
-  revalidatePublicPages,
+  revalidateArtworkPages,
+  revalidateSharedPages,
 } from "@/lib/revalidate";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
@@ -36,40 +36,33 @@ function hasPageForUrl(url: string): boolean {
   return walk(appDir, segments);
 }
 
-describe("revalidatePublicPages", () => {
-  it("шаблоны страниц работ совпадают с файлами в app/, вместе с группами", () => {
-    // Именно это сломалось при переезде в (ru)/(en): шаблон без группы
-    // молча ничего не сбрасывал.
-    for (const pattern of artworkPagePatterns) {
-      expect(existsSync(path.join(appDir, pattern, "page.tsx")), pattern).toBe(true);
-    }
-  });
+const calls = (): string[] => vi.mocked(revalidatePath).mock.calls.map(([p]) => p);
 
-  it("общий список миниатюр — существующий адрес и сбрасывается вместе со страницами", () => {
+describe("revalidateSharedPages", () => {
+  it("общий список миниатюр — существующий адрес и сбрасывается с общими страницами", () => {
     expect(existsSync(path.join(appDir, artworkThumbsPath, "route.ts"))).toBe(true);
     vi.mocked(revalidatePath).mockClear();
-    revalidatePublicPages();
-    expect(vi.mocked(revalidatePath).mock.calls.map(([p]) => p)).toContain(artworkThumbsPath);
+    revalidateSharedPages();
+    expect(calls()).toContain(artworkThumbsPath);
   });
 
-  it("карта сайта — существующий файл и сбрасывается вместе со страницами", () => {
+  it("карта сайта — существующий файл и сбрасывается с общими страницами", () => {
     expect(existsSync(path.join(appDir, "sitemap.ts"))).toBe(true);
     expect(sitemapPath).toBe("/sitemap.xml");
     vi.mocked(revalidatePath).mockClear();
-    revalidatePublicPages();
-    expect(vi.mocked(revalidatePath).mock.calls.map(([p]) => p)).toContain(sitemapPath);
+    revalidateSharedPages();
+    expect(calls()).toContain(sitemapPath);
   });
 
   it("у каждого готового адреса есть страница", () => {
     for (const url of publicPaths) expect(hasPageForUrl(url), url).toBe(true);
   });
 
-  it("сбрасывает и адреса, и страницы работ на обоих языках", async () => {
-    const { revalidatePath } = await import("next/cache");
-    revalidatePublicPages();
-    expect(revalidatePath).toHaveBeenCalledWith("/(ru)/gallery/[id]", "page");
-    expect(revalidatePath).toHaveBeenCalledWith("/(en)/en/gallery/[id]", "page");
-    expect(revalidatePath).toHaveBeenCalledWith("/en/gallery");
+  it("страницы работ не трогает — ни шаблоном, ни по одной (тикет О-5)", () => {
+    vi.mocked(revalidatePath).mockClear();
+    revalidateSharedPages();
+    expect(calls().filter((p) => p.includes("/gallery/"))).toEqual([]);
+    expect(vi.mocked(revalidatePath).mock.calls.every((call) => call.length === 1)).toBe(true);
   });
 });
 
@@ -79,8 +72,6 @@ describe("revalidatePublicPages", () => {
  * 21.10.2026).
  */
 describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
-  const calls = (): string[] => vi.mocked(revalidatePath).mock.calls.map(([p]) => p);
-
   it("страница работы — на обоих языках и с адресом, у которого есть файл", () => {
     vi.mocked(revalidatePath).mockClear();
     revalidateArtworkPage("abc");
@@ -94,7 +85,7 @@ describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
     expect(calls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
   });
 
-  it("главное фото сменилось или появилось — весь сайт", () => {
+  it("главное фото сменилось или появилось — своя страница и общие, но не чужие", () => {
     for (const [before, after] of [
       ["img1", "img2"],
       [null, "img1"],
@@ -102,7 +93,19 @@ describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
     ] as const) {
       vi.mocked(revalidatePath).mockClear();
       revalidateAfterImageChange("abc", before, after);
-      expect(calls()).toEqual(expect.arrayContaining([...publicPaths]));
+      expect(calls()).toEqual(
+        expect.arrayContaining([...publicPaths, "/gallery/abc", "/en/gallery/abc"]),
+      );
+      expect(calls().filter((p) => p.includes("/gallery/"))).toEqual([
+        "/gallery/abc",
+        "/en/gallery/abc",
+      ]);
     }
+  });
+
+  it("несколько работ: без повторов и без пустых соседей", () => {
+    vi.mocked(revalidatePath).mockClear();
+    revalidateArtworkPages(["a", null, "b", undefined, "a"]);
+    expect(calls()).toEqual(["/gallery/a", "/en/gallery/a", "/gallery/b", "/en/gallery/b"]);
   });
 });

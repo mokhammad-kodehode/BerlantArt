@@ -9,8 +9,17 @@ import { localePath, locales } from "@/lib/i18n/config";
  * с `"use server"` наружу можно отдавать только асинхронные функции —
  * обычную туда не положить. Вторая важнее: список страниц, зависящих
  * от работ, обязан быть один. Разъедься он между экшенами — часть правок
- * начнёт появляться на сайте сразу, а часть через пять минут, и понять,
+ * начнёт появляться на сайте сразу, а часть только через сутки, и понять,
  * почему так, будет не по чему.
+ *
+ * **Страницы работ по одной, а не все разом** (тикет О-5, 22.10.2026).
+ * Каждый сброс — пересборка при следующем заходе, то есть запись в кеш
+ * Vercel, на бесплатном тарифе ограниченная (ARCHITECTURE.md §9). Раньше
+ * любая правка сбрасывала все ~400 страниц работ: на каждой стоял номер
+ * «129 / 203» и список «Всех работ». Теперь и то и другое — в общем файле
+ * `artworkThumbsPath`, а страница работы зависит только от себя и от
+ * названий двух соседей на стрелках. Значит, правка одной работы
+ * обновляет её страницу, страницы её соседей и общие страницы — и всё.
  */
 
 /**
@@ -29,40 +38,67 @@ export const publicPaths = [
 ] as const;
 
 /**
- * Страницы работ — шаблоны по файлам в `app/`, а не адреса: их столько же,
- * сколько работ. **Группа маршрута в шаблоне обязательна** (документация
- * Next, revalidatePath, «with route groups»). Когда страницы разложили по
- * языкам в `(ru)` и `(en)`, здесь остался `/gallery/[id]` без группы —
- * вызов перестал находить страницу, и правка в админке появлялась на сайте
- * только через пять минут (`revalidate = 300`), заказчик 12.10.2026.
- * Тест сверяет шаблоны с файлами, чтобы при следующем переезде это упало
- * сразу.
+ * Общий список работ с миниатюрами (app/api/artwork-thumbs): по нему
+ * панель «Все работы» показывает ленту, а счётчик «129 / 203» — номер.
  */
+export const artworkThumbsPath = "/api/artwork-thumbs";
+
 /**
  * Карта сайта (app/sitemap.ts): в ней адрес, дата правки и главное фото
- * каждой работы — всё, что меняет полный сброс. Мелкие правки
- * (revalidateArtworkPage) её не трогают: дату правки в карте поправит
- * суточная пересборка, а поисковику она не срочна.
+ * каждой работы. Мелкие правки (только своя страница) её не трогают:
+ * дату правки в карте поправит суточная пересборка, поисковику она не
+ * срочна.
  */
 export const sitemapPath = "/sitemap.xml";
 
-/** Общий список миниатюр для панели «Все работы» (app/api/artwork-thumbs). */
-export const artworkThumbsPath = "/api/artwork-thumbs";
-
-export const artworkPagePatterns = ["/(ru)/gallery/[id]", "/(en)/en/gallery/[id]"] as const;
-
-export function revalidatePublicPages(): void {
-  // Сбрасывает ВСЕ страницы работ (~400 на двух языках), и каждая потом
-  // собирается заново при первом заходе — это записи в кеш Vercel, на
-  // бесплатном тарифе они ограничены (21.10.2026: 367 тысяч за месяц).
-  // Правка, которая не видна за пределами своей работы, зовёт
-  // revalidateArtworkPage — она обновляет две страницы, а не четыреста.
+/**
+ * Всё, что зависит от набора работ целиком: главная, галерея, «О
+ * художнице» и «Контакты», общий список и карта сайта. Страницы работ
+ * сюда не входят — их называют отдельно (`revalidateArtworkPages`).
+ */
+export function revalidateSharedPages(): void {
   for (const path of publicPaths) revalidatePath(path);
-  // Путь с динамическим сегментом требует второго аргумента: без него
-  // вызов не находит, какие именно страницы обновлять.
-  for (const pattern of artworkPagePatterns) revalidatePath(pattern, "page");
   revalidatePath(artworkThumbsPath);
   revalidatePath(sitemapPath);
+}
+
+/**
+ * Страницы перечисленных работ на обоих языках. `null` пропускается:
+ * у единственной работы нет соседей. Повторы — тоже: у двух работ сосед
+ * слева и справа один и тот же.
+ */
+export function revalidateArtworkPages(ids: Iterable<string | null | undefined>): void {
+  const unique = new Set<string>();
+  for (const id of ids) if (id) unique.add(id);
+
+  for (const id of unique) {
+    for (const lang of locales) revalidatePath(localePath(lang, `/gallery/${id}`));
+  }
+}
+
+/**
+ * Только страница одной работы. Для правок, которых не видно больше
+ * нигде: подпись к фото, порядок дополнительных фото, статус (продажа
+ * выключена — на стене и в галерее его нет).
+ */
+export function revalidateArtworkPage(artworkId: string): void {
+  revalidateArtworkPages([artworkId]);
+}
+
+/**
+ * Правка фото: своя страница всегда, а если сменилось главное фото — ещё
+ * и общие страницы: оно стоит плиткой в галерее, на главной, в общем
+ * списке и в карте сайта. На страницах соседей чужого фото нет, их
+ * трогать не нужно. `before` и `after` — главное фото до и после правки
+ * (`primaryImageId`).
+ */
+export function revalidateAfterImageChange(
+  artworkId: string,
+  before: string | null,
+  after: string | null,
+): void {
+  revalidateArtworkPage(artworkId);
+  if (before !== after) revalidateSharedPages();
 }
 
 /** Страница работы в админке — её тоже надо обновить, иначе список
@@ -72,31 +108,4 @@ export function revalidateAdminArtwork(artworkId: string): void {
   // Список работ показывает статус и превью — после правки он устареет
   // вместе со страницей работы, поэтому обновляется тем же вызовом.
   revalidatePath("/admin/artworks");
-}
-
-/**
- * Только страница одной работы, на обоих языках. Для правок, которых
- * не видно больше нигде: подпись к фото, порядок дополнительных фото,
- * статус (продажа выключена, на стене и в галерее его нет). Главное
- * фото к таким не относится — оно стоит в галерее, на главной и в
- * миниатюрах «Всех работ» на каждой странице.
- */
-export function revalidateArtworkPage(artworkId: string): void {
-  for (const lang of locales) revalidatePath(localePath(lang, `/gallery/${artworkId}`));
-}
-
-/**
- * Поменялось главное фото — сбросить всё, иначе только свою страницу.
- * `before` и `after` — главное фото до и после правки (`primaryImageId`).
- */
-export function revalidateAfterImageChange(
-  artworkId: string,
-  before: string | null,
-  after: string | null,
-): void {
-  if (before === after) {
-    revalidateArtworkPage(artworkId);
-    return;
-  }
-  revalidatePublicPages();
 }

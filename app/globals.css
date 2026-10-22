@@ -1785,8 +1785,11 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+  /* Ширина под «999 / 999»: число подставляет браузер после загрузки
+     общего списка (ArtworkPosition), и пустое место той же ширины не даёт
+     стрелкам сдвинуться, когда оно появится. */
   .stage-pager-count {
-    min-width: 4.5ch;
+    min-width: 8.5ch;
     font-size: 14px;
     font-variant-numeric: tabular-nums;
     color: var(--color-ink-soft);

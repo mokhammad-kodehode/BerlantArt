@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
 import { ArtworkPicker } from "@/components/gallery/ArtworkPicker";
+import { ArtworkPosition } from "@/components/gallery/ArtworkPosition";
 import { ArtworkSwipe } from "@/components/gallery/ArtworkSwipe";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { Header } from "@/components/layout/Header";
@@ -49,8 +50,10 @@ import { getDictionary, localePath, type Locale } from "@/lib/i18n";
  *
  * Стрелки — обычные ссылки: переход между работами — навигация, адрес
  * каждой картины свой, и работает всё без JavaScript. Свайп и клавиши
- * ← → добавляет ArtworkSwipe. Кольцо замкнуто, соседей и номер
- * считает `getArtworkNeighbours`.
+ * ← → добавляет ArtworkSwipe. Кольцо замкнуто, соседей считает
+ * `getArtworkNeighbours`, а номер «3 / 32» — браузер (ArtworkPosition):
+ * в самой странице его нет, иначе каждая новая работа меняла бы все
+ * страницы (тикет О-5).
  */
 export function ArtworkStage({
   lang,
@@ -79,7 +82,7 @@ export function ArtworkStage({
   children: ReactNode;
 }) {
   const t = getDictionary(lang).work;
-  const { prev, next, position, total, currentId } = neighbours;
+  const { prev, next, currentId } = neighbours;
   const prevHref = prev ? localePath(lang, `/gallery/${prev.id}`) : undefined;
   const nextHref = next ? localePath(lang, `/gallery/${next.id}`) : undefined;
   // Назад в галерею — к плитке этой работы, а не в начало стены: у работы
@@ -254,17 +257,14 @@ export function ArtworkStage({
                     <path d="m14.5 6-6 6 6 6" />
                   </svg>
                 </Link>
-                <span aria-hidden className="stage-pager-count">
-                  {position} / {total}
-                </span>
-                <span className="sr-only">{t.position(position, total)}</span>
+                {currentId && <ArtworkPosition currentId={currentId} />}
                 <Link href={nextHref} rel="next" aria-label={t.next(next.title)}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="m9.5 6 6 6-6 6" />
                   </svg>
                 </Link>
                 {/* «Все работы» — панель с миниатюрами поверх страницы. */}
-                {currentId && <ArtworkPicker total={total} currentId={currentId} />}
+                {currentId && <ArtworkPicker currentId={currentId} />}
               </div>
             )}
           </nav>

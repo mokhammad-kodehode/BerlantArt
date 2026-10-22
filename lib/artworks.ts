@@ -303,56 +303,58 @@ export type ArtworkLink = { id: string; title: string };
 /** Работа для списка-выбора на странице работы: название и миниатюра. */
 export type ArtworkThumb = ArtworkLink & { src?: string };
 
-/** Соседи работы и её место в галерее — для счётчика «3 / 32». */
+/** Соседи работы по кольцу галереи — для стрелок ‹ › на странице работы. */
 export type ArtworkNeighbours = {
   prev: ArtworkLink | null;
   next: ArtworkLink | null;
-  /** Номер работы в порядке галереи, с единицы; 0 — работы в списке нет. */
-  position: number;
-  total: number;
   /** Сама работа, если она в списке, — для якоря «← Все работы» и панели выбора. */
   currentId: string | null;
 };
 
 /**
+ * Соседи работы в списке, замкнутом в кольцо: с последней вперёд — на
+ * первую. Так у стрелок нет выключенного состояния, а тупик в конце на
+ * галерее из пяти работ раздражал бы сильнее, чем возврат к началу.
+ * Одна работа сама себе не сосед — стрелок тогда нет вовсе.
+ *
+ * Чистая функция отдельно от запроса — ради тестов: ошибку в кольце на
+ * глаз не видно, стрелка просто ведёт не туда.
+ */
+export function ringNeighbours<T extends { id: string }>(
+  works: readonly T[],
+  id: string,
+): { prev: T | null; next: T | null } {
+  const index = works.findIndex((work) => work.id === id);
+  if (index === -1 || works.length < 2) return { prev: null, next: null };
+
+  return {
+    prev: works[(index - 1 + works.length) % works.length],
+    next: works[(index + 1) % works.length],
+  };
+}
+
+/**
  * Соседние работы в порядке галереи — для листания на странице работы.
  *
- * Берётся список одних только id и названий, без изображений и описаний,
- * и в нём ищется позиция. Двумя запросами «предыдущая и следующая» это
- * не решается: курсор по дате путается на работах, добавленных в одну
- * секунду (пачкой через seed или импорт), — а ошибку такого рода на глаз
- * не видно, стрелка просто ведёт не туда. Тот же список даёт и номер
- * для счётчика. Один запрос на страницу при любом числе работ.
+ * Берётся список одних только id и названий и в нём ищется позиция.
+ * Двумя запросами «предыдущая и следующая» это не решается: курсор по
+ * дате путается на работах, добавленных в одну секунду (пачкой через
+ * seed или импорт). Один запрос на страницу при любом числе работ.
  *
- * Миниатюр для панели «Все работы» здесь больше нет — они в
- * `getArtworkThumbs` и грузятся одним общим файлом, только когда панель
- * открыли. Внутри каждой страницы список из 203 работ делал её в разы
- * тяжелее, а Vercel считает записи в кеш по 8 КБ (21.10.2026).
- *
- * Листание замкнуто в кольцо: с последней работы вперёд — на первую.
- * Так у стрелок нет выключенного состояния, а тупик в конце на галерее
- * из пяти работ раздражал бы сильнее, чем возврат к началу.
+ * Номера «129 / 203» здесь больше нет (тикет О-5, 22.10.2026): он
+ * менялся у всех ~400 страниц с каждой новой работой, и все уходили на
+ * пересборку — записи в кеш Vercel. Номер считает браузер по общему
+ * списку `/api/artwork-thumbs` (ArtworkPosition). Соседи же меняются
+ * только у двух-трёх работ рядом с новой — их обновляют экшены.
  */
 export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbours> {
   const works: ArtworkLink[] = await db.artwork.findMany({
     select: { id: true, title: true },
     orderBy: galleryOrder,
   });
-  const index = works.findIndex((work) => work.id === id);
-  const currentId = index === -1 ? null : id;
+  const isListed = works.some((work) => work.id === id);
 
-  // Одна работа сама себе не сосед: стрелки в таком случае не нужны вовсе.
-  if (index === -1 || works.length < 2) {
-    return { prev: null, next: null, position: index + 1, total: works.length, currentId };
-  }
-
-  return {
-    prev: works[(index - 1 + works.length) % works.length],
-    next: works[(index + 1) % works.length],
-    position: index + 1,
-    total: works.length,
-    currentId,
-  };
+  return { ...ringNeighbours(works, id), currentId: isListed ? id : null };
 }
 
 /**
@@ -521,7 +523,7 @@ async function renumber(tx: Prisma.TransactionClient, ids: string[]): Promise<vo
 /**
  * Главное фото работы — первое в показе — или `null`, если фото нет.
  * Экшены сверяют его до и после правки: от главного фото зависят плитки
- * галереи, главная и миниатюры на всех страницах работ, от остальных —
+ * галереи, главная, общий список миниатюр и карта сайта, от остальных —
  * только страница самой работы (lib/revalidate.ts).
  */
 export async function primaryImageId(artworkId: string): Promise<string | null> {

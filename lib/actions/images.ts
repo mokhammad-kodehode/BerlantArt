@@ -26,7 +26,6 @@ import {
   revalidateAdminArtwork,
   revalidateAfterImageChange,
   revalidateArtworkPage,
-  revalidatePublicPages,
 } from "@/lib/revalidate";
 import { checkUpload, isOwnObjectKey } from "@/lib/upload-limits";
 
@@ -228,12 +227,17 @@ export async function makePrimary(artworkId: string, imageId: string): Promise<I
 
   if (!parsed.success) return { ok: false, error: "Некорректный запрос." };
 
+  const primaryBefore = await primaryImageId(parsed.data.artworkId);
   if (!(await setPrimaryImage(parsed.data.artworkId, parsed.data.imageId))) {
     return { ok: false, error: "Изображение не найдено." };
   }
 
   revalidateAdminArtwork(artworkId);
-  revalidatePublicPages();
+  revalidateAfterImageChange(
+    parsed.data.artworkId,
+    primaryBefore,
+    await primaryImageId(parsed.data.artworkId),
+  );
 
   return { ok: true };
 }

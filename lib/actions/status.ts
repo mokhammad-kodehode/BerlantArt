@@ -30,6 +30,6 @@ export async function changeStatus(formData: FormData): Promise<void> {
   revalidateAdminArtwork(parsed.data.id);
   // Продажа выключена: статуса нет ни на стене, ни в галерее, ни на главной —
   // только на странице работы. Вернётся продажа с меткой «продана» на
-  // плитке — здесь снова нужен revalidatePublicPages.
+  // плитке — здесь снова нужен revalidateSharedPages.
   revalidateArtworkPage(parsed.data.id);
 }
