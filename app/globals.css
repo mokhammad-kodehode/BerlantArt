@@ -2087,9 +2087,27 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Тем, кто попросил у системы меньше движения, шапка не выезжает, а
+   проявляется на месте (заказчик, 22.10.2026: прежде здесь стояло
+   transition: none, и шапка возникала рывком — у заказчика в Windows
+   выключены эффекты анимации, Chrome передаёт это сайту). Проявление —
+   не движение, просьбу оно не нарушает.
+
+   Прячется по-прежнему сдвигом за край экрана — так пункты шапки
+   остаются доступны с клавиатуры, — только сдвиг мгновенный и после
+   той же паузы 0.35 с; гаснет шапка чуть раньше, к концу паузы. */
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
   .stage-header {
-    transition: none;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease 0.15s,
+      transform 0s linear 0.35s;
+  }
+  .stage-header-zone:hover + .stage-header,
+  .stage-header:hover,
+  .stage-header:focus-within {
+    opacity: 1;
+    transition-delay: 0s;
   }
 }
 
