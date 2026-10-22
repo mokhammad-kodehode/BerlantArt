@@ -6,6 +6,7 @@ import {
   likePattern,
   maxSearchLength,
   normalizeSearch,
+  parseGalleryQuery,
 } from "@/lib/gallery-search";
 
 describe("normalizeSearch", () => {
@@ -61,14 +62,49 @@ describe("galleryHref", () => {
     expect(galleryHref("ru", {})).toBe("/gallery");
   });
 
-  it("держит и категорию, и запрос — поиск не теряется при смене категории", () => {
+  it("только категория — её готовая страница, латиницей (тикет О-11)", () => {
+    expect(galleryHref("ru", { category: "Цветы" })).toBe("/gallery/category/flowers");
+    expect(galleryHref("en", { category: "Деревья и лес" })).toBe(
+      "/en/gallery/category/trees-and-forest",
+    );
+  });
+
+  it("запрос с категорией — поиск, и ни то ни другое не теряется", () => {
     const href = galleryHref("ru", { category: "Цветы", q: "ромашки" });
-    const params = new URL(href, "https://example.test").searchParams;
-    expect(params.get("category")).toBe("Цветы");
-    expect(params.get("q")).toBe("ромашки");
+    const url = new URL(href, "https://example.test");
+    expect(url.pathname).toBe("/gallery/search");
+    expect(url.searchParams.get("category")).toBe("flowers");
+    expect(url.searchParams.get("q")).toBe("ромашки");
+  });
+
+  it("категория не из списка — через поиск, а не на несуществующую страницу", () => {
+    expect(galleryHref("ru", { category: "Пейзаж" })).toBe(
+      "/gallery/search?category=%D0%9F%D0%B5%D0%B9%D0%B7%D0%B0%D0%B6",
+    );
   });
 
   it("английская версия — со своей приставкой", () => {
-    expect(galleryHref("en", { q: "towers" })).toBe("/en/gallery?q=towers");
+    expect(galleryHref("en", { q: "towers" })).toBe("/en/gallery/search?q=towers");
+  });
+});
+
+describe("parseGalleryQuery", () => {
+  it("повторённый параметр — первое значение, а не падение", () => {
+    expect(parseGalleryQuery({ category: ["Цветы", "Море"], q: ["роза", "мак"] })).toEqual({
+      category: "Цветы",
+      q: "роза",
+    });
+  });
+
+  it("категория латинским адресом и названием из старой ссылки — одна и та же", () => {
+    expect(parseGalleryQuery({ category: "flowers" }).category).toBe("Цветы");
+    expect(parseGalleryQuery({ category: "Цветы" }).category).toBe("Цветы");
+  });
+
+  it("пустая категория — без фильтра; прочие параметры не читаются", () => {
+    expect(parseGalleryQuery({ category: "", status: "SOLD" })).toEqual({
+      category: undefined,
+      q: undefined,
+    });
   });
 });

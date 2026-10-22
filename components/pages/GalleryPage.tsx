@@ -1,33 +1,34 @@
-import { z } from "zod";
+import type { Metadata } from "next";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { GalleryFilters } from "@/components/gallery/GalleryFilters";
 import { GallerySearch } from "@/components/gallery/GallerySearch";
-import { ReturnToTile } from "@/components/gallery/ReturnToTile";
 import { ButtonLink } from "@/components/ui/Button";
 import { artworkCategories } from "@/lib/artwork-form";
-import { artworkCategory, getArtworks, getCategories } from "@/lib/artworks";
-import { categoriesMatching, galleryHref, normalizeSearch } from "@/lib/gallery-search";
+import { artworkCategory, getCategories, getGalleryTiles } from "@/lib/artworks";
+import {
+  categoriesMatching,
+  galleryHref,
+  normalizeSearch,
+  type GalleryQuery,
+} from "@/lib/gallery-search";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { pageAlternates } from "@/lib/page-metadata";
 
 /**
- * Разбор параметров адреса — единственное место, где чужому вводу можно
- * верить только после проверки ([architecture.md](../../../.ai/rules/architecture.md)).
- *
- * `category` — обычная строка в схеме ([data.md](../../../.ai/rules/data.md)):
- * несуществующее значение просто даёт пустую выборку в базе, отдельной
- * проверки не требует. `.catch(undefined)` откатывает мусор к «без фильтра»
- * молча — так адрес с опечаткой не превращается в 500-ю.
- *
- * Фильтра по статусу нет: продажа на сайте выключена (ARCHITECTURE.md,
- * «Продажа выключена»). `?status=` из старых ссылок не читается вовсе.
+ * Заголовок и описание галереи — одни на все её адреса: всю галерею,
+ * категорию и поиск. Канонический адрес у всех тоже один, `/gallery`:
+ * фильтры дают десятки адресов с той же стеной, и поисковик иначе счёл
+ * бы их копиями.
  */
-const filtersSchema = z.object({
-  category: z.string().min(1).optional().catch(undefined),
-  // Поиск: строка как есть — её показывает поле; к виду для базы её
-  // приводит normalizeSearch (lib/gallery-search.ts).
-  q: z.string().optional().catch(undefined),
-});
+export function galleryMetadata(lang: Locale): Metadata {
+  const t = getDictionary(lang).gallery;
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: pageAlternates(lang, "/gallery"),
+  };
+}
 
 /**
  * Галерея — стена-коллаж во весь экран.
@@ -43,32 +44,18 @@ const filtersSchema = z.object({
  * и тест, который следит, чтобы в стене не появилось дыр при любом числе
  * работ.
  *
- * Страница читает `searchParams`, поэтому готовиться заранее ей нельзя —
- * маршрут динамический. Это ожидаемо: выборок с фильтрами много, заранее
- * их не подготовить. Уснувшая база покажет `error.tsx`.
+ * Параметров адреса страница не читает — выбор приходит от маршрута
+ * (тикет О-11, lib/gallery-routes.ts). Вся галерея и каждая категория
+ * поэтому готовятся заранее и не ходят в базу на каждый заход; живым
+ * запросом остаётся только поиск. Уснувшая база покажет `error.tsx`
+ * только в поиске.
  */
-export async function GalleryPage({
-  lang,
-  searchParams,
-}: {
-  lang: Locale;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export async function GalleryPage({ lang, query }: { lang: Locale; query: GalleryQuery }) {
   const t = getDictionary(lang).gallery;
-  const rawParams = await searchParams;
-  // Next отдаёт string[] для повторённого параметра (?category=A&category=B) —
-  // берём первое значение, а не роняем страницу и не гадаем, какое верно.
-  const first = (value: string | string[] | undefined): string | undefined =>
-    Array.isArray(value) ? value[0] : value;
-
-  const filters = filtersSchema.parse({
-    category: first(rawParams.category),
-    q: first(rawParams.q),
-  });
-  const search = normalizeSearch(filters.q);
+  const search = normalizeSearch(query.q);
   // Пустой или из одних пробелов запрос — не запрос: в ссылки категорий
   // он не попадает.
-  const current = { category: filters.category, q: search === undefined ? undefined : filters.q };
+  const current = { category: query.category, q: search === undefined ? undefined : query.q };
   // В английской версии запрос сверяется и с переводами категорий: в базе
   // они по-русски, и «flowers» иначе не нашёл бы «Цветы».
   const searchCategories =
@@ -79,8 +66,8 @@ export async function GalleryPage({
         );
 
   // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
-  const [works, categories] = await Promise.all([
-    getArtworks({ category: filters.category, search, searchCategories }),
+  const [tiles, categories] = await Promise.all([
+    getGalleryTiles({ category: query.category, search, searchCategories }, lang),
     getCategories(),
   ]);
 
@@ -99,13 +86,13 @@ export async function GalleryPage({
         <h1 className="text-accent font-body mt-0 mb-3 text-[13px] font-semibold tracking-[0.1em] uppercase md:mb-4">
           {t.kicker}
         </h1>
-        <GallerySearch lang={lang} category={current.category} query={filters.q} />
+        <GallerySearch lang={lang} category={current.category} query={query.q} />
         <div className="mt-4 md:mt-5">
           <GalleryFilters lang={lang} current={current} categories={categories} />
         </div>
       </div>
 
-      {works.length === 0 ? (
+      {tiles.length === 0 ? (
         <div className="flex flex-1 items-center justify-center px-[clamp(20px,5vw,64px)] pb-8">
           <div className="panel-dashed w-full max-w-[560px] p-10">
             {/* Разный текст для «работ ещё нет» и «фильтр ничего не нашёл»:
@@ -114,7 +101,7 @@ export async function GalleryPage({
             {search !== undefined ? (
               <>
                 <h2 className="text-ink mt-0 mb-2 text-[20px]">
-                  {t.emptySearchTitle(filters.q?.trim() ?? "")}
+                  {t.emptySearchTitle(query.q?.trim() ?? "")}
                 </h2>
                 <p className="text-ink-soft mt-0 mb-5 max-w-[48ch] text-[14px]">
                   {t.emptySearchText}
@@ -123,7 +110,7 @@ export async function GalleryPage({
                   {t.showAll}
                 </ButtonLink>
               </>
-            ) : filters.category ? (
+            ) : query.category ? (
               <>
                 <h2 className="text-ink mt-0 mb-2 text-[20px]">{t.emptyFilteredTitle}</h2>
                 <p className="text-ink-soft m-0 max-w-[48ch] text-[14px]">{t.emptyFilteredText}</p>
@@ -139,14 +126,12 @@ export async function GalleryPage({
       ) : (
         /* `flex-1` держит подвал внизу, когда по фильтру работ мало
              и стена не дотягивает до конца экрана. */
-        <>
-          <ArtworkCollage
-            works={works}
-            lang={lang}
-            className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
-          />
-          <ReturnToTile />
-        </>
+        <ArtworkCollage
+          tiles={tiles}
+          lang={lang}
+          moreLabel={t.showMore}
+          className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+        />
       )}
     </main>
   );

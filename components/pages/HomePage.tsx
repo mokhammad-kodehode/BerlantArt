@@ -6,7 +6,7 @@ import { PaintingReel } from "@/components/home/PaintingReel";
 import { Header } from "@/components/layout/Header";
 import { ButtonLink } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { countArtworks, getFeatured } from "@/lib/artworks";
+import { countArtworks, galleryTile, getFeatured } from "@/lib/artworks";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 import { artistJsonLd, websiteJsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -100,7 +100,11 @@ export async function HomePage({ lang }: { lang: Locale }) {
             </div>
           ) : (
             <>
-              <ArtworkCollage works={featured} lang={lang} />
+              <ArtworkCollage
+                tiles={featured.map((work) => galleryTile(work, lang))}
+                lang={lang}
+                moreLabel={t.gallery.showMore}
+              />
 
               {/* Кнопка под стеной, а не только ссылка над ней: досмотрев
                   тридцать работ, посетитель оказывается внизу, и путь

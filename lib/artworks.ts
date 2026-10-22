@@ -95,8 +95,7 @@ export function artworkSeo(
   lang: Locale = "ru",
 ): ArtworkSeo {
   const t = getDictionary(lang);
-  const isOil = work.technique !== null && /масл/i.test(work.technique);
-  const kind = isOil ? t.seo.oilPainting : t.seo.painting;
+  const kind = artworkKind(work.technique, lang);
   const size = artworkDimensions(work.dimensions, lang);
   const technique = artworkTechnique(work.technique, lang);
 
@@ -119,7 +118,61 @@ export function artworkSeo(
   return {
     title: t.seo.workTitle(work.title, kind, size),
     description,
-    imageAlt: t.seo.imageAlt(work.title, kind, t.site.artistGenitive),
+    imageAlt: artworkImageAlt(work, lang),
+  };
+}
+
+/** «Картина маслом» или просто «Картина» — по технике, а не наугад. */
+function artworkKind(technique: string | null, lang: Locale): string {
+  const t = getDictionary(lang);
+  const isOil = technique !== null && /масл/i.test(technique);
+  return isOil ? t.seo.oilPainting : t.seo.painting;
+}
+
+/**
+ * Подпись картинки отдельно от остальных текстов для поисковика: плитке
+ * галереи нужна только она, и выборке для плиток незачем тянуть описание.
+ */
+export function artworkImageAlt(
+  work: Pick<ArtworkWithImages, "title" | "technique">,
+  lang: Locale = "ru",
+): string {
+  const t = getDictionary(lang);
+  return t.seo.imageAlt(work.title, artworkKind(work.technique, lang), t.site.artistGenitive);
+}
+
+/**
+ * Плитка стены — всё, что нужно коллажу, и ничего сверх. Готовится здесь,
+ * у выборки (.ai/rules/architecture.md): плитку рисует клиентский
+ * компонент, и данные о работе ему передаются целиком в страницу — каждое
+ * лишнее поле умножается на число работ.
+ */
+export type GalleryTile = {
+  id: string;
+  title: string;
+  /** Техника и размер через «·»; пустая строка, если неизвестны. */
+  caption: string;
+  src?: string;
+  alt: string;
+  isLarge: boolean;
+};
+
+/** Из чего собирается плитка: и лёгкая выборка галереи, и полная работа. */
+type TileSource = Pick<
+  ArtworkWithImages,
+  "id" | "title" | "technique" | "dimensions" | "isLarge"
+> & { images: { url: string }[] };
+
+export function galleryTile(work: TileSource, lang: Locale = "ru"): GalleryTile {
+  // Выборки кладут главное изображение первым (withImages, tileSelect).
+  const stored = work.images[0]?.url;
+  return {
+    id: work.id,
+    title: work.title,
+    caption: artworkCaption(work, lang),
+    src: stored === undefined ? undefined : imageUrl(stored),
+    alt: artworkImageAlt(work, lang),
+    isLarge: work.isLarge,
   };
 }
 
@@ -249,6 +302,18 @@ async function searchArtworkIds(search: string): Promise<string[]> {
  * игнорирует, а `where: { category: "" }` вернул бы пусто.
  */
 export async function getArtworks(filters: ArtworkFilters = {}): Promise<ArtworkWithImages[]> {
+  return db.artwork.findMany({
+    where: await galleryWhere(filters),
+    include: withImages,
+    orderBy: galleryOrder,
+  });
+}
+
+/**
+ * Условие выборки галереи — общее для полных работ и для плиток, чтобы
+ * фильтр и поиск не разошлись между ними.
+ */
+async function galleryWhere(filters: ArtworkFilters): Promise<Prisma.ArtworkWhereInput> {
   const {
     category,
     technique,
@@ -266,20 +331,43 @@ export async function getArtworks(filters: ArtworkFilters = {}): Promise<Artwork
   // тем же findMany, с теми же изображениями и порядком, что и без поиска.
   const found = search === undefined ? undefined : await searchArtworkIds(search);
 
-  return db.artwork.findMany({
-    where: {
-      category: category || undefined,
-      technique: technique || undefined,
-      status,
-      price,
-      OR:
-        found === undefined
-          ? undefined
-          : [{ id: { in: found } }, { category: { in: searchCategories } }],
-    },
-    include: withImages,
+  return {
+    category: category || undefined,
+    technique: technique || undefined,
+    status,
+    price,
+    OR:
+      found === undefined
+        ? undefined
+        : [{ id: { in: found } }, { category: { in: searchCategories } }],
+  };
+}
+
+/**
+ * Поля плитки: одно главное фото, без описания, цены и остальных фото.
+ * На 203 работах полная выборка тянула все фото каждой работы, хотя
+ * плитке нужно одно.
+ */
+const tileSelect = {
+  id: true,
+  title: true,
+  technique: true,
+  dimensions: true,
+  isLarge: true,
+  images: { select: { url: true }, orderBy: withImages.images.orderBy, take: 1 },
+} satisfies Prisma.ArtworkSelect;
+
+/** Плитки галереи под фильтр — лёгкая выборка для стены (тикет О-11). */
+export async function getGalleryTiles(
+  filters: ArtworkFilters = {},
+  lang: Locale = "ru",
+): Promise<GalleryTile[]> {
+  const rows = await db.artwork.findMany({
+    where: await galleryWhere(filters),
+    select: tileSelect,
     orderBy: galleryOrder,
   });
+  return rows.map((row) => galleryTile(row, lang));
 }
 
 /**

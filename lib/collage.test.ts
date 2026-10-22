@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { collageLayout } from "@/lib/collage";
+import { collageLayout, revealCountFor, revealStep } from "@/lib/collage";
 
 /**
  * Проверяем два свойства раскладки, которые ломаются незаметно:
@@ -232,5 +232,26 @@ describe("collageLayout", () => {
 
     expect(heroes).toHaveLength(1);
     expect(heroes[0].item.n).toBe(0);
+  });
+});
+
+describe("revealCountFor", () => {
+  it("плитка в первой порции — одна порция", () => {
+    expect(revealCountFor(0, 203)).toBe(revealStep);
+    expect(revealCountFor(revealStep - 1, 203)).toBe(revealStep);
+  });
+
+  it("плитка дальше — порции до неё целиком", () => {
+    expect(revealCountFor(revealStep, 203)).toBe(2 * revealStep);
+    expect(revealCountFor(150, 203)).toBe(160);
+  });
+
+  it("не больше, чем работ всего", () => {
+    expect(revealCountFor(202, 203)).toBe(203);
+    expect(revealCountFor(3, 6)).toBe(6);
+  });
+
+  it("порция кратна десяти — двум блокам коллажа, чтобы стык не рвал чередование", () => {
+    expect(revealStep % 10).toBe(0);
   });
 });

@@ -8,6 +8,7 @@ import type { NextConfig } from "next";
  * бы уже на проде в рантайме.
  */
 import { clientEnv, serverEnv } from "./lib/env";
+import { galleryRedirects } from "./lib/gallery-routes";
 
 const r2PublicUrl = clientEnv.NEXT_PUBLIC_R2_PUBLIC_URL;
 
@@ -57,6 +58,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   /** Не подсказывать в каждом ответе, на чём сделан сайт. */
   poweredByHeader: false,
+  /**
+   * Старые адреса галереи с параметрами (`/gallery?category=Цветы`) →
+   * готовые страницы категорий и поиск (тикет О-11, lib/gallery-routes.ts).
+   */
+  async redirects() {
+    return galleryRedirects();
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

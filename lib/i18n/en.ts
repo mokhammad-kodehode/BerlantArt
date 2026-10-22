@@ -114,6 +114,7 @@ export const en: Dictionary = {
     emptySearchTitle: (query: string) => `Nothing found for “${query}”`,
     emptySearchText: "Try another word — titles, descriptions and categories are searched.",
     showAll: "Show all works",
+    showMore: "Show more",
   },
 
   categories: {

@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 
+import { categoryPagePath, categorySlugs } from "@/lib/gallery-routes";
 import { localePath, locales } from "@/lib/i18n/config";
 
 /**
@@ -38,6 +39,16 @@ export const publicPaths = [
 ] as const;
 
 /**
+ * Готовые страницы категорий галереи (тикет О-11):
+ * `/gallery/category/flowers` (lib/gallery-routes.ts). От набора
+ * работ они зависят так же, как сама галерея. Сброс — не пересборка:
+ * страница соберётся, только когда её откроют.
+ */
+export const galleryCategoryPaths: readonly string[] = locales.flatMap((lang) =>
+  Object.values(categorySlugs).map((slug) => categoryPagePath(lang, slug)),
+);
+
+/**
  * Общий список работ с миниатюрами (app/api/artwork-thumbs): по нему
  * сетка «Все работы» показывает миниатюры, а счётчик «129 / 203» — номер.
  */
@@ -52,12 +63,13 @@ export const artworkThumbsPath = "/api/artwork-thumbs";
 export const sitemapPath = "/sitemap.xml";
 
 /**
- * Всё, что зависит от набора работ целиком: главная, галерея, «О
- * художнице» и «Контакты», общий список и карта сайта. Страницы работ
+ * Всё, что зависит от набора работ целиком: главная, галерея с её
+ * категориями, «О художнице» и «Контакты», общий список и карта сайта. Страницы работ
  * сюда не входят — их называют отдельно (`revalidateArtworkPages`).
  */
 export function revalidateSharedPages(): void {
   for (const path of publicPaths) revalidatePath(path);
+  for (const path of galleryCategoryPaths) revalidatePath(path);
   revalidatePath(artworkThumbsPath);
   revalidatePath(sitemapPath);
 }

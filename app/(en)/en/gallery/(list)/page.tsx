@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
+import { GalleryPage, galleryMetadata } from "@/components/pages/GalleryPage";
 
-import { GalleryPage } from "@/components/pages/GalleryPage";
-import { getDictionary } from "@/lib/i18n";
-import { pageAlternates } from "@/lib/page-metadata";
+export const metadata = galleryMetadata("en");
 
-const t = getDictionary("en").gallery;
+/**
+ * Вся галерея готовится заранее и обновляется после правки в админке
+ * (lib/revalidate.ts) — как страницы работ. Раз в сутки — подстраховка.
+ * У категорий и поиска свои адреса (тикет О-11, lib/gallery-routes.ts).
+ * До этого всё было одним адресом с параметрами, и страница собиралась
+ * на каждый заход: 760 КБ, два запроса в базу и 0,7–1 с ответа.
+ */
+export const revalidate = 86400;
 
-export const metadata: Metadata = {
-  title: t.metaTitle,
-  description: t.metaDescription,
-  // Фильтры дают десятки адресов (?status=…&category=…) с той же стеной.
-  // Канонический у всех один — иначе поисковик сочтёт их копиями.
-  alternates: pageAlternates("en", "/gallery"),
-};
-
-export default function Page({ searchParams }: PageProps<"/en/gallery">) {
-  return <GalleryPage lang="en" searchParams={searchParams} />;
+export default function Page() {
+  return <GalleryPage lang="en" query={{}} />;
 }

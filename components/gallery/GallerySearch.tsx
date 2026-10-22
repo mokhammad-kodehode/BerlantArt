@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
-import { galleryHref } from "@/lib/gallery-search";
+import { gallerySearchPath } from "@/lib/gallery-routes";
+import { categoryParam, galleryHref } from "@/lib/gallery-search";
 import { useDictionary } from "@/lib/i18n/client";
-import { localePath, type Locale } from "@/lib/i18n/config";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Пауза после последней буквы перед поиском. Меньше — запрос уходил бы на
@@ -17,7 +18,7 @@ const typingPauseMs = 300;
  * Поле поиска в галерее (заказчик, 12.10.2026).
  *
  * Выдача обновляется по мере набора, без кнопки «Найти»: через паузу
- * запрос уходит в адрес (`?q=`), а находит работы сервер — как и фильтр
+ * запрос уходит в адрес (`/gallery/search?q=`, тикет О-11), а находит работы сервер — как и фильтр
  * по категории ([architecture.md](../../.ai/rules/architecture.md):
  * состояние живёт в адресе, ссылку на выдачу можно переслать). Адрес
  * меняется через replace, а не push: иначе каждая пауза при наборе
@@ -84,7 +85,7 @@ export function GallerySearch({
   return (
     <form
       role="search"
-      action={localePath(lang, "/gallery")}
+      action={gallerySearchPath(lang)}
       method="get"
       onSubmit={submit}
       className="search-field"
@@ -110,7 +111,7 @@ export function GallerySearch({
         autoComplete="off"
         enterKeyHint="search"
       />
-      {category && <input type="hidden" name="category" value={category} />}
+      {category && <input type="hidden" name="category" value={categoryParam(category)} />}
       {value !== "" && (
         <button
           type="button"

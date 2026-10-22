@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 
 import {
   artworkThumbsPath,
+  galleryCategoryPaths,
   publicPaths,
   sitemapPath,
   revalidateAfterImageChange,
@@ -38,6 +39,10 @@ function hasPageForUrl(url: string): boolean {
 
 const calls = (): string[] => vi.mocked(revalidatePath).mock.calls.map(([p]) => p);
 
+/** Сброшенные страницы работ — без готовых страниц категорий `/gallery/category/…`. */
+const artworkCalls = (): string[] =>
+  calls().filter((p) => p.includes("/gallery/") && !galleryCategoryPaths.includes(p));
+
 describe("revalidateSharedPages", () => {
   it("общий список миниатюр — существующий адрес и сбрасывается с общими страницами", () => {
     expect(existsSync(path.join(appDir, artworkThumbsPath, "route.ts"))).toBe(true);
@@ -54,6 +59,18 @@ describe("revalidateSharedPages", () => {
     expect(calls()).toContain(sitemapPath);
   });
 
+  it("готовые страницы категорий — на обоих языках, у каждой есть файл, сбрасываются с общими (тикет О-11)", () => {
+    expect(galleryCategoryPaths).toContain("/gallery/category/flowers");
+    expect(galleryCategoryPaths).toContain("/en/gallery/category/flowers");
+    for (const url of galleryCategoryPaths) {
+      expect(hasPageForUrl(url.replace(/[^/]+$/, "[category]")), url).toBe(true);
+    }
+
+    vi.mocked(revalidatePath).mockClear();
+    revalidateSharedPages();
+    expect(calls()).toEqual(expect.arrayContaining([...galleryCategoryPaths]));
+  });
+
   it("у каждого готового адреса есть страница", () => {
     for (const url of publicPaths) expect(hasPageForUrl(url), url).toBe(true);
   });
@@ -61,7 +78,7 @@ describe("revalidateSharedPages", () => {
   it("страницы работ не трогает — ни шаблоном, ни по одной (тикет О-5)", () => {
     vi.mocked(revalidatePath).mockClear();
     revalidateSharedPages();
-    expect(calls().filter((p) => p.includes("/gallery/"))).toEqual([]);
+    expect(artworkCalls()).toEqual([]);
     expect(vi.mocked(revalidatePath).mock.calls.every((call) => call.length === 1)).toBe(true);
   });
 });
@@ -96,10 +113,7 @@ describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
       expect(calls()).toEqual(
         expect.arrayContaining([...publicPaths, "/gallery/abc", "/en/gallery/abc"]),
       );
-      expect(calls().filter((p) => p.includes("/gallery/"))).toEqual([
-        "/gallery/abc",
-        "/en/gallery/abc",
-      ]);
+      expect(artworkCalls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
     }
   });
 

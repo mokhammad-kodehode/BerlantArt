@@ -5,7 +5,7 @@ import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { getFeatured } from "@/lib/artworks";
+import { galleryTile, getFeatured } from "@/lib/artworks";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 import { paintingYear, site } from "@/lib/site";
 
@@ -215,7 +215,7 @@ export async function AboutPage({ lang }: { lang: Locale }) {
                 {featured.map((work) => (
                   <ArtworkTile
                     key={work.id}
-                    work={work}
+                    tile={galleryTile(work, lang)}
                     lang={lang}
                     sizes="(max-width: 639px) 50vw, (max-width: 1199px) 25vw, 264px"
                   />
