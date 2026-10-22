@@ -324,7 +324,7 @@ export function ArtworkRoom({
   const whatsappLink = (place: "room" | "camera") =>
     whatsappPhone
       ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
-          roomMessage(work.title, options, pageUrl, place, lang),
+          roomMessage({ title: work.title, options, pageUrl, place, t }),
         )}`
       : undefined;
   const whatsappUrl = whatsappLink("room");

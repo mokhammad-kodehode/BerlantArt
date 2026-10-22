@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { ruUi } from "@/lib/i18n/ru-ui";
+
 import {
   defaultRoomOptions,
   finishFor,
@@ -151,11 +153,12 @@ describe("framedSides", () => {
 
 describe("roomMessage", () => {
   it("называет работу, раму с покрытием и стену и прикладывает ссылку", () => {
-    const text = roomMessage(
-      "Село",
-      { ...defaultRoomOptions, frame: "thin", finish: "black", wall: "olive" },
-      "https://example.test/gallery/1/room?frame=thin&wall=olive",
-    );
+    const text = roomMessage({
+      title: "Село",
+      options: { ...defaultRoomOptions, frame: "thin", finish: "black", wall: "olive" },
+      pageUrl: "https://example.test/gallery/1/room?frame=thin&wall=olive",
+      t: ruUi.room,
+    });
 
     expect(text).toBe(
       "Здравствуйте! Интересует работа «Село». Смотрю её в раме «Тонкая», чёрная, на оливковой стене. https://example.test/gallery/1/room?frame=thin&wall=olive",
@@ -163,19 +166,25 @@ describe("roomMessage", () => {
   });
 
   it("без рамы так и пишет", () => {
-    expect(roomMessage("Село", { ...defaultRoomOptions, frame: "none" }, "")).toContain(
-      "без рамы, на бежевой стене",
-    );
+    expect(
+      roomMessage({
+        title: "Село",
+        options: { ...defaultRoomOptions, frame: "none" },
+        pageUrl: "",
+        t: ruUi.room,
+      }),
+    ).toContain("без рамы, на бежевой стене");
   });
 
   it("из камеры не называет нарисованную стену", () => {
     expect(
-      roomMessage(
-        "Село",
-        { ...defaultRoomOptions, frame: "classic", finish: "gold" },
-        "",
-        "camera",
-      ),
+      roomMessage({
+        title: "Село",
+        options: { ...defaultRoomOptions, frame: "classic", finish: "gold" },
+        pageUrl: "",
+        place: "camera",
+        t: ruUi.room,
+      }),
     ).toContain("в раме «Классический багет», золото, у себя на стене, через камеру.");
   });
 });

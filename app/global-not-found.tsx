@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { DictionaryRu } from "@/components/layout/DictionaryRu";
 import { RootDocument } from "@/components/layout/RootDocument";
 import { NotFoundPage } from "@/components/pages/NotFoundPage";
 import { getDictionary } from "@/lib/i18n";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function GlobalNotFound() {
   return (
-    <RootDocument lang="ru">
+    <RootDocument lang="ru" Dictionary={DictionaryRu}>
       <NotFoundPage lang="ru" englishHint />
     </RootDocument>
   );

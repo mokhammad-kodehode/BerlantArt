@@ -13,7 +13,8 @@ components/
   ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch, BrushStroke,
                         PopoverMenu (кнопка с меню), ContactIcon
   layout/               Header (серверная обёртка) и HeaderBar (сама шапка), Footer,
-                        RootDocument (общий <html> для обоих языков)
+                        RootDocument (общий <html> для обоих языков), DictionaryRu и
+                        DictionaryEn (строки интерфейса своего языка для клиентских)
   pages/                тела публичных страниц с параметром lang — одно на оба языка
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkStage, ArtworkViewer, ArtworkSwipe, ArtworkPicker, ArtworkPosition,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { getDictionary, type Locale } from "@/lib/i18n";
+import type { UiDictionary } from "@/lib/i18n/ru-ui";
 
 /**
  * Примерочная: какие рамы, покрытия, стены и свет можно выбрать и как
@@ -347,17 +347,25 @@ export function framedSides(sides: CanvasSides, frame: RoomFrame): CanvasSides {
  * Из примерки через камеру стена своя, настоящая, — называть цвет
  * нарисованной стены там было бы неправдой.
  *
- * Текст — на языке страницы (lib/i18n): из английской версии пишут
- * по-английски. Подписи рам и стен для русского — те же, что здесь.
+ * Текст — на языке страницы: из английской версии пишут по-английски.
+ * Строки примерочной передаёт сама примерочная (`useDictionary().room`),
+ * а не берёт функция по языку: иначе в браузер ушёл бы полный словарь
+ * обоих языков — функция работает в клиентском компоненте (тикет О-12).
  */
-export function roomMessage(
-  title: string,
-  options: RoomOptions,
-  pageUrl: string,
-  place: "room" | "camera" = "room",
-  lang: Locale = "ru",
-): string {
-  const t = getDictionary(lang).room;
+export function roomMessage({
+  title,
+  options,
+  pageUrl,
+  place = "room",
+  t,
+}: {
+  title: string;
+  options: RoomOptions;
+  pageUrl: string;
+  place?: "room" | "camera";
+  /** Строки примерочной на языке страницы. */
+  t: UiDictionary["room"];
+}): string {
   const framing =
     options.frame === "none"
       ? t.messageNoFrame

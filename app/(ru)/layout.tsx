@@ -1,3 +1,4 @@
+import { DictionaryRu } from "@/components/layout/DictionaryRu";
 import { RootDocument } from "@/components/layout/RootDocument";
 import { rootMetadata } from "@/lib/page-metadata";
 
@@ -10,5 +11,9 @@ import "../globals.css";
 export const metadata = rootMetadata("ru");
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return <RootDocument lang="ru">{children}</RootDocument>;
+  return (
+    <RootDocument lang="ru" Dictionary={DictionaryRu}>
+      {children}
+    </RootDocument>
+  );
 }

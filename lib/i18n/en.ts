@@ -1,3 +1,4 @@
+import { enUi } from "@/lib/i18n/en-ui";
 import type { Dictionary } from "@/lib/i18n/ru";
 
 /**
@@ -36,38 +37,7 @@ const enOrdinals = [
 ];
 
 export const en: Dictionary = {
-  site: {
-    artist: "Berlant Dzhabrailova",
-    slogan: "Art has no purpose!",
-    description: "Artist from the Chechen Republic. Oil painting since 2020.",
-    location: "Grozny, Chechen Republic",
-    defaultTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
-    metaDescription:
-      "Chechen artist from Grozny painting the mountains, ancient towers and villages of Chechnya in oils and with a palette knife. Picked up a brush at 53, with no art school.",
-    ogTitle: "Berlant Dzhabrailova — Chechen artist, oil paintings",
-    artistGenitive: "Berlant Dzhabrailova",
-    ogImageAlt: "Berlant Dzhabrailova painting with a palette knife in her studio",
-    jobTitle: "Artist",
-    region: "Chechen Republic",
-    artform: "Painting",
-  },
-
-  nav: {
-    home: "Home",
-    gallery: "Gallery",
-    about: "About",
-    contact: "Contact",
-    cta: "Contact the artist",
-    openMenu: "Open menu",
-    closeMenu: "Close menu",
-    menu: "Menu",
-    contacts: "Get in touch",
-    theme: "Switch room: light or dark",
-    themeTitle: "Light or dark room",
-    language: "Language",
-    switchTo: "Русский",
-    switchToLabel: "Перейти на русский",
-  },
+  ...enUi,
 
   footer: {
     sections: "Sections",
@@ -97,26 +67,6 @@ export const en: Dictionary = {
     seeAll: "See the full gallery →",
   },
 
-  gallery: {
-    metaTitle: "Oil paintings — gallery of works",
-    metaDescription:
-      "Oil paintings by Chechen artist Berlant Dzhabrailova: mountains, towers, villages and rivers of Chechnya. Open any work full screen or try it on a wall.",
-    kicker: "Gallery",
-    emptyFilteredTitle: "Nothing matches this filter",
-    emptyFilteredText: "Try another category.",
-    emptyTitle: "No works yet",
-    emptyText: "Paintings will appear here as soon as the artist adds them.",
-    filterCategory: "Filter by category",
-    categoryAll: "All categories",
-    searchLabel: "Search works",
-    searchPlaceholder: "Find a painting…",
-    searchClear: "Clear search",
-    emptySearchTitle: (query: string) => `Nothing found for “${query}”`,
-    emptySearchText: "Try another word — titles, descriptions and categories are searched.",
-    showAll: "Show all works",
-    showMore: "Show more",
-  },
-
   categories: {
     Горы: "Mountains",
     Башни: "Towers",
@@ -135,34 +85,6 @@ export const en: Dictionary = {
     "Холст, масло": "Oil on canvas",
   },
 
-  work: {
-    notFound: "Work not found",
-    fallbackKicker: "Painting",
-    backToAll: "← All works",
-    tryOnWall: "Try it on a wall",
-    ask: "Ask about this painting:",
-    message: (title, url) => `Hello! I'm interested in the painting “${title}”. ${url}`,
-    share: "Share",
-    shareCopied: "Link copied",
-    shareText: (title, artistGenitive) => `“${title}” — a painting by ${artistGenitive}`,
-    shareCopy: "Copy link",
-    shareVk: "VK",
-    otherAngles: "Other views",
-    mailSubject: (title) => `Painting “${title}”`,
-    navLabel: "Browse works",
-    prev: (title) => `Previous work: “${title}”`,
-    next: (title) => `Next work: “${title}”`,
-    position: (position, total) => `Work ${position} of ${total}`,
-    pickerOpen: "All works",
-    pickerTitle: (count) => `All works · ${count}`,
-    pickerClose: "Close",
-    pickerError: "Couldn’t load the list of works.",
-    pickerRetry: "Try again",
-    openFullscreen: (title) => `Open “${title}” full screen`,
-    fullscreen: "Full screen",
-    closeViewer: "Close viewer",
-  },
-
   seo: {
     oilPainting: "oil painting",
     painting: "painting",
@@ -170,16 +92,6 @@ export const en: Dictionary = {
     workDescription: (title, details) => (details ? `“${title}”: ${details}.` : `“${title}”.`),
     byArtist: (artist) => `By Chechen artist ${artist}.`,
     imageAlt: (title, kind, artistGenitive) => `“${title}” — ${kind} by ${artistGenitive}`,
-  },
-
-  contacts: {
-    phone: "Phone",
-    email: "Email",
-    write: "Message",
-    call: "Call",
-    seeWorks: "See works",
-    openPage: "Open page",
-    writeEmail: "Send an email",
   },
 
   contactPage: {
@@ -198,28 +110,6 @@ export const en: Dictionary = {
     studio: "Studio",
   },
 
-  contactForm: {
-    topics: [
-      { label: "Painting", value: "About a painting" },
-      { label: "Feedback", value: "Feedback on the works" },
-      { label: "Other", value: "Other" },
-    ],
-    nameRequired: "Please tell us how to address you.",
-    messageRequired: "Please tell us what you're interested in.",
-    text: (name, topic, message) => `Hello! My name is ${name}.\nTopic: ${topic}.\n\n${message}`,
-    subject: (topic) => `${topic} — message from the website`,
-    name: "Your name",
-    topic: "Topic",
-    message: "Message",
-    placeholder: "Which work you liked and what you'd like to know about it",
-    sendWhatsapp: "Send via WhatsApp",
-    sendEmail: "Send by email",
-    privacyBefore: (channel) =>
-      `The message is not sent or stored by the website: ${channel} opens with the text ready, and you send it yourself. More in the `,
-    privacyLink: "privacy policy",
-    channelMail: "your email app",
-  },
-
   notFound: {
     title: "Page not found",
     code: "Error 404",
@@ -227,14 +117,6 @@ export const en: Dictionary = {
     text: "There may be a typo in the address — or the work the link led to is no longer on display.",
     toGallery: "See works",
     toHome: "Home page",
-  },
-
-  error: {
-    heading: "The page didn't open",
-    text: "Something went wrong on our side. Trying again usually helps — the data may not have responded in time.",
-    retry: "Try again",
-    toHome: "Home page",
-    code: "Error code:",
   },
 
   about: {
@@ -399,116 +281,5 @@ export const en: Dictionary = {
         contactLink: "Back to contact",
       },
     ],
-  },
-
-  room: {
-    title: (title) => `Try on a wall: “${title}”`,
-    tabs: { painting: "Painting", frame: "Frame", wall: "Wall" },
-    cm: "cm",
-    canvas: "Canvas",
-    framed: "Framed",
-    canvasSize: (size) => `Canvas ${size}`,
-    framedSize: (size) => `framed ${size}`,
-    noSize: "The painting's size isn't specified, so it can't be shown next to the sofa",
-    tryCamera: "Try with your camera",
-    label: (title) => `Try on a wall: “${title}”`,
-    back: "Back to work",
-    otherPainting: "Another painting",
-    about: "About the painting",
-    writeWhatsapp: "Message about this painting on WhatsApp",
-    close: "Close",
-    settings: "Settings",
-    otherWorks: "Other works",
-    settingsLabel: "Room settings",
-    hideSettings: "Hide settings",
-    kicker: "Try on a wall",
-    eveningLabel: "Evening light, lamp above the painting",
-    eveningTitle: "Evening, lamp",
-    dayTitle: "Day",
-    backToPainting: "Back to the painting",
-    viewFromAfar: "View from afar, next to a sofa",
-    frame: "Frame",
-    frameSummary: (label, width, finish) => `${label}, ${width} cm · ${finish}`,
-    canvasOnly: "canvas",
-    frameWidth: (width) => `${width} cm`,
-    frameColor: "Frame colour",
-    noCarving: "The camera view won't show carving on the frame — only its shape and colour.",
-    wall: "Wall",
-    write: "Message about this painting",
-    toolbar: "Try on a wall",
-    eveningToDay: "Evening, switch to day",
-    dayToEvening: "Day, switch to evening",
-    evening: "Evening",
-    day: "Day",
-    closer: "Closer to the painting",
-    afar: "View from afar, with a 210 cm sofa",
-    closerShort: "Closer",
-    afarShort: "Afar",
-    sofaCredit: "Sofa — 3D model made with",
-    frames: {
-      none: { label: "No frame", note: "canvas on a stretcher" },
-      thin: { label: "Slim", note: "aluminium, smooth" },
-      floater: { label: "Floater", note: "wood, box frame with a gap" },
-      modern: { label: "Modern", note: "wood, bead by the canvas" },
-      reverse: { label: "Reverse profile", note: "wood, rising toward the canvas" },
-      classic: { label: "Classic moulding", note: "wood, carved band" },
-      baroque: { label: "Baroque", note: "wood with ornament, two carved bands" },
-    },
-    finishes: {
-      gold: "Gold",
-      "old-gold": "Antique gold",
-      silver: "Silver",
-      bronze: "Bronze",
-      "oak-light": "Light oak",
-      oak: "Oak",
-      walnut: "Walnut",
-      wenge: "Wenge",
-      cherry: "Cherry",
-      white: "White",
-      black: "Black",
-      graphite: "Graphite",
-      navy: "Navy",
-      burgundy: "Burgundy",
-      olive: "Olive",
-    },
-    walls: {
-      white: { label: "White", phrase: "on a white wall" },
-      beige: { label: "Beige", phrase: "on a beige wall" },
-      grey: { label: "Grey", phrase: "on a grey wall" },
-      olive: { label: "Olive", phrase: "on an olive wall" },
-      terracotta: { label: "Terracotta", phrase: "on a terracotta wall" },
-      graphite: { label: "Graphite", phrase: "on a graphite wall" },
-    },
-    messageNoFrame: "without a frame",
-    messageFramed: (frame, finish) => `in the “${frame}” frame, ${finish.toLowerCase()}`,
-    messageCamera: "on my own wall, with the camera",
-    message: (title, framing, where, url) =>
-      `Hello! I'm interested in the painting “${title}”. I'm looking at it ${framing}, ${where}. ${url}`,
-  },
-
-  ar: {
-    steps: [
-      {
-        title: "Stand facing the wall",
-        text: "One and a half to two metres away, in good light. Hold the phone level, at eye height.",
-      },
-      {
-        title: "Move the phone slowly",
-        text: "Left and right along the wall. While the painting is see-through, the phone is looking for the wall — it turns solid once it finds it.",
-      },
-      {
-        title: "Move it with your finger",
-        text: "Drag the painting to choose its place. The size doesn't change — it's real.",
-      },
-    ],
-    kicker: "Try with your camera",
-    plainWall:
-      "A plain wall takes longer to find — include a switch, a corner or the edge of furniture in the frame.",
-    open: "Got it, open camera",
-    close: "Close",
-    noArcore: "Camera try-on doesn't work on this phone: it needs Google Play Services for AR.",
-    desktop: "The camera works only on a phone: open this page on an iPhone or Android.",
-    inApp: "The camera opens only in Safari: tap “…” and “Open in browser”.",
-    action: "Message about this painting",
   },
 };

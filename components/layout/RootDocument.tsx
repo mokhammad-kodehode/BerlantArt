@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 import { AdminReturnBar } from "@/components/layout/AdminReturnBar";
 import { Footer } from "@/components/layout/Footer";
@@ -13,7 +13,20 @@ import { localeMeta, type Locale } from "@/lib/i18n";
  * а скринридеру — каким голосом её читать. Всё остальное у них общее
  * и живёт здесь, чтобы версии не разошлись.
  */
-export function RootDocument({ lang, children }: { lang: Locale; children: ReactNode }) {
+export function RootDocument({
+  lang,
+  Dictionary,
+  children,
+}: {
+  lang: Locale;
+  /**
+   * Поставщик строк интерфейса своего языка — DictionaryRu или DictionaryEn
+   * (тикет О-12). Компонентом, а не языком: импорт должен стоять в layout
+   * своего языка, иначе в браузер попадут оба словаря.
+   */
+  Dictionary: ComponentType<{ children: ReactNode }>;
+  children: ReactNode;
+}) {
   return (
     /*
       suppressHydrationWarning — из-за атрибута темы: скрипт ниже ставит
@@ -66,9 +79,11 @@ export function RootDocument({ lang, children }: { lang: Locale; children: React
             __html: `try{if(localStorage.getItem("hall")==="dark")delete document.documentElement.dataset.theme}catch(e){}`,
           }}
         />
-        <div className="flex-1">{children}</div>
-        <Footer lang={lang} />
-        <AdminReturnBar />
+        <Dictionary>
+          <div className="flex-1">{children}</div>
+          <Footer lang={lang} />
+          <AdminReturnBar />
+        </Dictionary>
       </body>
     </html>
   );
