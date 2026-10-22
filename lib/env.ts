@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isResizable } from "./image-resize";
+
 /**
  * Валидация переменных окружения на старте приложения.
  *
@@ -46,6 +48,15 @@ const serverSchema = z.object({
    */
   GOOGLE_SITE_VERIFICATION: z.string().min(1).optional(),
   YANDEX_VERIFICATION: z.string().min(1).optional(),
+
+  /**
+   * Кто режет копии фото под ширину экрана (тикеты О-8, О-9). Пусто —
+   * никто: браузер берёт исходник из бакета как есть (ARCHITECTURE.md §8).
+   * `cloudflare` — Cloudflare Images на своём домене картинок,
+   * lib/image-resize.ts. Читает только next.config.ts при сборке, поэтому
+   * после смены значения в Vercel нужна новая сборка (Redeploy).
+   */
+  IMAGE_RESIZE: z.enum(["cloudflare"]).optional(),
 });
 
 const clientSchema = z.object({
@@ -152,8 +163,40 @@ export function describeConfigError(error: unknown): string {
   return error instanceof Error ? error.message.replace(/\s*\n\s*/g, " ") : "";
 }
 
+/**
+ * Что не так с включённой нарезкой Cloudflare, или `null`, если всё в порядке.
+ *
+ * Нарезка живёт по адресу /cdn-cgi/image/ на своём домене картинок. У r2.dev
+ * такого адреса нет, и lib/image-resize.ts его фото пропускает как есть:
+ * включённая раньше переезда на свой домен, нарезка молча ничего бы не
+ * делала — картинки остались бы тяжёлыми, а настройка выглядела бы
+ * сделанной. Поэтому такая сборка падает с объяснением.
+ */
+export function imageResizeProblem(
+  resize: z.infer<typeof serverSchema>["IMAGE_RESIZE"],
+  r2PublicUrl: string | undefined,
+): string | null {
+  if (resize !== "cloudflare") return null;
+  if (!r2PublicUrl) return "IMAGE_RESIZE: нарезка включена, а NEXT_PUBLIC_R2_PUBLIC_URL пуст.";
+  if (isResizable(r2PublicUrl)) return null;
+
+  return (
+    "IMAGE_RESIZE: нарезка Cloudflare на r2.dev не работает. Сначала подключи " +
+    "к бакету свой домен и впиши его в NEXT_PUBLIC_R2_PUBLIC_URL " +
+    "(docs/cloudflare-kartinki.md), или убери IMAGE_RESIZE."
+  );
+}
+
 export const serverEnv = parse(serverSchema, process.env, "сервер");
 export const clientEnv = parse(clientSchema, clientValues, "клиент");
+
+const resizeProblem = imageResizeProblem(
+  serverEnv.IMAGE_RESIZE,
+  clientEnv.NEXT_PUBLIC_R2_PUBLIC_URL,
+);
+if (resizeProblem !== null) {
+  throw new Error(`Некорректные переменные окружения:\n  ${resizeProblem}`);
+}
 
 /**
  * Ключи к хранилищу R2.
