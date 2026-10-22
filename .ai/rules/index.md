@@ -46,5 +46,7 @@
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) — принятые решения и обоснования.
 - [docs/obzor-proekta.md](../../docs/obzor-proekta.md) — ревью всего проекта
   от 22 октября 2026: узкие места и план улучшений по приоритетам.
+- [TICKETS-obzor.md](../../TICKETS-obzor.md) — находки обзора тикетами
+  со статусами; заказчик просил решить все.
 - `design/mockups/` — эталонные страницы макета.
 - `design/tokens/organic.css` — исходные токены дизайн-системы.
