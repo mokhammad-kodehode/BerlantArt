@@ -994,91 +994,13 @@
     border-color: var(--color-ink-faint);
   }
 
-  /* «Описание · Все работы» на странице работы (заказчик: 20.10.2026 —
-     компьютер, 22.10.2026 — телефон). Переключатель — CaptionTabs и
-     значок у стрелок WorksToggle, сетка — ArtworkPicker.
+  /* «Все работы» (components/gallery/ArtworkPicker.tsx): кнопка рядом
+     со стрелками и панель с миниатюрами поверх страницы.
 
-     Выбранный режим говорит атрибут data-caption на <html>
-     (lib/caption-mode.ts), и всё видимое решают правила ниже: нужный
-     режим виден с первой отрисовки, до того как проснётся React, и не
-     мелькает при переходе к соседней работе.
-
-     Отступ колонки подписи — переменной: лента работ на телефоне выходит
-     за него к краям экрана и должна знать его ширину. */
-  .stage-caption {
-    --caption-gutter: clamp(20px, 5vw, 64px);
-  }
-
-  /* Слова — текстовым гротеском, как кнопки и фильтры (design-system.md);
-     выбранное — цветом текста и мазком, как текущий пункт меню. */
-  .caption-tabs {
-    display: flex;
-    align-items: center;
-    gap: 26px;
-    margin-bottom: 8px;
-  }
-  .caption-tab {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0;
-    font: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-ink-soft);
-    cursor: pointer;
-    background: none;
-    border: 0;
-    transition: color 0.18s ease;
-  }
-  .caption-tab:hover {
-    color: var(--color-ink);
-  }
-  .caption-tab-label {
-    position: relative;
-  }
-  .caption-tab-count {
-    margin-left: 6px;
-    font-size: 13px;
-    font-weight: 400;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-ink-faint);
-  }
-  /* Мазок — полосой по нижней половине букв, как под девизом на первом
-     экране (.hero-stroke): во всю высоту строки, как в меню, он залил бы
-     мелкое слово целиком. Мазок есть у обоих пунктов, виден у выбранного;
-     при каждом переключении он наносится заново — анимация перезапускается,
-     когда элемент снова становится видимым. */
-  .caption-tab-stroke {
-    display: none;
-    color: var(--color-stroke);
-    left: -0.4em;
-    top: 64%;
-    width: calc(100% + 0.8em);
-    height: 0.9em;
-    transform: translateY(-50%);
-  }
-  :root:not([data-caption="works"]) .caption-tab[data-mode="about"],
-  :root[data-caption="works"] .caption-tab[data-mode="works"] {
-    color: var(--color-ink);
-  }
-  :root:not([data-caption="works"]) .caption-tab[data-mode="about"] .caption-tab-stroke,
-  :root[data-caption="works"] .caption-tab[data-mode="works"] .caption-tab-stroke {
-    display: block;
-  }
-
-  /* В режиме «Все работы» прячутся описание, кнопки и «Спросить о картине».
-     Надстрочник, название и строка с годом и размером остаются: по ним под
-     сеткой видно, какая картина сейчас на стене. Описание из разметки не
-     уходит — поисковик видит страницу целиком. */
-  :root[data-caption="works"] .caption-extra {
-    display: none;
-  }
-
-  /* Значок «Все работы» рядом со стрелками «‹ 3 / 32 ›» — тот же
-     переключатель, что слова вверху колонки. Нажат — лёгкая подложка. */
-  .works-toggle {
+     Панель тёмная в любом зале, как лента в примерочной и просмотр во весь
+     экран: миниатюры картин на ней читаются, а интерфейс не спорит с ними.
+     Внизу экрана, в два ряда, листается вбок. */
+  .stage-picker-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1093,129 +1015,159 @@
     border-radius: var(--radius-pill);
     transition: background-color 0.18s ease;
   }
-  .works-toggle:hover,
-  :root[data-caption="works"] .works-toggle {
+  .stage-picker-button:hover {
     background: color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
-  .works-toggle svg {
+  .stage-picker-button svg {
     width: 19px;
     height: 19px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.5;
   }
-
-  /* Сетка работ, только в режиме «Все работы».
-
-     Ниже 1024px — лента в два ряда под картиной (заказчик, 22.10.2026:
-     в цветах страницы, на месте описания — вместо тёмной панели поверх).
-     Листается вбок и выходит к краям экрана, правый край растворяется —
-     видно, что лента продолжается. Картина и выбор помещаются на одном
-     экране: нажал миниатюру — сменилась картина над ней.
-
-     С 1024px — три столбца в левой колонке с прокруткой внутри неё;
-     колонка в этом режиме ровно в экран (правило вне слоёв, ниже по
-     файлу). Низ растворяется — видно, что сетка продолжается. */
-  .works-grid {
-    --thumb: 96px;
-    display: none;
+  .picker {
+    inset: auto 0 16px;
+    width: min(1240px, calc(100vw - 24px));
+    max-width: none;
+    margin: 0 auto;
+    padding: 12px 14px 14px;
+    color: var(--color-neutral-100);
+    background: rgb(22 19 17 / 0.95);
+    border: 0;
+    /* Скругление лёгкое, как у плиток: крупное делало панель похожей на
+       всплывающее окно телефона (заказчик, 12.10.2026). */
+    border-radius: var(--radius-soft);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+  }
+  .picker[open] {
+    animation: picker-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .picker::backdrop {
+    background: rgb(20 18 17 / 0.35);
+  }
+  .picker:focus-visible {
+    outline: none;
+  }
+  @keyframes picker-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+  .picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-left: 4px;
+    font-size: 14px;
+    color: rgb(255 255 255 / 0.75);
+  }
+  .picker-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+  }
+  .picker-close:hover {
+    color: var(--color-neutral-100);
+    background: rgb(255 255 255 / 0.1);
+  }
+  .picker-close svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+  /* Два ряда, поток — по колонкам: лента растёт вбок, а не вниз. */
+  .picker-strip {
+    --thumb: 112px;
+    display: grid;
     grid-template-rows: repeat(2, var(--thumb));
     grid-auto-flow: column;
     grid-auto-columns: var(--thumb);
     gap: 8px;
-    margin: 0 calc(-1 * var(--caption-gutter)) 18px;
-    padding: 4px var(--caption-gutter) 8px;
-    list-style: none;
+    margin: 0;
+    padding: 4px 4px 10px;
     overflow-x: auto;
+    list-style: none;
     overscroll-behavior-x: contain;
-    scroll-padding-inline: var(--caption-gutter);
-    scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
-    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    scrollbar-color: rgb(255 255 255 / 0.3) transparent;
   }
-  :root[data-caption="works"] .works-grid {
-    display: grid;
-  }
-  @media (min-width: 1024px) {
-    .works-grid {
-      flex: 1 1 auto;
-      min-height: 0;
-      grid-template-rows: none;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-auto-flow: row;
-      grid-auto-columns: auto;
-      align-content: start;
-      /* Поля в 6px — под обводку текущей работы: без них её срезал бы
-         край прокрутки. */
-      margin: 6px -6px 18px;
-      padding: 6px 6px 28px;
-      overflow: hidden auto;
-      overscroll-behavior: contain;
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-stroke) transparent;
-      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
-      mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+  @media (max-width: 767px) {
+    .picker-strip {
+      --thumb: 84px;
     }
   }
-  .works-thumb {
+  .picker-thumb {
     position: relative;
     display: block;
-    aspect-ratio: 1;
+    width: 100%;
+    height: 100%;
     /* Без скругления: это миниатюры картин, а у холста прямые углы
        (design-system.md). */
     overflow: hidden;
-    background: var(--color-surface);
-    box-shadow: 0 2px 6px rgb(43 37 31 / 0.14);
-  }
-  .works-thumb img {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
     transition: transform 0.18s ease;
   }
-  .works-thumb:hover img {
-    transform: scale(1.05);
+  .picker-thumb:hover {
+    transform: scale(1.04);
   }
-  .works-thumb[aria-current="page"] {
-    outline: 2px solid var(--color-ink);
-    outline-offset: 2px;
-  }
-  /* Пока список работ грузится — плитки с тем же мерцанием, что у
-     заглушки фото (.image-loader): сетка сразу нужного размера. */
-  .works-thumb-loading {
-    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+  /* Пока список работ грузится — серые плитки с тем же мерцанием, что
+     у заглушки фото (.image-loader): лента сразу нужной высоты. */
+  .picker-thumb-loading {
+    background: rgb(255 255 255 / 0.08);
     animation: image-loader-pulse 1.8s ease-in-out infinite;
   }
-  .works-thumb-empty {
-    display: flex;
-    align-items: flex-end;
-    height: 100%;
-    padding: 6px;
-    font-size: 11px;
-    line-height: 1.2;
-    color: var(--color-ink-soft);
+  .picker-thumb-loading:hover {
+    transform: none;
   }
-  .works-error {
-    display: none;
-    margin: 10px 0 18px;
+  .picker-error {
+    margin: 0;
+    padding: 24px 4px;
     font-size: 14px;
-    color: var(--color-ink-soft);
+    color: rgb(255 255 255 / 0.75);
   }
-  :root[data-caption="works"] .works-error {
-    display: block;
-  }
-  .works-retry {
+  .picker-retry {
     padding: 0;
     font: inherit;
-    color: var(--color-ink);
+    color: var(--color-neutral-100);
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
     background: none;
     border: 0;
   }
+  .picker-thumb[aria-current="page"] {
+    outline: 2px solid var(--color-neutral-100);
+    outline-offset: 2px;
+  }
+  .picker-thumb-empty {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    background: rgb(255 255 255 / 0.08);
+  }
   @media (prefers-reduced-motion: reduce) {
-    .works-thumb img {
+    .picker[open] {
+      animation: none;
+    }
+    .picker-thumb {
       transition: none;
     }
-    .works-thumb:hover img {
+    .picker-thumb:hover {
       transform: none;
     }
   }
@@ -1977,26 +1929,6 @@
   }
 }
 
-/* Режим «Все работы» (lib/caption-mode.ts) — тоже вне @layer: правила
-   спорят с утилитами на тех же элементах — кеглем названия и высотой
-   колонки. Название под сеткой мельче: оно подпись к выбору, а не
-   заголовок над описанием. */
-:root[data-caption="works"] .caption-heading {
-  font-size: 26px;
-}
-@media (min-width: 1024px) {
-  /* Колонка ровно в экран: сетка занимает всё между переключателем и
-     подписью и прокручивается внутри, а подпись остаётся на одной линии
-     с низом холста. Выше экрана колонка росла бы вместе с сеткой из
-     двухсот работ. */
-  :root[data-caption="works"] .stage-caption {
-    height: 100svh;
-  }
-  :root[data-caption="works"] .caption-heading {
-    font-size: 34px;
-  }
-}
-
 @media (min-width: 1024px) {
   /* Не меньше 100px: в этом поле стоит ряд «‹ 3 / 32 ›» (ArtworkStage). */
   :root[data-theme="paper"] .stage-art-area {
@@ -2087,27 +2019,9 @@
   }
 }
 
-/* Тем, кто попросил у системы меньше движения, шапка не выезжает, а
-   проявляется на месте (заказчик, 22.10.2026: прежде здесь стояло
-   transition: none, и шапка возникала рывком — у заказчика в Windows
-   выключены эффекты анимации, Chrome передаёт это сайту). Проявление —
-   не движение, просьбу оно не нарушает.
-
-   Прячется по-прежнему сдвигом за край экрана — так пункты шапки
-   остаются доступны с клавиатуры, — только сдвиг мгновенный и после
-   той же паузы 0.35 с; гаснет шапка чуть раньше, к концу паузы. */
-@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
   .stage-header {
-    opacity: 0;
-    transition:
-      opacity 0.2s ease 0.15s,
-      transform 0s linear 0.35s;
-  }
-  .stage-header-zone:hover + .stage-header,
-  .stage-header:hover,
-  .stage-header:focus-within {
-    opacity: 1;
-    transition-delay: 0s;
+    transition: none;
   }
 }
 

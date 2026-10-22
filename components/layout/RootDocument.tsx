@@ -16,12 +16,11 @@ import { localeMeta, type Locale } from "@/lib/i18n";
 export function RootDocument({ lang, children }: { lang: Locale; children: ReactNode }) {
   return (
     /*
-      suppressHydrationWarning — из-за атрибутов темы и режима колонки:
-      скрипт ниже ставит data-theme и data-caption на <html> до гидратации,
-      и React видит на клиенте атрибуты, которых не было в серверной
-      разметке. Узнать выбор на сервере нельзя — он в хранилище браузера.
-      Подавление действует только на сам этот элемент, содержимое страницы
-      проверяется как обычно.
+      suppressHydrationWarning — из-за атрибута темы: скрипт ниже ставит
+      data-theme на <html> до гидратации, и React видит на клиенте атрибут,
+      которого не было в серверной разметке. Узнать выбор зала на сервере
+      нельзя — он в localStorage браузера. Подавление действует только на
+      сам этот элемент, содержимое страницы проверяется как обычно.
     */
     <html
       lang={localeMeta[lang].htmlLang}
@@ -61,18 +60,10 @@ export function RootDocument({ lang, children }: { lang: Locale; children: React
           Разметка приходит с почти белым залом; скрипт снимает атрибут,
           только если сохранён тёмный. Сохранённый «white» (третий зал,
           убран 19.09.2026) остаётся почти белым — это тот же светлый зал.
-
-          Тем же скриптом — режим колонки на странице работы, «Описание»
-          или «Все работы» (lib/caption-mode.ts, ключ и значение оттуда):
-          иначе после перезагрузки сначала мелькало бы описание. Две
-          отдельные попытки: запрет на localStorage не должен ронять
-          чтение sessionStorage.
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              `try{if(localStorage.getItem("hall")==="dark")delete document.documentElement.dataset.theme}catch(e){}` +
-              `try{if(sessionStorage.getItem("caption")==="works")document.documentElement.dataset.caption="works"}catch(e){}`,
+            __html: `try{if(localStorage.getItem("hall")==="dark")delete document.documentElement.dataset.theme}catch(e){}`,
           }}
         />
         <div className="flex-1">{children}</div>

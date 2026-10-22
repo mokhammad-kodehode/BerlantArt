@@ -50,7 +50,7 @@ export const galleryCategoryPaths: readonly string[] = locales.flatMap((lang) =>
 
 /**
  * Общий список работ с миниатюрами (app/api/artwork-thumbs): по нему
- * сетка «Все работы» показывает миниатюры, а счётчик «129 / 203» — номер.
+ * панель «Все работы» показывает ленту, а счётчик «129 / 203» — номер.
  */
 export const artworkThumbsPath = "/api/artwork-thumbs";
 

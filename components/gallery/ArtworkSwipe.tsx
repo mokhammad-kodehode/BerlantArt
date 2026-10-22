@@ -72,7 +72,10 @@ export function ArtworkSwipe({
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
-      if (isTyping(event.target) || isViewerOpen()) return;
+      // Открыта панель «Все работы» — стрелки листают её ленту, а не страницу.
+      if (isTyping(event.target) || isViewerOpen() || document.querySelector(".picker[open]")) {
+        return;
+      }
       const href =
         event.key === "ArrowLeft" ? prevHref : event.key === "ArrowRight" ? nextHref : undefined;
       if (href) router.push(href);

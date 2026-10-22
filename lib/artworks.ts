@@ -395,7 +395,7 @@ export type ArtworkThumb = ArtworkLink & { src?: string };
 export type ArtworkNeighbours = {
   prev: ArtworkLink | null;
   next: ArtworkLink | null;
-  /** Сама работа, если она в списке, — для якоря «← В галерею» и сетки «Все работы». */
+  /** Сама работа, если она в списке, — для якоря «← Все работы» и панели выбора. */
   currentId: string | null;
 };
 
@@ -446,7 +446,7 @@ export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbour
 }
 
 /**
- * Все работы в порядке галереи с одной миниатюрой — для сетки «Все
+ * Все работы в порядке галереи с одной миниатюрой — для панели «Все
  * работы» (ArtworkPicker). Отдаётся файлом /api/artwork-thumbs, общим
  * для всех страниц: у каждой работы — только адрес главного фото.
  */
