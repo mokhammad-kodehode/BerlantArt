@@ -156,6 +156,10 @@ export function ArtworkPicker({ total, currentId }: { total: number; currentId: 
                   <li key={work.id}>
                     <Link
                       href={localePath(lang, `/gallery/${work.id}`)}
+                      // Без заранее-загрузки, как у плиток стены (ArtworkTile):
+                      // иначе открытая лента запрашивала бы страницы всех
+                      // видимых миниатюр разом.
+                      prefetch={false}
                       onClick={close}
                       aria-current={work.id === currentId ? "page" : undefined}
                       title={work.title}
