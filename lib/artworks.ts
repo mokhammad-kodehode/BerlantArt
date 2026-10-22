@@ -385,85 +385,119 @@ export const getArtworkById = cache(async (id: string): Promise<ArtworkWithImage
   });
 });
 
-/** Ссылка на соседнюю работу: больше странице для стрелки ничего не нужно. */
+/** Ссылка на соседнюю работу: больше стрелке в просмотре ничего не нужно. */
 export type ArtworkLink = { id: string; title: string };
 
-/** Работа для списка-выбора на странице работы: название и миниатюра. */
-export type ArtworkThumb = ArtworkLink & { src?: string };
-
-/** Соседи работы по кольцу галереи — для стрелок ‹ › на странице работы. */
-export type ArtworkNeighbours = {
-  prev: ArtworkLink | null;
-  next: ArtworkLink | null;
-  /** Сама работа, если она в списке, — для якоря «← Все работы» и панели выбора. */
-  currentId: string | null;
+/**
+ * Картина в ленте на странице работы (заказчик, 22.10.2026): всё, что
+ * нужно холсту, табличке и миниатюре, и ничего сверх — список общий на
+ * все ~400 страниц, каждое лишнее поле умножается на число работ.
+ *
+ * Тексты — сразу на обоих языках: список отдаётся одним файлом и русской,
+ * и английской версии (`/api/artwork-thumbs`), а собирать подписи в
+ * браузере нечем — словари техник и формулировки живут здесь, у базы.
+ */
+export type ArtworkFeedItem = {
+  id: string;
+  title: string;
+  src?: string;
+  /** Пропорции главного фото, ширина к высоте; без размеров в базе — null. */
+  ratio: number | null;
+  /** Остальные фото работы — «другие ракурсы», по порядку. */
+  extra: string[];
+  /** «Холст, масло · 50 × 50 см · 2023» — строка таблички. */
+  label: Record<Locale, string>;
+  /** Заголовок вкладки без имени художницы: его добавляет шаблон. */
+  pageTitle: Record<Locale, string>;
+  alt: Record<Locale, string>;
+  /** Описание для таблички, только по-русски; null — нет или повторяет название. */
+  description: string | null;
 };
 
+/** Из чего собирается картина ленты: и выборка списка, и полная работа. */
+type FeedSource = Pick<
+  ArtworkWithImages,
+  "id" | "title" | "description" | "technique" | "dimensions" | "year"
+> & { images: { url: string; width: number | null; height: number | null }[] };
+
 /**
- * Соседи работы в списке, замкнутом в кольцо: с последней вперёд — на
- * первую. Так у стрелок нет выключенного состояния, а тупик в конце на
- * галерее из пяти работ раздражал бы сильнее, чем возврат к началу.
- * Одна работа сама себе не сосед — стрелок тогда нет вовсе.
- *
- * Чистая функция отдельно от запроса — ради тестов: ошибку в кольце на
- * глаз не видно, стрелка просто ведёт не туда.
+ * Строка таблички у картины: техника, размер, год — в том порядке, в каком
+ * их пишут на музейных этикетках. Пустые поля выпадают целиком
+ * (.ai/rules/content.md): ни прочерков, ни висящих точек.
  */
-export function ringNeighbours<T extends { id: string }>(
-  works: readonly T[],
-  id: string,
-): { prev: T | null; next: T | null } {
-  const index = works.findIndex((work) => work.id === id);
-  if (index === -1 || works.length < 2) return { prev: null, next: null };
+export function artworkLabel(
+  work: Pick<ArtworkWithImages, "technique" | "dimensions" | "year">,
+  lang: Locale = "ru",
+): string {
+  return [
+    artworkTechnique(work.technique, lang),
+    artworkDimensions(work.dimensions, lang),
+    work.year,
+  ]
+    .filter((part) => part !== null && part !== "")
+    .join(" · ");
+}
+
+/**
+ * Описание для таблички. Многие описания в базе повторяют название
+ * («Мечеть» — «Мечеть»), и на табличке оно стояло бы дважды — такие не
+ * показываются. Описание вводится только по-русски (решение заказчика
+ * от 4.10.2026), в английской версии его нет вовсе.
+ */
+export function labelDescription(
+  work: Pick<ArtworkWithImages, "title" | "description">,
+  lang: Locale,
+): string | null {
+  const text = work.description?.trim();
+  if (lang !== "ru" || !text) return null;
+  return text.toLowerCase() === work.title.trim().toLowerCase() ? null : text;
+}
+
+export function artworkFeedItem(work: FeedSource): ArtworkFeedItem {
+  // Выборки кладут главное изображение первым (withImages).
+  const [primary, ...rest] = work.images;
+  const both = <T>(make: (lang: Locale) => T): Record<Locale, T> => ({
+    ru: make("ru"),
+    en: make("en"),
+  });
 
   return {
-    prev: works[(index - 1 + works.length) % works.length],
-    next: works[(index + 1) % works.length],
+    id: work.id,
+    title: work.title,
+    src: primary ? imageUrl(primary.url) : undefined,
+    ratio: primary?.width && primary.height ? primary.width / primary.height : null,
+    extra: rest.flatMap((image) => imageUrl(image.url) ?? []),
+    label: both((lang) => artworkLabel(work, lang)),
+    pageTitle: both((lang) => artworkSeo(work, lang).title),
+    alt: both((lang) => artworkImageAlt(work, lang)),
+    description: labelDescription(work, "ru"),
   };
 }
 
 /**
- * Соседние работы в порядке галереи — для листания на странице работы.
- *
- * Берётся список одних только id и названий и в нём ищется позиция.
- * Двумя запросами «предыдущая и следующая» это не решается: курсор по
- * дате путается на работах, добавленных в одну секунду (пачкой через
- * seed или импорт). Один запрос на страницу при любом числе работ.
- *
- * Номера «129 / 203» здесь больше нет (тикет О-5, 22.10.2026): он
- * менялся у всех ~400 страниц с каждой новой работой, и все уходили на
- * пересборку — записи в кеш Vercel. Номер считает браузер по общему
- * списку `/api/artwork-thumbs` (ArtworkPosition). Соседи же меняются
- * только у двух-трёх работ рядом с новой — их обновляют экшены.
+ * Все работы в порядке галереи — для ленты на странице работы. Отдаётся
+ * файлом /api/artwork-thumbs (имя осталось от панели миниатюр, которую
+ * лента заменила), общим для всех страниц: страница работы от соседей не
+ * зависит, и новая картина не пересобирает остальные ~400 (тикет О-5).
  */
-export async function getArtworkNeighbours(id: string): Promise<ArtworkNeighbours> {
-  const works: ArtworkLink[] = await db.artwork.findMany({
-    select: { id: true, title: true },
-    orderBy: galleryOrder,
-  });
-  const isListed = works.some((work) => work.id === id);
-
-  return { ...ringNeighbours(works, id), currentId: isListed ? id : null };
-}
-
-/**
- * Все работы в порядке галереи с одной миниатюрой — для панели «Все
- * работы» (ArtworkPicker). Отдаётся файлом /api/artwork-thumbs, общим
- * для всех страниц: у каждой работы — только адрес главного фото.
- */
-export async function getArtworkThumbs(): Promise<ArtworkThumb[]> {
+export async function getArtworkFeed(): Promise<ArtworkFeedItem[]> {
   const rows = await db.artwork.findMany({
     select: {
       id: true,
       title: true,
-      images: { select: { url: true }, orderBy: withImages.images.orderBy, take: 1 },
+      description: true,
+      technique: true,
+      dimensions: true,
+      year: true,
+      images: {
+        select: { url: true, width: true, height: true },
+        orderBy: withImages.images.orderBy,
+      },
     },
     orderBy: galleryOrder,
   });
 
-  return rows.map((row) => {
-    const stored = row.images[0]?.url;
-    return { id: row.id, title: row.title, src: stored ? imageUrl(stored) : undefined };
-  });
+  return rows.map(artworkFeedItem);
 }
 
 /**

@@ -1,25 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ArtworkStage } from "@/components/gallery/ArtworkStage";
-import { ShareButton } from "@/components/gallery/ShareButton";
-import { ArtworkImage } from "@/components/ui/ArtworkImage";
-import { ButtonLink } from "@/components/ui/Button";
-import { Container } from "@/components/ui/Container";
+import { ArtworkFeed } from "@/components/gallery/ArtworkFeed";
+import { Header } from "@/components/layout/Header";
 import { JsonLd } from "@/components/ui/JsonLd";
 import {
-  artworkCategory,
-  artworkDimensions,
+  artworkFeedItem,
   artworkSeo,
   artworkTechnique,
   getArtworkById,
-  getArtworkNeighbours,
-  imageUrl,
   primaryImageUrl,
 } from "@/lib/artworks";
 import { contactEmail } from "@/lib/contacts";
 import { clientEnv } from "@/lib/env";
-import { getDictionary, localePath, type Locale } from "@/lib/i18n";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import { pageAlternates } from "@/lib/page-metadata";
 import { artworkJsonLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
@@ -71,66 +65,24 @@ export async function artworkMetadata(lang: Locale, id: string): Promise<Metadat
 }
 
 /**
- * Страница одной работы: картина во весь экран, подпись — в левом нижнем
- * углу поверх затемнения, как в превью у стриминговых сервисов.
+ * Страница одной работы — лента всех работ, открытая на этой
+ * (заказчик, 22.10.2026, макет «Лента с табличкой»): картина на стене,
+ * рядом табличка, как в музее, и миниатюры остальных. Устройство ленты —
+ * в components/gallery/ArtworkFeed.tsx.
  *
- * Прежняя вёрстка (картина в квадратной рамке слева, таблица свойств справа)
- * заменена по просьбе заказчика: разглядеть в ней живопись было нельзя —
- * репродукция занимала чуть больше трети экрана. Теперь холст занимает всю
- * высоту окна, а текст лежит на размытом фоне сбоку и картину не закрывает.
- * Устройство показа — в components/gallery/ArtworkStage.tsx.
+ * Сервер отдаёт только эту работу: её картину, табличку с заголовком
+ * страницы и описание для поисковика. Остальные картины лента
+ * дорисовывает в браузере по общему списку — от соседей страница не
+ * зависит, и правка одной работы не пересобирает остальные (тикет О-5).
  *
- * Таблицы свойств больше нет: из четырёх полей у работ заполнены одно-два,
- * и таблица в две строки выглядела пустой. Те же данные собраны в строку
- * через разделитель — по-прежнему без выдуманных значений
- * ([content.md](../../../.ai/rules/content.md)).
+ * Прежняя вёрстка (картина во весь экран, подпись в углу на затемнении,
+ * стрелки «‹ 3 / 32 ›», панель «Все работы» поверх) заменена целиком.
  */
 export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
   const t = getDictionary(lang);
-
-  // Запросы не зависят друг от друга, поэтому идут разом, а не по очереди.
-  const [work, neighbours] = await Promise.all([getArtworkById(id), getArtworkNeighbours(id)]);
+  const work = await getArtworkById(id);
 
   if (!work) notFound();
-
-  const extraImages = work.images.slice(1);
-
-  // Пропорции главного фото: по ним на телефоне и планшете строится блок
-  // картины (ArtworkStage). Размер в базе есть не у всех старых записей.
-  const photo = work.images[0];
-  const aspect = photo?.width && photo.height ? photo.width / photo.height : undefined;
-
-  // Незаполненное поле исчезает целиком, а не превращается в прочерк:
-  // врать о габаритах картины нельзя, даже когда она не продаётся.
-  // Категории здесь нет намеренно — она уже стоит надстрочником над
-  // названием, и в строке получалось «Холст, масло · Архитектурный мотив»
-  // при надстрочнике «АРХИТЕКТУРНЫЙ МОТИВ».
-  const meta = [
-    work.year,
-    artworkTechnique(work.technique, lang),
-    artworkDimensions(work.dimensions, lang),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  // Описание вводится в админке только по-русски (решение заказчика от
-  // 4 октября 2026), и в английской версии русский абзац был бы чужим.
-  const description = lang === "ru" ? work.description : null;
-
-  // Цены, статуса и кнопки «Купить» нет: продажа на сайте выключена до
-  // платного тарифа Vercel и оплаты через интернет (ARCHITECTURE.md,
-  // «Продажа выключена»). О покупке человек и художница договариваются
-  // в переписке, поэтому сообщение одно для всех работ — без цены.
-  //
-  // В сообщение подставляется ссылка на саму работу: художница сразу видит,
-  // о какой картине речь, и ей не нужно переспрашивать.
-  const pageUrl = `${clientEnv.NEXT_PUBLIC_SITE_URL}${localePath(lang, `/gallery/${work.id}`)}`;
-  const message = t.work.message(work.title, pageUrl);
-  const phone = clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE;
-  const whatsappHref = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : null;
-  const mailHref = contactEmail
-    ? `mailto:${contactEmail}?subject=${encodeURIComponent(t.work.mailSubject(work.title))}&body=${encodeURIComponent(message)}`
-    : null;
 
   return (
     <>
@@ -141,7 +93,9 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           artform: t.site.artform,
           id: work.id,
           title: work.title,
-          description,
+          // Описание вводится только по-русски (решение заказчика от
+          // 4 октября 2026), и в английской версии русский абзац был бы чужим.
+          description: lang === "ru" ? work.description : null,
           technique: artworkTechnique(work.technique, lang),
           dimensions: work.dimensions,
           year: work.year,
@@ -149,126 +103,33 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           artistName: t.site.artist,
         })}
       />
-      <ArtworkStage
-        lang={lang}
-        src={primaryImageUrl(work)}
-        aspect={aspect}
-        alt={artworkSeo(work, lang).imageAlt}
-        title={work.title}
-        priority
-        neighbours={neighbours}
-      >
-        <span className="text-accent mb-2.5 block text-[13px] font-semibold tracking-[0.12em] uppercase">
-          {artworkCategory(work.category, lang) ?? t.work.fallbackKicker}
-        </span>
 
-        {/* Тень под заголовком, а не плашка: в тёмном зале подпись лежит
-            на размытой копии картины, и у светлой работы фон светлеет —
-            без тени тонкие засечки Literata сливались с ним. В светлых
-            залах тень снимается (класс stage-title в globals.css). */}
-        <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,4vw,56px)] leading-[1.02]">
-          {work.title}
-        </h1>
+      {/*
+        Зал: на компьютере ровно в экран, лента прокручивается внутри него;
+        на телефоне — во всю высоту ленты, страница прокручивается обычно
+        (globals.css, «Лента работ»).
 
-        {meta && <p className="text-ink-soft mt-0 mb-4 text-[14px]">{meta}</p>}
-
-        {description && (
-          <p className="text-ink-soft mt-0 mb-5 max-w-[52ch] text-[15px] leading-[1.65]">
-            {description}
-          </p>
-        )}
-
-        {/*
-          Две невысокие кнопки в строку — «Примерить на стену» и «Поделиться»
-          (заказчик, 12.10.2026). Прежде под описанием стояли три
-          кнопки-таблетки одна под другой и занимали почти столько же места,
-          сколько текст; потом — плитки 84px, тоже крупные. Вид — в
-          globals.css, .action-pair.
-        */}
-        <div className="action-pair">
-          {/*
-            Примерка — одна кнопка: со стены в раме (/room) камера телефона
-            открывается кнопкой «Примерить через камеру» наверху. Две кнопки
-            рядом заставляли выбирать ещё до того, как человек понял, что
-            это такое (заказчик, 8.10.2026). Без фотографии кнопки нет.
-          */}
-          {primaryImageUrl(work) && (
-            <ButtonLink
-              href={localePath(lang, `/gallery/${work.id}/room`)}
-              variant="soft"
-              size="lg"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.6}
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="1.5" />
-                <rect x="7" y="7" width="10" height="10" />
-              </svg>
-              {t.work.tryOnWall}
-            </ButtonLink>
-          )}
-
-          <ShareButton url={pageUrl} title={work.title} />
-        </div>
-
-        {/*
-          Большой кнопки «Написать художнице» больше нет — заказчик попросил
-          убрать (12.10.2026). Но спросить о картине должно быть можно прямо
-          отсюда: только здесь сообщение уходит со ссылкой на работу, и
-          художнице не нужно переспрашивать, о какой речь. Поэтому вместо
-          кнопки — тихая строка текстовых ссылок. Ссылка появляется, только
-          когда номер или почта заполнены в переменных окружения.
-        */}
-        {(whatsappHref || mailHref) && (
-          <p className="text-ink-soft mt-4 mb-0 text-[14px]">
-            {t.work.ask}{" "}
-            {whatsappHref && (
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-ink underline-offset-4 hover:underline"
-              >
-                WhatsApp
-              </a>
-            )}
-            {whatsappHref && mailHref && " · "}
-            {mailHref && (
-              <a href={mailHref} className="text-ink underline-offset-4 hover:underline">
-                {t.contacts.email}
-              </a>
-            )}
-          </p>
-        )}
-      </ArtworkStage>
-
-      <main>
-        {extraImages.length > 0 && (
-          <Container>
-            <section className="pt-12 pb-4">
-              <h2 className="mt-0 mb-5 text-[22px]">{t.work.otherAngles}</h2>
-              <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-3">
-                {extraImages.map((image) => (
-                  <li key={image.id} className="bg-surface relative aspect-square overflow-hidden">
-                    <ArtworkImage
-                      src={imageUrl(image.url)}
-                      alt={image.alt}
-                      fit="contain"
-                      sizes="(max-width: 767px) 50vw, 380px"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </Container>
-        )}
-      </main>
+        Шапку подключает страница, вариантом `stage`, — чтобы она не
+        отвлекала от картины (заказчик, 12.10.2026): на компьютере она
+        спрятана над экраном и выезжает, когда мышь подходит к верхнему
+        краю (globals.css, .stage-header-zone), на телефоне — тонкая полоса
+        48px с одним бургером. Полоса для наведения стоит прямо перед
+        шапкой — селектор «соседний элемент» иначе не сработает.
+      */}
+      <div className="feed-stage">
+        <div aria-hidden className="stage-header-zone" />
+        <Header variant="stage" />
+        <main>
+          <ArtworkFeed
+            initial={artworkFeedItem(work)}
+            siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
+            contacts={{
+              whatsappPhone: clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE,
+              email: contactEmail ?? undefined,
+            }}
+          />
+        </main>
+      </div>
     </>
   );
 }

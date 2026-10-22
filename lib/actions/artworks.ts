@@ -9,12 +9,12 @@ import {
   type ArtworkFieldErrors,
   type ArtworkFormRaw,
 } from "@/lib/artwork-form";
-import { createArtwork, deleteArtwork, getArtworkNeighbours, updateArtwork } from "@/lib/artworks";
+import { createArtwork, deleteArtwork, updateArtwork } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
 import { deleteObject } from "@/lib/r2";
 import {
   revalidateAdminArtwork,
-  revalidateArtworkPages,
+  revalidateArtworkPage,
   revalidateSharedPages,
 } from "@/lib/revalidate";
 import { isOwnObjectKey } from "@/lib/upload-limits";
@@ -73,10 +73,9 @@ export async function saveArtwork(
 
   if (id === null) {
     const created = await createArtwork(parsed.data);
-    // Новая работа встаёт в кольцо галереи между двумя другими — у них
-    // меняется сосед на стрелке. Остальные страницы работ не меняются.
-    const { prev, next } = await getArtworkNeighbours(created);
-    revalidateArtworkPages([created, prev?.id, next?.id]);
+    // Страницы других работ новая не задевает: в их ленту она приходит
+    // из общего списка, а он среди общих страниц.
+    revalidateArtworkPage(created);
     revalidateSharedPages();
 
     // Переход на страницу редактирования, а не «создано, введите ещё раз»:
@@ -94,11 +93,10 @@ export async function saveArtwork(
     };
   }
 
-  // Соседи — потому что на их стрелках подписано название этой работы.
-  // Порядок в галерее правка не меняет: он по дате создания.
-  const { prev, next } = await getArtworkNeighbours(id);
+  // Название и табличка этой работы в лентах других страниц — из общего
+  // списка (общие страницы), сами те страницы не меняются.
   revalidateAdminArtwork(id);
-  revalidateArtworkPages([id, prev?.id, next?.id]);
+  revalidateArtworkPage(id);
   revalidateSharedPages();
 
   return { values: raw, saved: true, warmWords: pickWarmWords(state.warmWords) };
@@ -122,9 +120,6 @@ export async function removeArtwork(formData: FormData): Promise<void> {
   const id = formData.get("id");
   if (typeof id !== "string" || id === "") return;
 
-  // Соседей узнаём до удаления: после него работы в кольце уже нет, а
-  // её соседи теперь смотрят друг на друга — их страницы и обновляем.
-  const { prev, next } = await getArtworkNeighbours(id);
   const keys = await deleteArtwork(id);
   if (keys === null) return;
 
@@ -148,7 +143,7 @@ export async function removeArtwork(formData: FormData): Promise<void> {
   }
 
   // Страница самой работы — чтобы вместо неё сразу отдавалась 404.
-  revalidateArtworkPages([id, prev?.id, next?.id]);
+  revalidateArtworkPage(id);
   revalidateSharedPages();
   redirect("/admin/artworks");
 }

@@ -57,12 +57,20 @@ export function ArtworkViewer({
   title,
   prev,
   next,
+  openOnHash = true,
   children,
 }: {
   src: string;
   title: string;
   prev?: ArtworkLink | null;
   next?: ArtworkLink | null;
+  /**
+   * Открываться самому, если в адресе #view. В ленте на странице работы
+   * просмотров несколько — у картины и её соседей, у «других ракурсов», —
+   * а пометка в адресе одна: открываться по ней должен только просмотр
+   * той картины, ради которой страницу открыли.
+   */
+  openOnHash?: boolean;
   /** То, что показано на странице: по нажатию на него окно и открывается. */
   children: ReactNode;
 }) {
@@ -93,9 +101,9 @@ export function ArtworkViewer({
       );
       const width = img.naturalWidth * scale;
       const height = img.naturalHeight * scale;
-      // Где лёг холст по вертикали, решает object-position: на компьютере
-      // он прижат к низу блока (globals.css, .stage-art), на телефоне —
-      // по центру. Читаем из CSS, чтобы кнопка не разошлась с картиной.
+      // Где лёг холст по вертикали, решает object-position. В ленте блок
+      // и так по пропорциям картины, но читаем из CSS, чтобы кнопка не
+      // разошлась с картиной, если блок когда-нибудь станет шире её.
       const [, y = "50%"] = getComputedStyle(img).objectPosition.split(" ");
       const yShare = parseFloat(y) / 100;
       setPaintedBox({
@@ -120,8 +128,9 @@ export function ArtworkViewer({
   // обычный: он срабатывает до отрисовки, и страница работы не мелькает
   // между двумя картинами.
   useLayoutEffect(() => {
-    if (window.location.hash === VIEW_HASH && dialogRef.current) showViewer(dialogRef.current);
-  }, []);
+    if (!openOnHash || window.location.hash !== VIEW_HASH || !dialogRef.current) return;
+    showViewer(dialogRef.current);
+  }, [openOnHash]);
 
   // Стрелки клавиатуры листают, пока открыт просмотр.
   useEffect(() => {

@@ -159,15 +159,8 @@
   --theme-shadow-tile-hover: 0 24px 60px rgb(0 0 0 / 0.6);
   --theme-shadow-art: drop-shadow(0 2px 3px rgb(0 0 0 / 0.5))
     drop-shadow(0 26px 60px rgb(0 0 0 / 0.55));
-  /* Пол и угол зала. В тёмном зале пол почти чёрный, стык со стеной едва
-     намечен: комната читается, но не спорит с картиной. */
-  --theme-hall-floor: linear-gradient(
-    to top,
-    rgb(0 0 0 / 0.55) 0,
-    rgb(0 0 0 / 0.22) 12%,
-    rgb(255 255 255 / 0.03) 21%,
-    transparent 24%
-  );
+  /* Потемнение по углам зала: в тёмном зале под картиной в ленте лежит её
+     размытая копия, и без углов она читалась бы заливкой, а не комнатой. */
   --theme-hall-vignette: radial-gradient(
     ellipse 88% 72% at 50% 44%,
     transparent 42%,
@@ -199,32 +192,6 @@
   --theme-shadow-tile-hover: 0 18px 44px rgb(43 37 31 / 0.26);
   --theme-shadow-art: drop-shadow(0 2px 2px rgb(43 37 31 / 0.22))
     drop-shadow(0 22px 44px rgb(43 37 31 / 0.26));
-  /* Соседний зал слева и угол стены. Правая часть кадра — стена, на
-     которой висит холст; левая уходит вглубь, в соседнее помещение.
-     Границу между ними даёт не линия, а перепад освещённости с мягким
-     затенением в углу на 32-34.5%: так угол комнаты и выглядит.
-     Затемнение держится в пределах 10%, чтобы подпись на левой части
-     не потеряла контраст. */
-  --theme-hall-room: linear-gradient(
-    to right,
-    rgb(43 37 31 / 0.1) 0,
-    rgb(43 37 31 / 0.065) 24%,
-    rgb(43 37 31 / 0.095) 32%,
-    rgb(43 37 31 / 0.02) 34.5%,
-    transparent 38%
-  );
-
-  /* Стык стены и пола опущен на 20% по просьбе заказчика: был на 20.6%
-     от низа окна, стал на 16.5%. Полоса пола заодно стала ниже — все
-     точки градиента сжаты в те же 0.8 раза. */
-  --theme-hall-floor: linear-gradient(
-    to top,
-    rgb(43 37 31 / 0.17) 0,
-    rgb(43 37 31 / 0.07) 10.4%,
-    rgb(43 37 31 / 0.12) 16.5%,
-    rgb(43 37 31 / 0.03) 17.1%,
-    transparent 21.6%
-  );
   --theme-hall-vignette: radial-gradient(
     ellipse 92% 76% at 50% 40%,
     transparent 40%,
@@ -245,18 +212,11 @@
      меняется и это число; замерено в браузере 12.10.2026. */
   --header-h: 73px;
 
-  /* Наибольшая ширина первого экрана главной, страницы работы и шапки
-     (заказчик, 12.10.2026). На экранах шире 1680px они растягивались:
-     подпись картины уезжала к левому краю, далеко от холста, фото в hero
-     становилось огромным. Галерея намеренно не ограничена — там широкий
-     экран вмещает больше картин. */
+  /* Наибольшая ширина первого экрана главной и шапки (заказчик,
+     12.10.2026). На экранах шире 1680px они растягивались: фото в hero
+     становилось огромным. Галерея и лента на странице работы намеренно не
+     ограничены — там широкий экран вмещает больше картин. */
   --page-max: 1680px;
-
-  /* Грань стены на странице работы — 30% ширины содержимого сцены, а не
-     окна: на широком экране содержимое ограничено --page-max и стоит по
-     центру (ArtworkStage). Проценты считаются от сцены — правила, которые
-     берут это значение, лежат в ней на всю её ширину. */
-  --stage-edge: calc(max(0px, (100% - var(--page-max)) / 2) + min(100%, var(--page-max)) * 0.3);
 
   /* Насыщенность заголовочного шрифта. Вынесено сюда, а не в @theme:
      утилита из этого не нужна, значение читают только базовые правила ниже.
@@ -955,223 +915,6 @@
     }
   }
 
-  /* Пара кнопок под описанием работы (components/pages/ArtworkPage.tsx):
-     «Примерить на стену» и «Поделиться». Невысокие таблетки 40px, значок
-     слева, текст 14px, тонкая рамка (заказчик, 12.10.2026: плитки 84px
-     со значком сверху были красивыми, но слишком крупными для колонки
-     подписи). Не влезают в строку — вторая переносится, а не сжимается.
-     Это те же кнопки (.btn): селектор длиннее, чем у .btn и .btn-soft,
-     поэтому побеждает без !important. «Поделиться» — кругом со значком
-     (.btn-icon): с текстом обе не помещались в строку на 1280–1440. */
-  .action-pair {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .action-pair > .btn {
-    gap: 6px;
-    min-height: 40px;
-    padding: 8px 13px 8px 11px;
-    font-size: 14px;
-    line-height: 1.2;
-    background: var(--color-surface);
-    border-color: var(--color-divider);
-    transition:
-      background-color 0.18s ease,
-      border-color 0.18s ease;
-  }
-  .action-pair > .btn svg {
-    width: 18px;
-    height: 18px;
-  }
-  /* «Поделиться» — круг того же роста, только значок. */
-  .action-pair > .btn-icon {
-    width: 40px;
-    padding: 0;
-  }
-  .action-pair > .btn:hover {
-    background: color-mix(in srgb, var(--color-ink) 7%, var(--color-surface));
-    border-color: var(--color-ink-faint);
-  }
-
-  /* «Все работы» (components/gallery/ArtworkPicker.tsx): кнопка рядом
-     со стрелками и панель с миниатюрами поверх страницы.
-
-     Панель тёмная в любом зале, как лента в примерочной и просмотр во весь
-     экран: миниатюры картин на ней читаются, а интерфейс не спорит с ними.
-     Внизу экрана, в два ряда, листается вбок. */
-  .stage-picker-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    margin-left: 4px;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-    background: transparent;
-    border: 0;
-    border-radius: var(--radius-pill);
-    transition: background-color 0.18s ease;
-  }
-  .stage-picker-button:hover {
-    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
-  }
-  .stage-picker-button svg {
-    width: 19px;
-    height: 19px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-  }
-  .picker {
-    inset: auto 0 16px;
-    width: min(1240px, calc(100vw - 24px));
-    max-width: none;
-    margin: 0 auto;
-    padding: 12px 14px 14px;
-    color: var(--color-neutral-100);
-    background: rgb(22 19 17 / 0.95);
-    border: 0;
-    /* Скругление лёгкое, как у плиток: крупное делало панель похожей на
-       всплывающее окно телефона (заказчик, 12.10.2026). */
-    border-radius: var(--radius-soft);
-    box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
-  }
-  .picker[open] {
-    animation: picker-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-  .picker::backdrop {
-    background: rgb(20 18 17 / 0.35);
-  }
-  .picker:focus-visible {
-    outline: none;
-  }
-  @keyframes picker-in {
-    from {
-      opacity: 0;
-      transform: translateY(24px);
-    }
-  }
-  .picker-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding-left: 4px;
-    font-size: 14px;
-    color: rgb(255 255 255 / 0.75);
-  }
-  .picker-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
-    background: transparent;
-    border: 0;
-    border-radius: 50%;
-  }
-  .picker-close:hover {
-    color: var(--color-neutral-100);
-    background: rgb(255 255 255 / 0.1);
-  }
-  .picker-close svg {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.75;
-    stroke-linecap: round;
-  }
-  /* Два ряда, поток — по колонкам: лента растёт вбок, а не вниз. */
-  .picker-strip {
-    --thumb: 112px;
-    display: grid;
-    grid-template-rows: repeat(2, var(--thumb));
-    grid-auto-flow: column;
-    grid-auto-columns: var(--thumb);
-    gap: 8px;
-    margin: 0;
-    padding: 4px 4px 10px;
-    overflow-x: auto;
-    list-style: none;
-    overscroll-behavior-x: contain;
-    scrollbar-color: rgb(255 255 255 / 0.3) transparent;
-  }
-  @media (max-width: 767px) {
-    .picker-strip {
-      --thumb: 84px;
-    }
-  }
-  .picker-thumb {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 100%;
-    /* Без скругления: это миниатюры картин, а у холста прямые углы
-       (design-system.md). */
-    overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
-    transition: transform 0.18s ease;
-  }
-  .picker-thumb:hover {
-    transform: scale(1.04);
-  }
-  /* Пока список работ грузится — серые плитки с тем же мерцанием, что
-     у заглушки фото (.image-loader): лента сразу нужной высоты. */
-  .picker-thumb-loading {
-    background: rgb(255 255 255 / 0.08);
-    animation: image-loader-pulse 1.8s ease-in-out infinite;
-  }
-  .picker-thumb-loading:hover {
-    transform: none;
-  }
-  .picker-error {
-    margin: 0;
-    padding: 24px 4px;
-    font-size: 14px;
-    color: rgb(255 255 255 / 0.75);
-  }
-  .picker-retry {
-    padding: 0;
-    font: inherit;
-    color: var(--color-neutral-100);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-    background: none;
-    border: 0;
-  }
-  .picker-thumb[aria-current="page"] {
-    outline: 2px solid var(--color-neutral-100);
-    outline-offset: 2px;
-  }
-  .picker-thumb-empty {
-    display: flex;
-    align-items: flex-end;
-    height: 100%;
-    padding: 6px;
-    font-size: 11px;
-    line-height: 1.2;
-    background: rgb(255 255 255 / 0.08);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .picker[open] {
-      animation: none;
-    }
-    .picker-thumb {
-      transition: none;
-    }
-    .picker-thumb:hover {
-      transform: none;
-    }
-  }
-
   /* Меню у кнопки (components/ui/PopoverMenu.tsx) — встроенный в браузер
      popover: закрытие по клику мимо и по Esc браузер делает сам. По
      умолчанию popover стоит по центру экрана с рамкой — это сброшено,
@@ -1504,24 +1247,424 @@
     transform: translateX(-50%);
   }
 
-  /* — показ одной работы во весь экран (components/gallery/ArtworkStage.tsx) — */
+  /* — лента работ на странице работы (components/gallery/ArtworkFeed.tsx,
+     WallLabel.tsx, FeedThumbs.tsx; заказчик, 22.10.2026, макет «Лента
+     с табличкой») —
 
-  /* Фон полноэкранного показа — та же фотография, что и сама картина.
-     Размытие прячет малое разрешение снимка, увеличение убирает светлую
-     кромку, которую blur иначе вытягивает по краям кадра, а затемнение
-     даёт подписи в углу контраст выше 4.5:1 на любой картине. */
-  .stage-backdrop {
+     Картины одна за другой, каждая на весь экран; браузер сам прилипает
+     к картине (scroll-snap), отдельного кода листания нет. На компьютере
+     лента — блок ровно в экран, листается вниз, миниатюры столбиком
+     слева. Ниже 1024px — вбок, свайпом, миниатюры полосой у низа экрана,
+     а страница прокручивается обычно — к подвалу. */
+  .feed-stage {
+    --thumbs-w: 190px;
+    position: relative;
+    background: var(--color-wall);
+  }
+  /* Верхний свет на стене; в тёмном зале его нет (--theme-toplight). */
+  .feed-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--theme-toplight);
+  }
+  .feed {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .feed::-webkit-scrollbar {
+    display: none;
+  }
+  /* scroll-snap-stop: always — один жест листает ровно одну картину:
+     сильный свайп или рывок колесом не пролетает через несколько. */
+  .feed-slide {
+    position: relative;
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 20px 24px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .feed-work {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 520px;
+  }
+  /* Блок картины — ровно по её пропорциям (--ratio из базы, ArtworkFeed):
+     табличка ложится к самому холсту, а не к пустому полю вокруг, и место
+     под картину занято ещё до загрузки фото — ничего не прыгает.
+     На телефоне холст во всю ширину, но не выше остатка экрана: шапка
+     48px, полоса миниатюр ~140px и место под название на табличке. */
+  .feed-art {
+    --art-max-h: max(220px, calc(100svh - 360px));
+    position: relative;
+    flex: none;
+    align-self: center;
+    width: min(100%, calc(var(--art-max-h) * var(--ratio)));
+    aspect-ratio: var(--ratio);
+  }
+  /* Тень сажает холст на стену; в тёмном зале глубже (--theme-shadow-art). */
+  .feed-art-image {
+    filter: var(--theme-shadow-art);
+  }
+  /* Фон тёмного зала — размытая копия картины, как в прежнем показе
+     работы: в нём стена не ровная чёрная, а тонированная живописью. В
+     светлом зале стена ровная, копии нет. */
+  .feed-backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .feed-backdrop img {
     filter: blur(48px) saturate(1.15) brightness(0.42);
     transform: scale(1.2);
   }
-  /* В светлых залах размытой копии картины нет.
-     Пробовали: подложка давала красивое свечение, но перекрашивала стену
-     под каждую работу — у тёплого пейзажа она желтела, у грозового неба
-     серела. Стена в зале так себя не ведёт, и заказчик это заметил сразу.
-     Тон здесь постоянный, а глубину дают неизменные градиенты:
-     верхний свет (--theme-toplight), пол и углы (.stage-hall). */
-  :root[data-theme="paper"] .stage-backdrop {
+  .feed-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--theme-hall-vignette);
+  }
+  :root[data-theme="paper"] .feed-backdrop {
     display: none;
+  }
+
+  /* Табличка — светлее стены и с тенью, как карточка, приколотая рядом
+     с холстом. В тёмном зале — тёмная, иначе светлое пятно спорило бы
+     с картиной. */
+  .wall-label-col {
+    width: 100%;
+  }
+  .wall-label {
+    padding: 15px 18px 14px;
+    background: var(--color-bg);
+    box-shadow:
+      0 1px 2px rgb(43 37 31 / 0.1),
+      0 10px 24px rgb(43 37 31 / 0.14);
+  }
+  :root:not([data-theme="paper"]) .wall-label {
+    background: var(--color-surface);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.4),
+      0 12px 28px rgb(0 0 0 / 0.45);
+  }
+  .wall-label-title {
+    margin: 0 0 8px;
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: var(--font-heading-weight);
+    line-height: 1.1;
+    color: var(--color-ink);
+  }
+  .wall-label-artist {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--color-ink);
+  }
+  .wall-label-meta {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-ink-soft);
+  }
+  .wall-label-text {
+    margin: 12px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+  }
+  /* «Другие ракурсы» — маленькие фото под табличкой, без скругления:
+     это тоже холст. */
+  .label-extra {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .label-extra-photo {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+  /* Тихая строка под табличкой: ссылки текстом, не кнопками — кнопки
+     наравне с табличкой спорили бы с картиной. «Поделиться» — та же
+     кнопка с меню (ShareButton), её вид кнопки здесь снят. */
+  .label-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 14px;
+  }
+  .label-link,
+  .label-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    transition: color 0.18s ease;
+  }
+  .label-link:hover,
+  .label-actions .btn:hover {
+    color: var(--color-ink);
+    background: none;
+  }
+  .label-link svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+  .label-ask {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-ink-soft);
+  }
+  .label-ask a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .label-ask a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Низ ленты на телефоне: номер над полосой миниатюр, прилипает к низу
+     экрана, пока лента на виду, и уходит вместе с ней к подвалу. */
+  .feed-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding-top: 10px;
+    background: var(--color-wall);
+    box-shadow: 0 -1px 0 var(--color-divider);
+  }
+  .feed-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0 20px 6px;
+    font-size: 13px;
+    color: var(--color-ink-soft);
+  }
+  .feed-bar-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .feed-bar-link:hover {
+    color: var(--color-ink);
+  }
+  .feed-bar-dot {
+    display: none;
+  }
+  .feed-bar-count {
+    min-width: 8.5ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .feed-thumbs-list {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 80px;
+    margin: 0;
+    padding: 0 20px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    list-style: none;
+    scrollbar-width: none;
+  }
+  .feed-thumbs-list::-webkit-scrollbar {
+    display: none;
+  }
+  .feed-thumbs-list > li {
+    flex: none;
+  }
+  /* Миниатюра — в пропорциях картины: на телефоне одной высоты, на
+     компьютере одной ширины. Без скругления — это холст. */
+  .feed-thumb {
+    position: relative;
+    display: block;
+    width: clamp(44px, calc(64px * var(--ratio)), 96px);
+    height: 64px;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--color-surface);
+    border: 0;
+  }
+  .feed-thumb img {
+    transition: transform 0.2s ease;
+  }
+  .feed-thumb:hover img {
+    transform: scale(1.04);
+  }
+  .feed-thumb[aria-current] {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+  .feed-thumb-empty {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    padding: 4px;
+    font-size: 10px;
+    line-height: 1.2;
+    color: var(--color-ink-soft);
+  }
+
+  /* Компьютер: зал ровно в экран, лента внутри листается вниз. Слева
+     столбик миниатюр, номер — внизу по центру под картинами; части низа
+     ленты расходятся по своим местам (display: contents). Картина с
+     табличкой стоят рядом, табличка прижата к низу холста. */
+  @media (min-width: 1024px) {
+    .feed-stage {
+      height: 100svh;
+      overflow: hidden;
+    }
+    .feed {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-x: auto;
+      scroll-snap-type: y mandatory;
+    }
+    /* content-visibility: невидимые картины браузер не рисует вовсе — в
+       ленте из двухсот работ на экране всегда одна. */
+    .feed-slide {
+      height: 100%;
+      flex-direction: row;
+      justify-content: center;
+      padding: 48px clamp(40px, 6vw, 120px) 92px calc(var(--thumbs-w) + 40px);
+      content-visibility: auto;
+      contain-intrinsic-size: auto 100svh;
+    }
+    .feed-work {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 56px;
+      width: auto;
+      max-width: none;
+    }
+    /* Не выше экрана без полей и не шире места, что остаётся от
+       столбика миниатюр и таблички. */
+    .feed-art {
+      --art-max-h: calc(100svh - 160px);
+      --art-max-w: min(calc(100vw - var(--thumbs-w) - 520px), 820px);
+      align-self: auto;
+      width: min(var(--art-max-w), calc(var(--art-max-h) * var(--ratio)));
+    }
+    .wall-label-col {
+      flex: none;
+      width: 260px;
+    }
+    .wall-label {
+      padding: 20px 22px 18px;
+    }
+
+    .feed-dock {
+      display: contents;
+    }
+    .feed-bar {
+      position: absolute;
+      left: var(--thumbs-w);
+      right: 0;
+      bottom: 26px;
+      z-index: 2;
+      justify-content: center;
+      gap: 22px;
+      padding: 0;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .feed-bar > * {
+      pointer-events: auto;
+    }
+    .feed-bar-dot {
+      display: inline;
+    }
+    .feed-bar-count {
+      min-width: 0;
+    }
+    /* Столбик миниатюр со сдвигами вбок (FeedThumbs, --shift). Края
+       растворяются — видно, что столбик продолжается. */
+    .feed-thumbs {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 2;
+      width: var(--thumbs-w);
+    }
+    .feed-thumbs-list {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+      height: 100%;
+      padding: 24px 0 24px 14px;
+      overflow: hidden auto;
+      overscroll-behavior: contain;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 40px,
+        #000 calc(100% - 40px),
+        transparent
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 40px,
+        #000 calc(100% - 40px),
+        transparent
+      );
+    }
+    .feed-thumbs-list > li {
+      margin-left: var(--shift);
+    }
+    .feed-thumb {
+      width: 96px;
+      height: clamp(72px, calc(96px / var(--ratio)), 136px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feed-thumb img {
+      transition: none;
+    }
+    .feed-thumb:hover img {
+      transform: none;
+    }
   }
 
   /* Заглушка на время загрузки фото (components/ui/ArtworkImage.tsx).
@@ -1558,34 +1701,6 @@
     .image-loader {
       animation: none;
     }
-  }
-
-  /* Тень под холстом — из темы: в тёмном зале глубокая, в светлом мягкая. */
-  .stage-art {
-    filter: var(--theme-shadow-art);
-  }
-  /* На компьютере холст прижат к низу своего блока, а не стоит по центру
-     (заказчик, 12.10.2026): тогда низ картины всегда на одной линии с низом
-     подписи слева (.stage-caption) и стрелки «‹ 3 / 32 ›» стоят сразу под
-     холстом. По центру широкая картина на большом экране поднималась, и
-     подпись оказывалась ниже холста. Заглушка загрузки прижата так же. */
-  @media (min-width: 1024px) {
-    .stage-art {
-      object-position: 50% 100%;
-    }
-    .stage-art-area .image-loader-frame {
-      align-items: flex-end;
-    }
-  }
-
-  /* Название работы поверх картины. В тёмном зале ему нужна тень: фоном
-     лежит размытая копия холста, и у светлой работы он светлеет. В светлых
-     залах тени нет — там тёмный текст на светлой стене. */
-  .stage-title {
-    text-shadow: 0 2px 24px rgb(20 18 17 / 0.65);
-  }
-  :root[data-theme="paper"] .stage-title {
-    text-shadow: none;
   }
 
   /* Лента фильтров на телефоне. Полоса прокрутки спрятана — на сенсорном
@@ -1744,58 +1859,6 @@
     }
   }
 
-  /* Листание работ «‹ 3 / 32 ›» (components/gallery/ArtworkStage.tsx).
-
-     Тонкие шевроны без кругов и плашек: ряд стоит под холстом, как
-     подпись на стене музея, и не должен спорить с картиной. Поле
-     нажатия 44px — пальцем попасть удобно, хотя сам значок мелкий. Цифры — моноширинными (tabular-nums): иначе при
-     переходе с «1 / 5» на «4 / 5» ряд подрагивал бы. */
-  .stage-pager {
-    display: flex;
-    flex: none;
-    align-items: center;
-    color: var(--color-ink);
-  }
-  /* На телефоне ряд прижат вправо: шеврон встаёт ровно по краю колонки,
-     пустое поле кнопки уходит за него. */
-  @media (max-width: 1023px) {
-    .stage-pager {
-      margin-right: -12px;
-    }
-  }
-  .stage-pager > a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    color: inherit;
-    border-radius: var(--radius-pill);
-    transition: background-color 0.18s ease;
-  }
-  .stage-pager > a:hover {
-    background: color-mix(in srgb, var(--color-ink) 8%, transparent);
-  }
-  .stage-pager > a svg {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  /* Ширина под «999 / 999»: число подставляет браузер после загрузки
-     общего списка (ArtworkPosition), и пустое место той же ширины не даёт
-     стрелкам сдвинуться, когда оно появится. */
-  .stage-pager-count {
-    min-width: 8.5ch;
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-ink-soft);
-    text-align: center;
-  }
-
   /* — переключатель зала (components/ui/ThemeSwitch.tsx) —
 
      Тумблер: слева солнце, справа луна, ползунок под выбранным залом.
@@ -1863,93 +1926,6 @@
       transition: none;
     }
   }
-
-  /* Затемнение под подписью: густое в левом нижнем углу, сходит на нет
-     к правому верхнему — сама картина остаётся открытой. */
-  .stage-scrim {
-    background:
-      linear-gradient(to top, rgb(20 18 17 / 0.88), rgb(20 18 17 / 0.2) 42%, transparent 68%),
-      radial-gradient(ellipse 70% 75% at 0% 100%, rgb(20 18 17 / 0.82), transparent 72%);
-  }
-
-  /* В светлых залах затемнение не нужно — вместо него верхний свет. */
-  :root[data-theme="paper"] .stage-scrim {
-    background: var(--theme-toplight);
-  }
-
-  /* Зал: пол под стеной и потемнение по углам. Вместе с верхним светом
-     (--theme-toplight) и двойной тенью холста это даёт ощущение комнаты,
-     а не заливки. Прежде в светлых залах фон был ровным, и картина
-     висела в пустоте.
-
-     Пол занимает нижнюю четверть: стык со стеной намечен тонкой полосой
-     на 20.6-21.4%, а не жёсткой линией — резкая граница на глаз читается
-     как ошибка вёрстки, а не как угол комнаты.
-
-     Пол — только с 1024px. Уже этого подпись и кнопки стоят под картиной
-     в столбик, ровно на месте пола, и стык стены с полом резал кнопку
-     «Примерить на стену» пополам — углом комнаты он там не читался
-     (заказчик, 03.10.2026). Белый зал на компьютере пол убирает сам,
-     ниже по файлу. */
-  .stage-hall {
-    background: var(--theme-hall-vignette);
-  }
-  @media (min-width: 1024px) {
-    .stage-hall {
-      background: var(--theme-hall-vignette), var(--theme-hall-floor);
-    }
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════════════════
-   Поле под холстом в зале «почти белый» — намеренно ВНЕ @layer.
-
-   Правило спорит с утилитой p-12 на том же элементе. В каскадных слоях
-   побеждает не большая специфичность, а более поздний слой, и utilities
-   у Tailwind идёт после components — то есть из @layer components это
-   правило не сработало бы вовсе (проверено: padding-bottom оставался 48px).
-   Стили вне слоёв перекрывают любые слои, поэтому правило вынесено сюда.
-
-   Зачем: на десктопе над картиной оставалось 124px стены, а под ней 33px —
-   холст выглядел обрезанным нижним краем окна, а не висящим. Теперь поля
-   сопоставимы, и под холстом читается стена с полом.
-
-   Только этот зал и только с 1024px: на телефоне эффект и так работает,
-   а тёмный зал заказчик просил не трогать.
-   ═════════════════════════════════════════════════════════════════════════ */
-/* Низ подписи слева — на той же линии, что низ холста: отступ снизу
-   такой же, как у блока картины (lg:pb-[100px] там, правило ниже — для
-   белого зала). Холст прижат к низу блока (.stage-art). */
-@media (min-width: 1024px) {
-  .stage-caption {
-    padding-bottom: 100px;
-  }
-  :root[data-theme="paper"] .stage-caption {
-    padding-bottom: clamp(100px, 11vh, 120px);
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Не меньше 100px: в этом поле стоит ряд «‹ 3 / 32 ›» (ArtworkStage). */
-  :root[data-theme="paper"] .stage-art-area {
-    padding-bottom: clamp(100px, 11vh, 120px);
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════════════════
-   Зал «почти белый» на десктопе: размытое помещение во весь фон, поверх
-   него — стена-панель с чёткими краями, на ней висит холст.
-
-   Прежде комната была набрана градиентами: мягкий угол, полоса пола внизу.
-   Заказчик забраковал — пола под картиной на стене быть не должно, а край
-   стены обязан быть настоящим краем, а не растушёвкой. Теперь наоборот:
-   фотография зала закрывает фон целиком, а стена — отдельная плоскость
-   поверх неё, с резкой левой гранью и тенью, падающей в глубину.
-
-   Вне @layer — правила спорят с утилитами Tailwind на тех же элементах.
-   ═════════════════════════════════════════════════════════════════════════ */
-.stage-wall {
-  display: none;
 }
 
 /* Линия под шапкой — всегда (заказчик, 12.10.2026; прежде появлялась
@@ -2022,73 +1998,6 @@
 @media (prefers-reduced-motion: reduce) {
   .stage-header {
     transition: none;
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Пол и угол убраны совсем: их роль теперь у фотографии и грани стены. */
-  :root[data-theme="paper"] .stage-hall {
-    background: none;
-  }
-
-  /* Снимок белого зала убран совсем: в нём почти нет перепадов светлоты —
-     белые стены, белый потолок, — и в размытии он превращался в ровную
-     светлую массу. Глубины она не давала. Файл public/ui/zal-fon.webp
-     удалён вместе со слоем.
-
-     Глубину слева теперь даёт та же размытая копия картины, что и в тёмном
-     зале: крупные мягкие пятна разной светлоты читаются как пространство
-     за стеной. Стена справа при этом постоянная — она лежит отдельной
-     плоскостью поверх и закрывает подложку там, где висит холст.
-     Перекрашивается только глубина слева, как и в тёмном зале. */
-
-  :root[data-theme="paper"] .stage-backdrop {
-    display: block;
-    filter: blur(64px) saturate(0.45) brightness(1.7);
-    transform: scale(1.35);
-    opacity: 0.26;
-  }
-
-  /* Глубина зала. Пространство у самого угла темнее: свет туда уже не
-     достаёт, и именно этот перепад читается как уходящая вглубь комната.
-     Затемнение начинается на 16% и набирает силу к грани — там, где
-     заканчивается текст подписи, оно ещё слабое. */
-  :root[data-theme="paper"] .stage-hall::after {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: var(--stage-edge);
-    background: linear-gradient(
-      to right,
-      rgb(43 37 31 / 0) 0,
-      rgb(43 37 31 / 0.03) 52%,
-      rgb(43 37 31 / 0.13) 100%
-    );
-  }
-
-  /* Стена. Левая грань на 30%: текст подписи заканчивается около 23%
-     ширины, картина начинается с 36% — панель проходит между ними.
-
-     Тени наружу нет намеренно. Размытая тень в комнату превращала стену
-     в карточку, лежащую поверх фона, — заказчик это и заметил. У настоящего
-     угла работает не тень, а перепад светлоты: ближняя плоскость освещена,
-     уходящая в глубину затемнена (см. правило выше). Сама грань поэтому
-     резкая, без растушёвки.
-
-     На стене — верхний свет и лёгкое потемнение к нижнему краю: так
-     плоскость перестаёт быть ровной заливкой, но остаётся стеной. */
-  :root[data-theme="paper"] .stage-wall {
-    position: absolute;
-    inset: 0 0 0 var(--stage-edge);
-    display: block;
-    background:
-      linear-gradient(
-        to bottom,
-        rgb(255 255 255 / 0.6) 0,
-        rgb(255 255 255 / 0) 38%,
-        rgb(43 37 31 / 0.05) 100%
-      ),
-      var(--color-wall);
   }
 }
 

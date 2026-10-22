@@ -80,11 +80,9 @@ export const ruUi = {
 
   work: {
     notFound: "Работа не найдена",
-    fallbackKicker: "Работа",
     backToAll: "← Все работы",
     tryOnWall: "Примерить на стену",
-    /** Главная кнопка под картиной: меню «WhatsApp или почта» с готовым сообщением. */
-    /** Строка под плитками: «Спросить о картине: WhatsApp · почта». */
+    /** Строка под табличкой: «Спросить о картине: WhatsApp · Почта». */
     ask: "Спросить о картине:",
     message: (title: string, url: string) =>
       `Здравствуйте! Меня заинтересовала работа «${title}». ${url}`,
@@ -100,13 +98,6 @@ export const ruUi = {
     prev: (title: string) => `Предыдущая работа: «${title}»`,
     next: (title: string) => `Следующая работа: «${title}»`,
     position: (position: number, total: number) => `Работа ${position} из ${total}`,
-    /** Панель «Все работы» поверх страницы работы (ArtworkPicker). */
-    pickerOpen: "Все работы",
-    pickerTitle: (count: number) => `Все работы · ${count}`,
-    pickerClose: "Закрыть",
-    /** Список для панели не загрузился — текст и кнопка повтора. */
-    pickerError: "Не удалось загрузить список работ.",
-    pickerRetry: "Попробовать ещё раз",
     openFullscreen: (title: string) => `Открыть «${title}» во весь экран`,
     fullscreen: "Во весь экран",
     closeViewer: "Закрыть просмотр",

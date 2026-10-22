@@ -29,7 +29,19 @@ import { useDictionary } from "@/lib/i18n/client";
  * наведении и для скринридера. Ссылка скопирована — значок сменяется
  * галочкой.
  */
-export function ShareButton({ url, title }: { url: string; title: string }) {
+export function ShareButton({
+  url,
+  title,
+  showLabel = false,
+}: {
+  url: string;
+  title: string;
+  /**
+   * Подпись словом рядом со значком — для тихой строки под табличкой
+   * на странице работы (ArtworkFeed). Без неё — круглая кнопка-значок.
+   */
+  showLabel?: boolean;
+}) {
   const t = useDictionary();
   const [isCopied, setIsCopied] = useState(false);
   const text = t.work.shareText(title, t.site.artistGenitive);
@@ -91,14 +103,14 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
   return (
     <PopoverMenu
       onTriggerClick={handleTrigger}
-      triggerClassName="btn-icon"
-      triggerTitle={t.work.share}
+      triggerClassName={showLabel ? undefined : "btn-icon"}
+      triggerTitle={showLabel ? undefined : t.work.share}
       label={
         <>
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className="size-5"
+            className={showLabel ? "size-[15px]" : "size-5"}
             fill="none"
             stroke="currentColor"
             strokeWidth={1.6}
@@ -111,7 +123,7 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
               <path d="M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1" />
             )}
           </svg>
-          <span className="sr-only">{t.work.share}</span>
+          <span className={showLabel ? undefined : "sr-only"}>{t.work.share}</span>
           {/* Смена значка скринридеру не видна — для него отдельная
               живая область. */}
           <span role="status" className="sr-only">

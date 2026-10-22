@@ -64,12 +64,19 @@ export function ArtworkImage({
   fit = "cover",
   loader,
   aspect,
+  eager,
 }: {
   src?: string;
   alt: string;
   className?: string;
   sizes?: string;
   priority?: boolean;
+  /**
+   * Грузить сразу, не дожидаясь, пока картина подъедет к экрану. Ленте
+   * на странице работы: соседняя картина за краем ленты для браузера
+   * «не видна», и ленивая подгрузка начиналась бы только посреди свайпа.
+   */
+  eager?: boolean;
   fit?: "cover" | "contain";
   /** Серая мерцающая карточка, пока фото грузится. */
   loader?: boolean;
@@ -91,6 +98,8 @@ export function ArtworkImage({
           fill
           sizes={sizes ?? "100vw"}
           priority={priority}
+          // У priority своя загрузка — сразу и с высоким приоритетом.
+          loading={eager && !priority ? "eager" : undefined}
           onLoad={() => setIsLoaded(true)}
           // Не загрузилось — мерцать бесконечно незачем: заглушка убирается,
           // и браузер показывает подпись картины вместо пустой серой плитки.

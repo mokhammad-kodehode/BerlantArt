@@ -1,8 +1,10 @@
-import { getArtworkThumbs } from "@/lib/artworks";
+import { getArtworkFeed } from "@/lib/artworks";
 
 /**
- * Список работ с миниатюрами для панели «Все работы» — один файл на весь
- * сайт. Панель грузит его, только когда её открыли (ArtworkPicker).
+ * Все работы для ленты на странице работы (ArtworkFeed): фото, пропорции,
+ * табличка на обоих языках — один файл на весь сайт. Страница работы
+ * грузит его после отрисовки своей картины, браузер держит его в кеше.
+ * Имя адреса осталось от панели миниатюр, которую лента заменила.
  *
  * Раньше этот список сидел внутри каждой из ~400 страниц работ и делал
  * каждую в разы тяжелее, а Vercel считает записи в кеш по 8 КБ на
@@ -16,5 +18,5 @@ import { getArtworkThumbs } from "@/lib/artworks";
 export const revalidate = 86400;
 
 export async function GET(): Promise<Response> {
-  return Response.json(await getArtworkThumbs());
+  return Response.json(await getArtworkFeed());
 }

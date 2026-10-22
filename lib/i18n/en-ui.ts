@@ -57,7 +57,6 @@ export const enUi: UiDictionary = {
 
   work: {
     notFound: "Work not found",
-    fallbackKicker: "Painting",
     backToAll: "← All works",
     tryOnWall: "Try it on a wall",
     ask: "Ask about this painting:",
@@ -73,11 +72,6 @@ export const enUi: UiDictionary = {
     prev: (title) => `Previous work: “${title}”`,
     next: (title) => `Next work: “${title}”`,
     position: (position, total) => `Work ${position} of ${total}`,
-    pickerOpen: "All works",
-    pickerTitle: (count) => `All works · ${count}`,
-    pickerClose: "Close",
-    pickerError: "Couldn’t load the list of works.",
-    pickerRetry: "Try again",
     openFullscreen: (title) => `Open “${title}” full screen`,
     fullscreen: "Full screen",
     closeViewer: "Close viewer",

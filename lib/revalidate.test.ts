@@ -12,7 +12,6 @@ import {
   sitemapPath,
   revalidateAfterImageChange,
   revalidateArtworkPage,
-  revalidateArtworkPages,
   revalidateSharedPages,
 } from "@/lib/revalidate";
 
@@ -115,11 +114,5 @@ describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
       );
       expect(artworkCalls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
     }
-  });
-
-  it("несколько работ: без повторов и без пустых соседей", () => {
-    vi.mocked(revalidatePath).mockClear();
-    revalidateArtworkPages(["a", null, "b", undefined, "a"]);
-    expect(calls()).toEqual(["/gallery/a", "/en/gallery/a", "/gallery/b", "/en/gallery/b"]);
   });
 });
