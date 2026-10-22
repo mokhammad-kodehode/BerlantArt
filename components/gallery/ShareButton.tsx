@@ -104,7 +104,9 @@ export function ShareButton({
     <PopoverMenu
       onTriggerClick={handleTrigger}
       triggerClassName={showLabel ? undefined : "btn-icon"}
-      triggerTitle={showLabel ? undefined : t.work.share}
+      // Подсказка нужна и с подписью: в узкой табличке подпись прячется,
+      // и остаётся один значок (globals.css, .share-label).
+      triggerTitle={t.work.share}
       label={
         <>
           <svg
@@ -123,7 +125,7 @@ export function ShareButton({
               <path d="M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1" />
             )}
           </svg>
-          <span className={showLabel ? undefined : "sr-only"}>{t.work.share}</span>
+          <span className={showLabel ? "share-label" : "sr-only"}>{t.work.share}</span>
           {/* Смена значка скринридеру не видна — для него отдельная
               живая область. */}
           <span role="status" className="sr-only">
