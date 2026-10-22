@@ -28,7 +28,38 @@ const resize: NextConfig["images"] =
     ? { loader: "custom", loaderFile: "./lib/image-loader.ts" }
     : { unoptimized: true };
 
+/**
+ * Защитные заголовки на каждый ответ сайта (тикет О-14, обзор проекта,
+ * раздел 7). До 22.10.2026 сайт не отправлял ни одного.
+ *
+ * - встраивать сайт в чужую страницу нельзя: иначе вход в админку можно
+ *   показать внутри чужого сайта и наложить поверх свои поля. Два
+ *   заголовка, потому что старые браузеры знают только X-Frame-Options;
+ * - тип файла браузер не угадывает, а верит заголовку: файл примерки или
+ *   картинку не выдать за скрипт;
+ * - чужому сайту по ссылке уходит только адрес нашего, без пути;
+ * - камера, микрофон и геолокация внутри страницы выключены — сайт ими не
+ *   пользуется. Примерка через камеру открывает программу телефона
+ *   (Quick Look, Scene Viewer), а на неё запрет не действует. «Поделиться»
+ *   и копирование ссылки (ShareButton) не запрещены.
+ *
+ * Строгой Content-Security-Policy здесь нет: она отдельный тикет О-15,
+ * её надо проверять на видео, примерке и камере. HSTS ставит Vercel.
+ */
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+];
+
 const nextConfig: NextConfig = {
+  /** Не подсказывать в каждом ответе, на чём сделан сайт. */
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   experimental: {
     /**
      * Корневых layout два — русский и английский (app/(ru), app/(en)/en),
