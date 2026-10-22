@@ -43,7 +43,7 @@ export function ArtworkTile({
   const caption = artworkCaption(work, lang);
 
   return (
-    // id — якорь: «← Все работы» на странице работы ведёт сюда,
+    // id — якорь: «← В галерею» на странице работы ведёт сюда,
     // к той же плитке, а не в начало стены (заказчик, 16.10.2026).
     <li id={tileAnchor(work.id)} className={cn("wall-tile list-none", className)}>
       {/*

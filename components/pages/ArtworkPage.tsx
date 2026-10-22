@@ -166,14 +166,20 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
             на размытой копии картины, и у светлой работы фон светлеет —
             без тени тонкие засечки Literata сливались с ним. В светлых
             залах тень снимается (класс stage-title в globals.css). */}
-        <h1 className="stage-title text-ink mt-0 mb-3 text-[clamp(32px,4vw,56px)] leading-[1.02]">
+        <h1 className="stage-title caption-heading text-ink mt-0 mb-3 text-[clamp(32px,4vw,56px)] leading-[1.02]">
           {work.title}
         </h1>
 
         {meta && <p className="text-ink-soft mt-0 mb-4 text-[14px]">{meta}</p>}
 
+        {/*
+          caption-extra — то, что прячется в режиме «Все работы»: описание,
+          кнопки и «Спросить о картине». Надстрочник, название и строка
+          с годом и размером остаются под сеткой — по ним видно, какая
+          картина сейчас на стене (globals.css, «Описание · Все работы»).
+        */}
         {description && (
-          <p className="text-ink-soft mt-0 mb-5 max-w-[52ch] text-[15px] leading-[1.65]">
+          <p className="caption-extra text-ink-soft mt-0 mb-5 max-w-[52ch] text-[15px] leading-[1.65]">
             {description}
           </p>
         )}
@@ -185,7 +191,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           сколько текст; потом — плитки 84px, тоже крупные. Вид — в
           globals.css, .action-pair.
         */}
-        <div className="action-pair">
+        <div className="action-pair caption-extra">
           {/*
             Примерка — одна кнопка: со стены в раме (/room) камера телефона
             открывается кнопкой «Примерить через камеру» наверху. Две кнопки
@@ -226,7 +232,7 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
           когда номер или почта заполнены в переменных окружения.
         */}
         {(whatsappHref || mailHref) && (
-          <p className="text-ink-soft mt-4 mb-0 text-[14px]">
+          <p className="caption-extra text-ink-soft mt-4 mb-0 text-[14px]">
             {t.work.ask}{" "}
             {whatsappHref && (
               <a

@@ -2,8 +2,8 @@ import type { ArtworkThumb } from "@/lib/artworks";
 
 /**
  * Общий список работ в браузере: один запрос за посещение на всё, что
- * в нём нуждается, — счётчик «129 / 203» (ArtworkPosition) и панель
- * «Все работы» (ArtworkPicker).
+ * в нём нуждается, — счётчик «129 / 203» (ArtworkPosition), сетка
+ * «Все работы» (ArtworkPicker) и число работ в переключателе (CaptionTabs).
  *
  * Список отдаёт `/api/artwork-thumbs`, а не сама страница работы, — иначе
  * каждая новая картина меняла бы все ~400 страниц (тикет О-5,
@@ -34,12 +34,14 @@ export function isThumbList(value: unknown): value is ArtworkThumb[] {
 }
 
 let pending: Promise<ArtworkThumb[]> | null = null;
+let loaded: ArtworkThumb[] | null = null;
 
 export function fetchArtworkThumbs(): Promise<ArtworkThumb[]> {
   pending ??= (async () => {
     const response = await fetch(artworkThumbsUrl);
     const data: unknown = response.ok ? await response.json() : null;
     if (!isThumbList(data)) throw new Error(`Список работ не получен: ${response.status}`);
+    loaded = data;
     return data;
   })().catch((error: unknown) => {
     pending = null;
@@ -47,6 +49,15 @@ export function fetchArtworkThumbs(): Promise<ArtworkThumb[]> {
   });
 
   return pending;
+}
+
+/**
+ * Уже загруженный список — сразу, без ожидания. Сетка «Все работы»
+ * собирается заново на каждой странице работы, и без этого при каждом
+ * переходе к соседней картине на миг мелькали бы серые заглушки.
+ */
+export function loadedArtworkThumbs(): ArtworkThumb[] | null {
+  return loaded;
 }
 
 /**

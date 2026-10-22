@@ -5,6 +5,8 @@ import { ArtworkPicker } from "@/components/gallery/ArtworkPicker";
 import { ArtworkPosition } from "@/components/gallery/ArtworkPosition";
 import { ArtworkSwipe } from "@/components/gallery/ArtworkSwipe";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
+import { CaptionTabs } from "@/components/gallery/CaptionTabs";
+import { WorksToggle } from "@/components/gallery/WorksToggle";
 import { Header } from "@/components/layout/Header";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { tileAnchor } from "@/components/ui/ArtworkTile";
@@ -176,7 +178,7 @@ export function ArtworkStage({
         Ниже 1024px блок картины строится по пропорциям фото: во всю ширину,
         но не выше экрана без шапки — картина целиком на первом экране
         (96px = полоса шапки 48px, поле сверху 20px и запас под ряд
-        «← Все работы … ‹ 3 / 32 ›», чтобы его край был виден).
+        «← В галерею … ‹ 3 / 32 ›», чтобы его край был виден).
         Прежде он брал остаток высоты после подписи, не меньше 46vh, и про
         ширину не знал: на планшете 768×1024 квадратная картина занимала
         507px — 66% ширины, а в окне пониже и того меньше (заказчик,
@@ -247,7 +249,7 @@ export function ArtworkStage({
               href={galleryHref}
               className="text-ink-soft hover:text-ink text-[14px] no-underline hover:underline lg:hidden"
             >
-              {t.backToAll}
+              {t.backToGallery}
             </Link>
 
             {prevHref && nextHref && prev && next && (
@@ -263,8 +265,8 @@ export function ArtworkStage({
                     <path d="m9.5 6 6 6-6 6" />
                   </svg>
                 </Link>
-                {/* «Все работы» — панель с миниатюрами поверх страницы. */}
-                {currentId && <ArtworkPicker currentId={currentId} />}
+                {/* «Все работы» — сетка миниатюр на месте описания. */}
+                {currentId && <WorksToggle />}
               </div>
             )}
           </nav>
@@ -277,13 +279,29 @@ export function ArtworkStage({
         (заказчик, 12.10.2026). Справа поле уже, чем слева: там его и так
         отделяет от картины стена.
       */}
-        <div className="stage-caption relative z-[2] px-[clamp(20px,5vw,64px)] pt-2 pb-10 lg:w-[30%] lg:self-end lg:pt-8 lg:pr-10 lg:[grid-area:1/1]">
+        {/*
+        Вверху колонки — «Описание · Все работы» (заказчик, 20.10.2026):
+        во втором режиме на месте описания сетка миниатюр, и другую картину
+        выбирают, не уходя со страницы. Режим помнит браузер
+        (lib/caption-mode.ts), показ решает CSS — globals.css, «Описание ·
+        Все работы».
+
+        На компьютере колонка не ниже экрана: переключатель стоит наверху,
+        на одной высоте с холстом, а подпись по-прежнему прижата к низу
+        (mt-auto у ссылки «← В галерею»). В режиме сетки колонка ровно
+        в экран, и сетка прокручивается внутри неё. На телефоне всё идёт
+        потоком под картиной: переключатель, лента работ или описание.
+      */}
+        <div className="stage-caption relative z-[2] flex flex-col px-(--caption-gutter) pt-2 pb-10 lg:min-h-svh lg:w-[30%] lg:pt-8 lg:pr-10 lg:[grid-area:1/1]">
+          <CaptionTabs />
+          <ArtworkPicker currentId={currentId} />
+
           {/* На телефоне эта ссылка стоит в ряду со стрелками, под картиной. */}
           <Link
             href={galleryHref}
-            className="text-ink-soft hover:text-ink mb-4 hidden text-[14px] no-underline hover:underline lg:inline-block"
+            className="text-ink-soft hover:text-ink mb-4 hidden self-start text-[14px] no-underline hover:underline lg:mt-auto lg:inline-block"
           >
-            {t.backToAll}
+            {t.backToGallery}
           </Link>
 
           {children}
