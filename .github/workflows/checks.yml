@@ -23,15 +23,24 @@ concurrency:
 permissions:
   contents: read
 
+# Только для `next typegen` в проверке типов: он читает next.config.ts,
+# а тот проверяет переменные окружения (lib/env.ts) и без DATABASE_URL
+# падает. Базы в CI нет и не нужно — это заглушка, к ней никто не
+# подключается.
+env:
+  DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
 jobs:
   checks:
     name: Формат, линтер, типы, тесты
-    runs-on: ubuntu-latest
+    # Версия закреплена: ubuntu-latest с 19.10.2026 переезжает на Ubuntu 26,
+    # и проверки не должны начать падать сами по себе.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # Та же версия, на которой проект проверяется у разработчика.
           node-version: 22
@@ -47,6 +56,9 @@ jobs:
       - name: Линтер (ESLint)
         run: npm run lint
 
+      # Сначала next typegen (внутри npm run typecheck): типы PageProps и
+      # LayoutProps Next создаёт сам при запуске сайта, на чистой машине их
+      # нет — первый прогон 22.10.2026 упал на 21 «Cannot find name».
       - name: Типы (TypeScript)
         run: npm run typecheck
 
