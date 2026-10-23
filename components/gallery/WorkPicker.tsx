@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 
 import { filterFittingWorks, fittingCategories, type FittingWork } from "@/lib/fitting-works";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
@@ -14,14 +14,25 @@ const thumbSide = 84;
 const eagerThumbs = 6;
 
 /**
+ * Столько курсор должен простоять на работе, чтобы она повисла на стене.
+ * Без этого картина вешалась при любом касании миниатюры курсором, и по
+ * пути из списка к стене на ней мелькали случайные работы (заказчик,
+ * 23.10.2026; запись: три картины за 0,7 с). Счёт идёт от остановки, а не
+ * от входа в миниатюру: «пробыл на ней 150 мс» медленный курсор набирал
+ * и на ходу — одна картина всё равно мелькала.
+ */
+const previewDelay = 150;
+
+/**
  * Выбор картины в панели примерочной («Повесить у себя», заказчик,
  * 23.10.2026): поиск, категории и сетка работ. Один и тот же список
  * открывается сразу, когда пришли из меню, и по «Сменить», когда пришли
  * со страницы работы, — отдельной страницы со списком нет, картина
  * меняется на месте.
  *
- * Наведение мышью (и фокус с клавиатуры) вешает работу на стену заранее,
- * до нажатия: так выбирают глазами, а не по названиям. На телефоне
+ * Курсор, остановившийся на работе (и фокус с клавиатуры), вешает её на
+ * стену заранее, до нажатия: так выбирают глазами, а не по названиям.
+ * Курсор, проходящий через миниатюры, ничего не вешает. На телефоне
  * наведения нет — касание сразу выбирает.
  */
 export function WorkPicker({
@@ -55,6 +66,31 @@ export function WorkPicker({
     () => filterFittingWorks(works ?? [], { category, query }),
     [works, category, query],
   );
+
+  // Таймер до показа: каждое движение курсора начинает счёт заново.
+  const previewTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(previewTimer.current), []);
+
+  function aimAt(work: FittingWork, event: PointerEvent<HTMLButtonElement>): void {
+    // Только настоящее движение мыши: касание сразу выбирает, а миниатюра,
+    // въехавшая под неподвижный курсор при прокрутке, — не выбор.
+    if (event.pointerType !== "mouse") return;
+    if (event.movementX === 0 && event.movementY === 0) return;
+    clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => onPreview(work), previewDelay);
+  }
+
+  // Курсор ушёл с миниатюры раньше срока — показ отменяется. Уже
+  // повешенная работа остаётся до следующей: между миниатюрами стена не
+  // мигает пустотой.
+  function stopAiming(): void {
+    clearTimeout(previewTimer.current);
+  }
+
+  function leaveList(): void {
+    stopAiming();
+    onPreview(null);
+  }
 
   return (
     <section className="pick" aria-label={current === null ? t.pickWork : t.changeTitle}>
@@ -120,7 +156,7 @@ export function WorkPicker({
       ) : shown.length === 0 ? (
         <p className="pick-note">{t.noMatches}</p>
       ) : (
-        <ul className="pick-grid" onMouseLeave={() => onPreview(null)}>
+        <ul className="pick-grid" onPointerLeave={leaveList}>
           {shown.map((work, index) => {
             const size = canvasCmText(work.canvas, t.cm);
             const isCurrent = work.id === current?.id;
@@ -137,8 +173,13 @@ export function WorkPicker({
                   aria-current={isCurrent || undefined}
                   aria-label={t.workOption(work.title, size)}
                   onClick={() => onPick(work)}
-                  onMouseEnter={() => onPreview(work)}
-                  onFocus={() => onPreview(work)}
+                  onPointerMove={(event) => aimAt(work, event)}
+                  onPointerLeave={stopAiming}
+                  // С клавиатуры — сразу: Tab и так шаг за шагом. Фокус от
+                  // нажатия мышью не в счёт — нажатие и так выбирает.
+                  onFocus={(event) => {
+                    if (event.currentTarget.matches(":focus-visible")) onPreview(work);
+                  }}
                 >
                   <span className="pick-box">
                     <span className="pick-art" style={{ width, height }}>
