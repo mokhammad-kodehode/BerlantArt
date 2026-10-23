@@ -405,7 +405,7 @@ export function FittingRoom({
             sizes="(max-width: 1023px) 80vw, 50vw"
             // Картина на стене — главное на экране и тогда, когда её
             // повесили из списка уже в браузере: грузится первой.
-            priority
+            preload
           />
         )}
         {isListOpen && preview !== null && preview.id !== work?.id && (

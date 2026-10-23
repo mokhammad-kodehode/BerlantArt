@@ -20,14 +20,14 @@ export function FramedPainting({
   choice,
   canvas,
   sizes,
-  priority = false,
+  preload = false,
 }: {
   src: string;
   alt: string;
   choice: FrameChoice;
   canvas: CanvasCm;
   sizes: string;
-  priority?: boolean;
+  preload?: boolean;
 }) {
   const style: CSSProperties & CssVars = {
     ...frameStyle(choice),
@@ -51,14 +51,7 @@ export function FramedPainting({
         </>
       )}
       <div className="framed-canvas">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes={sizes}
-          className="object-cover"
-          priority={priority}
-        />
+        <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" preload={preload} />
       </div>
     </div>
   );

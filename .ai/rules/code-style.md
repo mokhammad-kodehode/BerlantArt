@@ -54,7 +54,7 @@ import { formatCaption } from "./caption";
 | функция          | глагол       | `getArtworks`, `artworkCaption` |
 | булево значение  | `is` / `has` | `isPrimary`, `hasPrice`         |
 | тип              | `PascalCase` | `ArtworkFilters`                |
-| файл с данными   | `kebab-case` | `demo-artworks.ts`              |
+| файл с данными   | `kebab-case` | `room-options.ts`               |
 
 Имя файла компонента совпадает с именем компонента — иначе поиск по
 проекту находит файл, но не находит определение.

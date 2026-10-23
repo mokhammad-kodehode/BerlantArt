@@ -60,7 +60,7 @@ export function ArtworkImage({
   alt,
   className,
   sizes,
-  priority,
+  preload,
   fit = "cover",
   loader,
   aspect,
@@ -70,7 +70,11 @@ export function ArtworkImage({
   alt: string;
   className?: string;
   sizes?: string;
-  priority?: boolean;
+  /**
+   * Первый экран: Next ставит ссылку на картину в <head>, и она не
+   * откладывается. В Next 16 это бывший `priority` — он устарел.
+   */
+  preload?: boolean;
   /**
    * Грузить сразу, не дожидаясь, пока картина подъедет к экрану. Ленте
    * на странице работы: соседняя картина за краем ленты для браузера
@@ -97,9 +101,10 @@ export function ArtworkImage({
           alt={alt}
           fill
           sizes={sizes ?? "100vw"}
-          priority={priority}
-          // У priority своя загрузка — сразу и с высоким приоритетом.
-          loading={eager && !priority ? "eager" : undefined}
+          preload={preload}
+          // С preload картина и так грузится сразу, а вместе с loading
+          // Next считает их взаимоисключающими.
+          loading={eager && !preload ? "eager" : undefined}
           onLoad={() => setIsLoaded(true)}
           // Не загрузилось — мерцать бесконечно незачем: заглушка убирается,
           // и браузер показывает подпись картины вместо пустой серой плитки.

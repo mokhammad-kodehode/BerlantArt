@@ -96,7 +96,7 @@ export async function ContactPage({ lang }: { lang: Locale }) {
                   fill
                   sizes="(min-width: 900px) 420px, 90vw"
                   className="object-cover"
-                  priority
+                  preload
                 />
               </figure>
 

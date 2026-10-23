@@ -343,7 +343,7 @@ const FeedSlide = memo(function FeedSlide({
       alt={item.alt[lang]}
       fit="contain"
       sizes={artSizes}
-      priority={isMain}
+      preload={isMain}
       eager={isNear}
       loader
       aspect={item.ratio ?? undefined}

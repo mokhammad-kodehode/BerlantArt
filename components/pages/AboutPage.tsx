@@ -73,7 +73,7 @@ export async function AboutPage({ lang }: { lang: Locale }) {
                 fill
                 sizes="(min-width: 900px) 440px, 100vw"
                 className="object-cover"
-                priority
+                preload
               />
             </figure>
 
