@@ -14,7 +14,8 @@ export default defineConfig({
     alias: { "@": import.meta.dirname },
   },
   test: {
-    include: ["lib/**/*.test.ts"],
+    // scripts/ — проверка сайта целиком (О-19): её обходчик тоже под тестами.
+    include: ["lib/**/*.test.ts", "scripts/**/*.test.ts"],
     env: {
       DATABASE_URL: "postgresql://test:test@localhost:5432/test",
       NEXT_PUBLIC_R2_PUBLIC_URL: "https://pub-test.r2.dev",

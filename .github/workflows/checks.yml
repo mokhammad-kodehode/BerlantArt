@@ -80,3 +80,43 @@ jobs:
             | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r/%0D/g' \
             | sed ':a;N;$!ba;s/\n/%0A/g' \
             | sed 's/^/::error title=Конец журнала тестов::/'
+
+  # Сайт целиком (тикет О-19): сборка, как для Vercel, на временной базе
+  # с пятью работами и обход по ссылкам — битая ссылка, ответ не 200
+  # и ошибка в журнале сервера роняют проверку. Отдельной задачей, чтобы
+  # шла параллельно с проверками кода. Что и как — scripts/site-check.
+  site:
+    name: Сайт целиком — сборка и ссылки
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Сборка и обход сайта
+        run: |
+          set -o pipefail
+          npm run check:site 2>&1 | tee site-check.log
+          # Итог и при успехе — пометкой: видно, что обход был и сколько проверил.
+          grep "Проверено адресов" site-check.log | sed "s/^/::notice title=Проверка сайта::/"
+
+      # Найденное — пометками на странице прогона: журнал без входа
+      # в GitHub не открывается. Каждая находка проверки начинается с «✗»;
+      # нет ни одной — значит, упала сама проверка, и уходит конец журнала.
+      - name: Находки проверки сайта — пометками
+        if: failure()
+        run: |
+          if grep -q '✗' site-check.log; then
+            grep '✗' site-check.log | head -n 10 | sed 's/%/%25/g' | sed 's/^/::error title=Проверка сайта::/'
+          else
+            tail -n 40 site-check.log \
+              | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r/%0D/g' \
+              | sed ':a;N;$!ba;s/\n/%0A/g' \
+              | sed 's/^/::error title=Конец журнала проверки сайта::/'
+          fi
