@@ -437,12 +437,17 @@ export type ArtworkFeedItem = {
   canvas: CanvasCm | null;
   /** Версия модели для камеры телефона (lib/ar-target.ts); null — работу в камере не показать. */
   arVersion: string | null;
+  /**
+   * Категория на обоих языках — для фильтра в выборе картины на «Повесить
+   * у себя» (lib/fitting-works.ts); null — без категории.
+   */
+  category: Record<Locale, string> | null;
 };
 
 /** Из чего собирается картина ленты: и выборка списка, и полная работа. */
 type FeedSource = Pick<
   ArtworkWithImages,
-  "id" | "title" | "description" | "technique" | "dimensions" | "year"
+  "id" | "title" | "description" | "technique" | "dimensions" | "year" | "category"
 > & { images: { url: string; width: number | null; height: number | null }[] };
 
 /**
@@ -481,6 +486,7 @@ export function labelDescription(
 export function artworkFeedItem(work: FeedSource): ArtworkFeedItem {
   // Выборки кладут главное изображение первым (withImages).
   const [primary, ...rest] = work.images;
+  const { category } = work;
   const both = <T>(make: (lang: Locale) => T): Record<Locale, T> => ({
     ru: make("ru"),
     en: make("en"),
@@ -498,7 +504,13 @@ export function artworkFeedItem(work: FeedSource): ArtworkFeedItem {
     description: labelDescription(work, "ru"),
     canvas: canvasCm(work),
     arVersion: cameraTarget(work)?.version ?? null,
+    category: category === null ? null : both((lang) => categoryLabel(category, lang)),
   };
+}
+
+/** Подпись категории; не из утверждённого списка — как пришла из базы. */
+function categoryLabel(category: string, lang: Locale): string {
+  return artworkCategory(category, lang) ?? category;
 }
 
 /**
@@ -530,6 +542,7 @@ export async function getArtworkFeed(): Promise<ArtworkFeedItem[]> {
       technique: true,
       dimensions: true,
       year: true,
+      category: true,
       images: {
         select: { url: true, width: true, height: true },
         orderBy: withImages.images.orderBy,

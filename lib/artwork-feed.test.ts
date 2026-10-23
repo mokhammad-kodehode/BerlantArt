@@ -16,6 +16,7 @@ const work = {
   technique: "Холст, масло",
   dimensions: "50 × 50 см",
   year: 2023,
+  category: "Старая архитектура",
   // Путь от корня — фото из public/: адрес остаётся как есть, без бакета.
   images: [
     { url: "/artworks/gorod.jpg", width: 1200, height: 1500 },
@@ -103,6 +104,19 @@ describe("artworkFeedItem — картина ленты", () => {
     });
     // Форма фото и холста расходятся — примерять нечестно.
     expect(artworkFeedItem(work).canvas).toBeNull();
+  });
+
+  it("категория на обоих языках — для фильтра в «Повесить у себя»", () => {
+    expect(artworkFeedItem(work).category).toEqual({
+      ru: "Старая архитектура",
+      en: "Old architecture",
+    });
+    // Не из утверждённого списка — как пришла, на обоих языках.
+    expect(artworkFeedItem({ ...work, category: "Портрет" }).category).toEqual({
+      ru: "Портрет",
+      en: "Портрет",
+    });
+    expect(artworkFeedItem({ ...work, category: null }).category).toBeNull();
   });
 });
 

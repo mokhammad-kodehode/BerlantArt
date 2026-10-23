@@ -1,13 +1,15 @@
 import Link from "next/link";
 
 import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
+import { HangTeaser } from "@/components/home/HangTeaser";
 import { Hero } from "@/components/home/Hero";
 import { PaintingReel } from "@/components/home/PaintingReel";
 import { Header } from "@/components/layout/Header";
 import { Arrow } from "@/components/ui/Arrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { countArtworks, galleryTile, getFeatured } from "@/lib/artworks";
+import { artworkFeedItem, countArtworks, galleryTile, getFeatured } from "@/lib/artworks";
+import { fittingWork, type FittingWork } from "@/lib/fitting-works";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 import { artistJsonLd, websiteJsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -32,6 +34,9 @@ export async function HomePage({ lang }: { lang: Locale }) {
   // Сравнение с общим числом, а не с HOME_WORKS: в галерее есть и работы
   // без отметки «на главную», их на стене нет, но кнопка должна к ним вести.
   const hasMore = total > featured.length;
+  const hangWork = featured
+    .map((work) => fittingWork(artworkFeedItem(work), lang))
+    .find((work): work is FittingWork => work !== null);
 
   const base = siteUrl();
 
@@ -124,6 +129,12 @@ export async function HomePage({ lang }: { lang: Locale }) {
           </div>
         </section>
       </main>
+
+      {/* «Повесить у себя» — сразу за стеной работ: посмотрел картины,
+          и тут же предложение повесить понравившуюся у себя (заказчик,
+          23.10.2026, вариант «А»). Картина — первая со стены, которую
+          можно примерить; таких нет — нет и секции. */}
+      {hangWork && <HangTeaser lang={lang} work={hangWork} />}
 
       {/* Видео на весь экран с надписью «Berlant Art», проявляющейся при
           прокрутке, — последним, перед подвалом, по просьбе заказчика.

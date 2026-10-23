@@ -66,6 +66,12 @@ export const en: Dictionary = {
     allGallery: "Full gallery",
     empty: "Works for the home page haven't been chosen yet. All paintings are in the gallery.",
     seeAll: "See the full gallery",
+    hangTitle: "How will the painting look in your home?",
+    hangText:
+      "Choose a work and a frame — and see it on a photo of your wall or through your phone's camera, at its real size.",
+    hangPrivacy: "The photo of your wall stays with you — it is never uploaded to the site.",
+    hangArt: (title) =>
+      `The painting “${title}” on a wall — unframed, in a slim frame, in a classic moulding and in a baroque frame`,
   },
 
   categories: {
@@ -93,6 +99,12 @@ export const en: Dictionary = {
     workDescription: (title, details) => (details ? `“${title}”: ${details}.` : `“${title}”.`),
     byArtist: (artist) => `By Chechen artist ${artist}.`,
     imageAlt: (title, kind, artistGenitive) => `“${title}” — ${kind} by ${artistGenitive}`,
+  },
+
+  hangPage: {
+    metaTitle: "Hang a painting at home — try it on your wall",
+    metaDescription:
+      "Choose a painting by Berlant Dzhabrailova and a frame — and see it on a photo of your wall or through your phone's camera, at its real size.",
   },
 
   contactPage: {

@@ -2767,6 +2767,190 @@
     );
   }
 
+  /* — «Повесить у себя» на главной (components/home/HangTeaser.tsx) —
+     на компьютере текст слева, стена с картиной справа; на телефоне
+     столбиком: текст, стена, кнопка. Рамы лежат стопкой и проявляются по
+     очереди — каждой три секунды из двенадцати. Картина чуть качается на
+     гвоздике; при «меньше движения» не качается, а рамы только
+     проявляются: проявление движением не считается. */
+  .hang-teaser {
+    background: var(--color-bg);
+  }
+  .hang-teaser-inner {
+    display: grid;
+    grid-template-areas: "text" "wall" "cta";
+    gap: 26px;
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: clamp(56px, 8vw, 110px) clamp(20px, 6vw, 77px);
+  }
+  .hang-teaser-text {
+    grid-area: text;
+  }
+  .hang-teaser-cta {
+    display: flex;
+    grid-area: cta;
+    flex-direction: column;
+    text-align: center;
+  }
+  .hang-teaser-cta .btn {
+    width: 100%;
+  }
+  .hang-teaser-wall {
+    position: relative;
+    grid-area: wall;
+    height: 370px;
+    overflow: hidden;
+    background: var(--color-wall);
+    border-radius: 22px;
+  }
+  .hang-teaser-wall::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--theme-toplight);
+  }
+  .hang-teaser-nail {
+    position: absolute;
+    top: 34px;
+    left: 50%;
+    z-index: 2;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    background: var(--color-ink-faint);
+    border-radius: 50%;
+  }
+  .hang-teaser-swing {
+    position: absolute;
+    top: 38px;
+    left: 50%;
+    display: grid;
+    width: 236px;
+    margin-left: -118px;
+    transform-origin: 50% 0;
+    animation: hang-teaser-swing 6s ease-in-out infinite;
+  }
+  .hang-teaser-layer,
+  .hang-teaser-label {
+    grid-area: 1 / 1;
+    opacity: 0;
+    animation: hang-teaser-turn 12s ease-in-out infinite both;
+    animation-delay: calc(var(--i) * 3s);
+  }
+  .hang-teaser-layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hang-teaser-wire {
+    display: block;
+    width: calc(100% - 20px);
+    height: 32px;
+    fill: none;
+    stroke: var(--color-divider);
+    stroke-width: 1.2;
+  }
+  /* Контейнер для FramedPainting: картина с рамой вписывается в квадрат
+     и прижата к его верху — к шнуру. */
+  .hang-teaser-art {
+    display: grid;
+    width: 100%;
+    height: 236px;
+    place-items: start center;
+    container-type: size;
+  }
+  .hang-teaser-labels {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    display: grid;
+    transform: translateX(-50%);
+  }
+  .hang-teaser-label {
+    justify-self: center;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    color: var(--color-ink);
+    background: var(--color-bg);
+    border-radius: 999px;
+    box-shadow: var(--theme-shadow-tile);
+  }
+  @keyframes hang-teaser-turn {
+    0% {
+      opacity: 0;
+    }
+    4%,
+    22% {
+      opacity: 1;
+    }
+    26%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes hang-teaser-swing {
+    0%,
+    100% {
+      transform: rotate(-1deg);
+    }
+    50% {
+      transform: rotate(1deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hang-teaser-swing {
+      animation: none;
+    }
+  }
+  @media (min-width: 1024px) {
+    .hang-teaser-inner {
+      grid-template-rows: 1fr auto auto 1fr;
+      grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+      grid-template-areas: ". wall" "text wall" "cta wall" ". wall";
+      column-gap: 64px;
+      row-gap: 0;
+    }
+    .hang-teaser-cta {
+      align-items: flex-start;
+      margin-top: 32px;
+      text-align: left;
+    }
+    .hang-teaser-cta .btn {
+      width: auto;
+    }
+    .hang-teaser-wall {
+      height: 560px;
+      border-radius: 28px;
+    }
+    .hang-teaser-nail {
+      top: 58px;
+      width: 10px;
+      height: 10px;
+      margin-left: -5px;
+    }
+    .hang-teaser-swing {
+      top: 63px;
+      width: 340px;
+      margin-left: -170px;
+    }
+    .hang-teaser-wire {
+      height: 46px;
+    }
+    .hang-teaser-art {
+      height: 340px;
+    }
+    .hang-teaser-labels {
+      bottom: 32px;
+    }
+    .hang-teaser-label {
+      padding: 8px 16px;
+      font-size: 13.5px;
+    }
+  }
+
   /* — экран «Картина и рама» — на телефоне колонкой: полоса с «К работе»,
      картина на стене, под ней выбор и кнопки. На компьютере — картина
      слева на всю высоту, выбор — панелью справа. */
@@ -2847,12 +3031,407 @@
     margin: 0 auto;
     padding: 14px 18px calc(32px + env(safe-area-inset-bottom));
   }
-  .fit-size {
+  /* «Повесить у себя» из меню (HangPage): над примерочной шапка сайта,
+     поэтому экран — за вычетом её высоты. Пустая стена на телефоне —
+     низкая полоса: место отдано списку картин (заказчик, 23.10.2026);
+     с выбранной картиной стена вырастает до обычной высоты. */
+  .fit[data-entry="hang"] {
+    min-height: calc(100svh - var(--header-h));
+  }
+  .fit[data-entry="hang"] .fit-stage {
+    transition: height 0.35s ease;
+  }
+  .fit[data-empty] .fit-stage {
+    height: 128px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fit[data-entry="hang"] .fit-stage {
+      transition: none;
+    }
+  }
+  .fit-heading {
     margin: 0;
-    font-size: 13.5px;
-    text-align: center;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  /* Пустая стена: гвоздик, шнур и пунктир на месте картины. На телефоне
+     в пунктире — «Выберите картину», на компьютере — «Здесь повиснет
+     картина» с подсказкой про список справа. Пунктир тихо дышит цветом —
+     это не движение, поэтому и при «меньше движения». */
+  .fit-empty {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .fit-empty-nail {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-ink-faint);
+  }
+  /* Шнур тянется от гвоздика к углам пунктира, поэтому на 24px уже его. */
+  .fit-empty-wire {
+    width: 166px;
+    height: 16px;
+    fill: none;
+    stroke: var(--color-divider);
+    stroke-width: 1.6;
+  }
+  .fit-empty-frame {
+    display: grid;
+    place-items: center;
+    width: 190px;
+    height: 62px;
+    box-sizing: border-box;
+    border: 2px dashed var(--color-divider);
+    animation: fit-empty-breathe 3.2s ease-in-out infinite;
+  }
+  @keyframes fit-empty-breathe {
+    50% {
+      border-color: var(--color-ink-faint);
+    }
+  }
+  .fit-empty-title,
+  .fit-empty-hint {
+    display: none;
+  }
+  .fit-empty-pick {
+    font-size: 15px;
+    font-weight: 600;
     color: var(--color-ink-soft);
   }
+  /* Наведённая в списке работа висит на стене до нажатия — плашка
+     говорит, что её ещё надо выбрать. Только мышью: на телефоне касание
+     сразу выбирает. */
+  .fit-preview {
+    display: none;
+  }
+  @media (pointer: fine) {
+    .fit-preview {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      z-index: 2;
+      display: block;
+      margin: 0;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--color-btn-ink);
+      pointer-events: none;
+      background: var(--color-btn);
+      border-radius: 999px;
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Шаги «Картина — Рама — Ваша стена». На телефоне, пока открыт список,
+     их нет: каждая строка над сеткой отнимает место у картин. */
+  .fit-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin: -8px 0 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--color-ink-faint);
+    list-style: none;
+  }
+  .fit[data-picking] .fit-steps {
+    display: none;
+  }
+  .fit-steps li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .fit-steps li + li::before {
+    content: "";
+    width: 16px;
+    height: 1px;
+    background: var(--color-divider);
+  }
+  .fit-step-mark {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    box-sizing: border-box;
+    place-items: center;
+    font-size: 12px;
+    border: 1.5px solid var(--color-divider);
+    border-radius: 50%;
+  }
+  .fit-steps [aria-current="step"] {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .fit-steps [aria-current="step"] .fit-step-mark {
+    color: var(--color-btn-ink);
+    background: var(--color-btn);
+    border-color: transparent;
+  }
+  .fit-steps [data-done] {
+    color: var(--color-ink-soft);
+  }
+  .fit-steps [data-done] .fit-step-mark {
+    background: var(--color-surface);
+    border-color: transparent;
+  }
+
+  /* Выбранная картина — строкой с «Сменить»: список открывается на месте,
+     рама остаётся прежней. */
+  .fit-work {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    background: var(--color-surface);
+    border-radius: 14px;
+  }
+  .fit-work-thumb {
+    display: grid;
+    flex: none;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    background: var(--color-wall);
+  }
+  .fit-work-art {
+    position: relative;
+    display: block;
+    box-shadow: var(--theme-shadow-tile);
+  }
+  .fit-work-text {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .fit-work-title {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .fit-work-size {
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: var(--color-ink-soft);
+  }
+  .fit-change {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--color-ink);
+    cursor: pointer;
+    background: var(--color-bg);
+    border: 1px solid var(--color-divider);
+    border-radius: 999px;
+    transition: border-color 0.2s ease;
+  }
+  .fit-change:hover {
+    border-color: var(--color-ink-faint);
+  }
+
+  /* Выбор картины (WorkPicker): поиск, категории, сетка по три. На
+     телефоне категории — лентой вбок, чтобы не съедать высоту. */
+  .pick {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .pick-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pick-change {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .pick-title {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.1;
+  }
+  .pick-keep {
+    display: grid;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    padding: 0;
+    color: var(--color-ink);
+    cursor: pointer;
+    background: var(--color-surface);
+    border: 0;
+    border-radius: 50%;
+  }
+  .pick-lead {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+  .fit[data-empty] .pick-lead {
+    display: none;
+  }
+  .pick-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 42px;
+    padding: 0 16px;
+    color: var(--color-ink-soft);
+    background: var(--color-surface);
+    border-radius: 999px;
+  }
+  /* Обводка фокуса — у всей таблетки поиска, а не у голого поля внутри:
+     так её видно, и она повторяет форму. */
+  .pick-search:focus-within {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .pick-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--color-ink);
+    background: transparent;
+    border: 0;
+    outline: none;
+  }
+  .pick-search input::placeholder {
+    color: var(--color-ink-faint);
+  }
+  .pick-chips {
+    display: flex;
+    gap: 6px;
+    margin: 0 -18px;
+    padding: 0 18px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pick-chips::-webkit-scrollbar {
+    display: none;
+  }
+  .pick-chip {
+    flex: none;
+    height: 36px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--color-ink);
+    cursor: pointer;
+    background: var(--color-surface);
+    border: 0;
+    border-radius: 999px;
+  }
+  .pick-chip[aria-pressed="true"] {
+    color: var(--color-btn-ink);
+    background: var(--color-btn);
+  }
+  .pick-note {
+    margin: 0;
+    padding: 24px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--color-ink-soft);
+    border: 1.5px dashed var(--color-divider);
+    border-radius: 18px;
+  }
+  .pick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pick-cell {
+    display: block;
+    width: 100%;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+    color: var(--color-ink);
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+  }
+  .pick-box {
+    position: relative;
+    display: grid;
+    height: 100px;
+    place-items: center;
+    background: var(--color-wall);
+  }
+  .pick-cell[aria-current="true"] .pick-box {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  .pick-art {
+    position: relative;
+    display: block;
+    box-shadow: var(--theme-shadow-tile);
+    transition: transform 0.3s ease;
+  }
+  .pick-cell:hover .pick-art,
+  .pick-cell:focus-visible .pick-art {
+    transform: translateY(-3px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pick-art {
+      transition: none;
+    }
+    .pick-cell:hover .pick-art,
+    .pick-cell:focus-visible .pick-art {
+      transform: none;
+    }
+  }
+  .pick-now {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 2px 7px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--color-btn-ink);
+    background: var(--color-btn);
+    border-radius: 999px;
+  }
+  .pick-name {
+    display: block;
+    margin-top: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .pick-size {
+    display: block;
+    font-size: 11.5px;
+    color: var(--color-ink-soft);
+  }
+
   .fit-actions {
     display: flex;
     flex-direction: column;
@@ -2939,8 +3518,88 @@
       padding: 20px 28px 32px;
       border-left: 1px solid var(--color-divider);
     }
-    .fit-size {
-      text-align: left;
+
+    /* Из меню: полосы с «К работе» нет, заголовок — в панели, и обе
+       колонки — в одну строку под шапкой сайта. Стена стоит на месте
+       под шапкой, пока панель листается. */
+    .fit[data-entry="hang"] {
+      min-height: calc(100svh - var(--header-h));
+      grid-template-rows: auto;
+    }
+    .fit[data-entry="hang"] .fit-stage,
+    .fit[data-empty] .fit-stage {
+      top: var(--header-h);
+      grid-row: 1;
+      height: calc(100svh - var(--header-h));
+      min-height: 480px;
+    }
+    .fit[data-entry="hang"] .fit-panel {
+      grid-row: 1;
+      padding-top: 28px;
+    }
+    .fit-heading {
+      font-size: 34px;
+    }
+    .fit-steps,
+    .fit[data-picking] .fit-steps {
+      display: flex;
+    }
+    .fit[data-empty] .pick-lead {
+      display: block;
+    }
+    .fit-empty-nail {
+      width: 9px;
+      height: 9px;
+    }
+    .fit-empty-wire {
+      width: calc(min(380px, 70cqw) - 24px);
+      height: 40px;
+      stroke-width: 1.2;
+    }
+    .fit-empty-frame {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      width: min(380px, 70cqw);
+      height: 300px;
+      padding: 32px;
+      text-align: center;
+    }
+    .fit-empty-title {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 28px;
+      line-height: 1.2;
+      color: var(--color-ink-soft);
+    }
+    .fit-empty-hint {
+      display: block;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-ink-faint);
+    }
+    .fit-empty-pick {
+      display: none;
+    }
+    /* В колонке 344px двенадцать категорий лентой вбок мышью не
+       пролистать — переносятся в несколько строк. */
+    .pick-chips {
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+    }
+    .pick-chip {
+      height: 32px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
+    .pick-grid {
+      gap: 18px 14px;
+    }
+    .pick-box {
+      height: 104px;
     }
   }
 

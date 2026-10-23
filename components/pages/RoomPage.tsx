@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { FittingRoom } from "@/components/gallery/FittingRoom";
-import { roomPageUrl } from "@/lib/ar-links";
 import { artworkFeedItem, getArtworkById } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
+import { fittingWork } from "@/lib/fitting-works";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { localePath } from "@/lib/i18n/config";
-import { qrPath } from "@/lib/qr";
 
 export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> {
   const t = getDictionary(lang);
@@ -23,7 +22,8 @@ export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> 
 }
 
 /**
- * Примерочная (TICKETS-primerka.md): картина и рама, дальше — камера
+ * Примерочная работы — «Повесить у себя», открытая со страницы работы
+ * (TICKETS-primerka.md): картина уже на стене, дальше рама, камера
  * телефона или фото своей стены. Устройство — в
  * components/gallery/FittingRoom.tsx, рамы — в lib/room-options.ts.
  *
@@ -40,41 +40,17 @@ export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> 
  * «К работе» в углу.
  */
 export async function RoomPage({ lang, id }: { lang: Locale; id: string }) {
-  const work = await getArtworkById(id);
-  if (!work) notFound();
+  const found = await getArtworkById(id);
+  if (!found) notFound();
 
-  const item = artworkFeedItem(work);
-  if (item.src === undefined || item.canvas === null) {
-    redirect(localePath(lang, `/gallery/${id}`));
-  }
-
-  // Код для телефона — на эту же примерочную, без рамы: страница одна на
-  // все рамы и готовится заранее, выбор с компьютера ей не виден.
-  const qr = qrPath(`${clientEnv.NEXT_PUBLIC_SITE_URL}${roomPageUrl(id, null, lang)}`);
+  const work = fittingWork(artworkFeedItem(found), lang);
+  if (work === null) redirect(localePath(lang, `/gallery/${id}`));
 
   return (
     <main>
       <FittingRoom
-        phoneCode={
-          <svg
-            viewBox={`0 0 ${qr.size} ${qr.size}`}
-            className="fit-qr-code"
-            role="img"
-            aria-label={getDictionary(lang).room.qrLabel}
-            shapeRendering="crispEdges"
-          >
-            <rect width={qr.size} height={qr.size} fill="#ffffff" />
-            <path d={qr.path} fill="#111111" />
-          </svg>
-        }
-        work={{
-          id: item.id,
-          title: item.title,
-          src: item.src,
-          alt: item.alt[lang],
-          canvas: item.canvas,
-          arVersion: item.arVersion,
-        }}
+        entry="work"
+        work={work}
         siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
         whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
       />

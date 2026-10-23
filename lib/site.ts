@@ -41,7 +41,7 @@ export function paintingYear(now: Date = new Date()): number {
 /** Пункт навигации: адрес (русский, без приставки) и ключ подписи в словаре. */
 export type NavItem = {
   href: string;
-  key: "home" | "gallery" | "about" | "contact" | "cta";
+  key: "home" | "gallery" | "hang" | "about" | "contact" | "cta";
 };
 
 /**
@@ -56,6 +56,9 @@ export type NavItem = {
 export const navItems: NavItem[] = [
   { href: "/", key: "home" },
   { href: "/gallery", key: "gallery" },
+  // «Повесить у себя» — сразу за галереей: посмотрел картины, примерил
+  // понравившуюся (заказчик, 23.10.2026).
+  { href: "/hang", key: "hang" },
   { href: "/about", key: "about" },
   { href: "/contact", key: "contact" },
 ];

@@ -21,6 +21,7 @@ export const enUi: UiDictionary = {
   nav: {
     home: "Home",
     gallery: "Gallery",
+    hang: "Hang It at Home",
     about: "About",
     contact: "Contact",
     cta: "Contact the artist",
@@ -116,8 +117,8 @@ export const enUi: UiDictionary = {
   },
 
   room: {
-    title: (title) => `Try it on: “${title}”`,
-    heading: "Try it on",
+    title: (title) => `Hang it at home: “${title}”`,
+    heading: "Hang It at Home",
     back: "Back to work",
     cm: "cm",
     canvasSize: (size) => `Canvas ${size}`,
@@ -137,6 +138,29 @@ export const enUi: UiDictionary = {
     choiceNote:
       "The camera shows one painting right in your room. On a photo you can hang several.",
     noCarving: "In the camera the frame is plain: the same colour and width, but without carving.",
+    steps: "Steps",
+    stepWork: "Painting",
+    stepFrame: "Frame",
+    stepWall: "Your wall",
+    emptyWall: "Your painting will hang here",
+    emptyWallHint:
+      "Choose one from the list on the right — hover over it, and it appears on the wall",
+    pickWork: "Choose a painting",
+    pickLead: "Choose a painting and see how it will look in your home.",
+    changeWork: "Change",
+    changeTitle: "Change the painting",
+    keepWork: (title) => `Keep “${title}”`,
+    keepFrame: (frame) => `The frame stays the same — “${frame}”.`,
+    preview: (title) => `Click to choose “${title}”`,
+    search: "Find a painting…",
+    searchLabel: "Find a painting",
+    categories: "Categories",
+    allCategories: "All",
+    current: "now",
+    workOption: (title, size) => `“${title}”, canvas ${size}`,
+    noMatches: "No paintings match — try another word or category.",
+    listLoading: "Loading paintings…",
+    listFailed: "The list of paintings didn't load. Please refresh the page.",
     frames: {
       none: { label: "No frame", short: "None", note: "canvas on a stretcher" },
       thin: { label: "Slim", short: "Slim", note: "aluminium, smooth" },

@@ -66,7 +66,10 @@ export function isFeedList(value: unknown): value is ArtworkFeedItem[] {
         (item.arVersion === undefined ||
           item.arVersion === null ||
           typeof item.arVersion === "string") &&
-        (item.canvas === undefined || item.canvas === null || isCanvas(item.canvas)),
+        (item.canvas === undefined || item.canvas === null || isCanvas(item.canvas)) &&
+        // Категория появилась 23.10.2026 («Повесить у себя»); без неё —
+        // старая копия, и фильтр просто не знает категорию этой работы.
+        (item.category === undefined || item.category === null || isBilingual(item.category)),
     )
   );
 }
