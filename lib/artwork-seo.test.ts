@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { artworkSeo } from "@/lib/artworks";
+import { artworkDimensions, artworkSeo } from "@/lib/artworks";
 
 /**
  * Тексты для выдачи собираются из данных — и ломаются незаметно: страница
@@ -60,5 +60,14 @@ describe("artworkSeo", () => {
     expect(artworkSeo({ ...work, technique: null }).imageAlt).toBe(
       "«Село» — картина Берлант Джабраиловой",
     );
+  });
+});
+
+describe("artworkDimensions", () => {
+  it("размер, вписанный от руки, на сайте — как в списке, на обоих языках", () => {
+    expect(artworkDimensions("120/120")).toBe("120 × 120 см");
+    expect(artworkDimensions("120/120", "en")).toBe("120 × 120 cm");
+    expect(artworkDimensions("40 × 50 см", "en")).toBe("40 × 50 cm");
+    expect(artworkDimensions(null)).toBeNull();
   });
 });

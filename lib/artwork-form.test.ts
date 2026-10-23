@@ -133,6 +133,15 @@ describe("размер", () => {
     expect(parsed({ dimensionsCustom: "35 × 45 см" }).dimensions).toBeNull();
   });
 
+  it("сохраняет «другой размер» в том же виде, что и список", () => {
+    expect(parsed({ dimensions: customSize, dimensionsCustom: "120/120" }).dimensions).toBe(
+      "120 × 120 см",
+    );
+    expect(parsed({ dimensions: customSize, dimensionsCustom: "35x45" }).dimensions).toBe(
+      "35 × 45 см",
+    );
+  });
+
   it("не пропускает пустой «другой размер» и размер мимо списка", () => {
     const cases: Record<string, string>[] = [
       { dimensions: customSize, dimensionsCustom: "  " },

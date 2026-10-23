@@ -305,7 +305,26 @@ export function roomQuery(options: RoomOptions): string {
 export type CanvasSides = { short: number; long: number };
 
 /**
- * Стороны холста из строки размера: «50 × 60 см», «50x60», «50 х 60 см».
+ * Размер холста одной строкой: два числа через «×», «x», «х», «*», «/»
+ * или «на», с «см» или без. «/» и «на» — так размер вписывают от руки
+ * в «Другой размер»: «120/120» сайт прежде не узнавал, и у такой картины
+ * не было ни камеры, ни дивана для масштаба (заказчик, 23.10.2026).
+ */
+const canvasSizePattern =
+  /^\s*(\d+(?:[.,]\d+)?)\s*(?:[×xх*/]|на)\s*(\d+(?:[.,]\d+)?)\s*(?:см\.?)?\s*$/i;
+
+/**
+ * Размер в том виде, что в списке админки: «120/120» → «120 × 120 см».
+ * Порядок сторон — как вписал человек. Строку, в которой размер не
+ * прочитать, возвращает как есть: додумывать за художницу нельзя.
+ */
+export function normalizeCanvasSize(text: string): string {
+  const match = canvasSizePattern.exec(text);
+  return match === null ? text.trim() : `${match[1]} × ${match[2]} см`;
+}
+
+/**
+ * Стороны холста из строки размера: «50 × 60 см», «50x60», «120/120».
  *
  * null, если строку нельзя прочитать уверенно — нет двух чисел или единица
  * не сантиметры. Лучше не показать диван, чем показать картину не того
@@ -318,7 +337,7 @@ export type CanvasSides = { short: number; long: number };
 export function parseCanvasSides(text: string | null): CanvasSides | null {
   if (text === null) return null;
 
-  const match = /^\s*(\d+(?:[.,]\d+)?)\s*[×xх*]\s*(\d+(?:[.,]\d+)?)\s*(см)?\s*$/i.exec(text);
+  const match = canvasSizePattern.exec(text);
   if (match === null) return null;
 
   const [first, second] = [match[1], match[2]].map((side) => Number(side.replace(",", ".")));

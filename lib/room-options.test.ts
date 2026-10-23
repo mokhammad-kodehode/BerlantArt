@@ -6,6 +6,7 @@ import {
   defaultRoomOptions,
   finishFor,
   framedSides,
+  normalizeCanvasSize,
   parseCanvasSides,
   parseRoomOptions,
   roomFrames,
@@ -122,6 +123,13 @@ describe("parseCanvasSides", () => {
     expect(parseCanvasSides("60 х 80 см")).toEqual({ short: 60, long: 80 });
   });
 
+  it("понимает размер, вписанный от руки: через косую черту, звёздочку, «на»", () => {
+    // «120/120» стояло у работы на сайте — без этого у неё не было камеры.
+    expect(parseCanvasSides("120/120")).toEqual({ short: 120, long: 120 });
+    expect(parseCanvasSides("50*60 см.")).toEqual({ short: 50, long: 60 });
+    expect(parseCanvasSides("50 на 70 см")).toEqual({ short: 50, long: 70 });
+  });
+
   it("стороны упорядочены: ориентацию решает фотография, а не строка", () => {
     expect(parseCanvasSides("50 × 40 см")).toEqual({ short: 40, long: 50 });
   });
@@ -132,6 +140,20 @@ describe("parseCanvasSides", () => {
     // Миллиметры и метры — не сантиметры: диван вышел бы в десять раз не того размера.
     expect(parseCanvasSides("400 × 500 мм")).toBeNull();
     expect(parseCanvasSides("0 × 50 см")).toBeNull();
+  });
+});
+
+describe("normalizeCanvasSize", () => {
+  it("приводит размер к виду списка админки, не меняя порядок сторон", () => {
+    expect(normalizeCanvasSize("120/120")).toBe("120 × 120 см");
+    expect(normalizeCanvasSize(" 70x50 ")).toBe("70 × 50 см");
+    expect(normalizeCanvasSize("35,5 на 45 см")).toBe("35,5 × 45 см");
+    expect(normalizeCanvasSize("40 × 50 см")).toBe("40 × 50 см");
+  });
+
+  it("непонятную строку не трогает — додумывать размер нельзя", () => {
+    expect(normalizeCanvasSize(" диптих, 2 × 30 × 40 ")).toBe("диптих, 2 × 30 × 40");
+    expect(normalizeCanvasSize("400 × 500 мм")).toBe("400 × 500 мм");
   });
 });
 

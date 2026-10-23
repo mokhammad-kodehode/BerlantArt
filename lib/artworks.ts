@@ -6,6 +6,7 @@ import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
 import { likePattern } from "@/lib/gallery-search";
 import { getDictionary, translateValue, type Locale } from "@/lib/i18n";
 import { publicUrl } from "@/lib/r2";
+import { normalizeCanvasSize } from "@/lib/room-options";
 import type { SitemapArtwork } from "@/lib/seo";
 
 // Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
@@ -73,7 +74,9 @@ export function artworkTechnique(technique: string | null, lang: Locale = "ru"):
  */
 export function artworkDimensions(dimensions: string | null, lang: Locale = "ru"): string | null {
   if (dimensions === null) return null;
-  return lang === "ru" ? dimensions : dimensions.replace(/\s*см\.?\s*$/i, " cm");
+  // Сохранённое до 23.10.2026 «120/120» на сайте — «120 × 120 см».
+  const size = normalizeCanvasSize(dimensions);
+  return lang === "ru" ? size : size.replace(/\s*см\.?\s*$/i, " cm");
 }
 
 /** Тексты картины для поисковиков: заголовок, описание, подпись картинки. */

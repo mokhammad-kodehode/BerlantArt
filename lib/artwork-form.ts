@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { ArtworkInput, ArtworkStatus } from "@/lib/artworks";
+import { normalizeCanvasSize } from "@/lib/room-options";
 
 /**
  * Разбор и проверка данных формы работы.
@@ -80,6 +81,7 @@ export const artworkSizes = [
   "70 × 90 см",
   "80 × 100 см",
   "90 × 120 см",
+  "120 × 120 см",
 ] as const;
 
 /** Значение пункта «Другой размер» в селекте размера. */
@@ -282,7 +284,9 @@ const dimensionsField = z
           : custom.length > 100
             ? "Размер: не длиннее 100 символов"
             : null;
-      if (message === null) return custom;
+      // «120/120» и «120x120» сохраняются как «120 × 120 см»: в таком
+      // виде размер понимают примерочная и камера.
+      if (message === null) return normalizeCanvasSize(custom);
 
       ctx.addIssue({ code: "custom", message });
       return z.NEVER;
