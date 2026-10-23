@@ -12,6 +12,7 @@ import {
 import { FramePicker } from "@/components/gallery/FramePicker";
 import { AddWorkSheet } from "@/components/gallery/wall/AddWorkSheet";
 import { MeasureLayer } from "@/components/gallery/wall/MeasureLayer";
+import { WallHelp } from "@/components/gallery/wall/WallHelp";
 import { Button } from "@/components/ui/Button";
 import { roomPageUrl } from "@/lib/ar-links";
 import { framedSize, type PaintingImage } from "@/lib/frame-canvas";
@@ -543,6 +544,7 @@ export function WallEditor({
           <span className="fit-title-main">{t.wall.title}</span>
           <span className="fit-title-work">{subtitle}</span>
         </h1>
+        <WallHelp />
       </header>
 
       <div ref={stage} className="wall-stage">

@@ -211,6 +211,31 @@ export const enUi: UiDictionary = {
       snapshotError: "Couldn't put the picture together. Please try again.",
       stageLabel: (count) => `Photo of the wall with ${count} painting(s)`,
       frameFor: (title) => `Frame · ${title}`,
+      helpLabel: "How it works",
+      helpTitle: "How to try it on a photo",
+      helpSteps: [
+        {
+          title: "Photograph the wall",
+          text: "Stand straight in front of it and use the normal camera (1×). The wide-angle lens (0.5×) bends the edges of the room, and a painting near the edge of the photo will look crooked.",
+        },
+        {
+          title: "Mark the reference",
+          text: "You need a rectangle of known size in the same wall: an A4 sheet taped to it or a closed door. Drag the four dots exactly to its corners — they tell the site the scale and angle of the wall. For a door, enter its real size: usually 80 × 200 cm, but better measure it.",
+        },
+        {
+          title: "Hang the painting",
+          text: "Drag it with a finger or the mouse; on a computer the arrow keys work too. The size is real and most accurate near the reference. “Frame” changes the frame, “Painting” adds another one.",
+        },
+        {
+          title: "Save the picture",
+          text: "Tap “Done” to save the picture, send it to anyone or show it to the artist.",
+        },
+      ],
+      helpWarn:
+        "An open door, a wardrobe or a mirror won't do as a reference: they don't lie in the wall, and the paintings come out the wrong size with crooked corners.",
+      helpNote:
+        "No reference at hand? “Skip — I'll judge by eye”: the painting hangs straight and you set the size with a slider. The photo never leaves your device: everything is worked out in the browser.",
+      helpClose: "Got it",
     },
     messageNoFrame: "without a frame",
     messageFramed: (frame, finish) => `in the “${frame}” frame, ${finish.toLowerCase()}`,
