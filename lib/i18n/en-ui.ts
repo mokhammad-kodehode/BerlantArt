@@ -127,7 +127,9 @@ export const enUi: UiDictionary = {
     frameSummary: (label, width) => `${label} · ${width} cm`,
     openCamera: "Try it on with the camera",
     photoWall: "Try it on a photo of your wall",
-    dropPhoto: "or drop a photo here",
+    dropPhoto: "Drag a photo of your wall here",
+    dropPick: "or click to choose a file",
+    dropRelease: "Release to open the photo",
     qrTitle: "The camera is on your phone",
     qrText:
       "Point your phone's camera at the code — this page will open, and you can try the painting right on your wall.",

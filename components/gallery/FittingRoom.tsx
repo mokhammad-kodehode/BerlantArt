@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -174,6 +175,12 @@ export function FittingRoom({
   // вместе с развешенными картинами.
   const [wallFile, setWallFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // Сколько элементов страницы сейчас под перетаскиваемым файлом. По
+  // одному dragleave не понять, ушёл файл за окно или на соседний
+  // элемент: проверка «покинули сам корень» пропускала уход за окно с
+  // кнопки или текста, и подсветка залипала до следующего перетаскивания.
+  const dragDepth = useRef(0);
+  const photoInputId = useId();
 
   function openWall(file: File | undefined): void {
     if (file === undefined) return;
@@ -224,16 +231,22 @@ export function FittingRoom({
       className="fit"
       data-dragging={isDragging || undefined}
       // Фото можно перетащить в окно мышью — в любое место страницы.
-      onDragOver={(event) => {
+      onDragEnter={(event) => {
         if (!event.dataTransfer.types.includes("Files")) return;
-        event.preventDefault();
+        dragDepth.current += 1;
         setIsDragging(true);
       }}
+      onDragOver={(event) => {
+        if (event.dataTransfer.types.includes("Files")) event.preventDefault();
+      }}
       onDragLeave={(event) => {
-        if (event.currentTarget === event.target) setIsDragging(false);
+        if (!event.dataTransfer.types.includes("Files")) return;
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setIsDragging(false);
       }}
       onDrop={(event) => {
         event.preventDefault();
+        dragDepth.current = 0;
         setIsDragging(false);
         const file = [...event.dataTransfer.files].find((item) => item.type.startsWith("image/"));
         openWall(file);
@@ -301,9 +314,13 @@ export function FittingRoom({
           {/* Подпись к полю выбора файла, а не кнопка: системное меню «снять
               или выбрать» браузер открывает только по нажатию на само поле. */}
           <label className="btn btn-secondary btn-lg btn-block fit-photo">
+            {/* Подпись задана явно: у поля две подписи — эта кнопка и зона
+                перетаскивания ниже, — и скринридер склеил бы их текст. */}
             <input
+              id={photoInputId}
               type="file"
               accept="image/*"
+              aria-label={t.photoWall}
               className="sr-only"
               onChange={(event) => {
                 openWall(event.target.files?.[0]);
@@ -327,9 +344,27 @@ export function FittingRoom({
             {t.photoWall}
           </label>
         </div>
-        <p className="fit-drop" aria-hidden="true">
-          {t.dropPhoto}
-        </p>
+        {/* Зона показывает, куда бросить фото, а по нажатию открывает тот же
+            выбор файла, что кнопка выше: пунктирная рамка выглядит полем,
+            и пустой клик по ней сбивал бы. Скринридеру и клавиатуре она не
+            нужна — для них есть кнопка. */}
+        <label htmlFor={photoInputId} className="fit-drop" aria-hidden="true">
+          <svg viewBox="0 0 48 48" className="fit-drop-icon">
+            <g className="fit-drop-photo">
+              <rect x="14" y="6" width="20" height="16" rx="2" />
+              <path d="m16.5 19.5 5-5 3.5 3.5 2.5-2.5 4 4" />
+              <circle cx="28.5" cy="11" r="1.7" />
+            </g>
+            {/* Лоток рисуется поверх фото и залит фоном зоны — опускаясь,
+                фото уходит за его край. */}
+            <path
+              className="fit-drop-tray"
+              d="M7 29h9l2.5 4h11l2.5-4h9v7.5a3.5 3.5 0 0 1-3.5 3.5h-27A3.5 3.5 0 0 1 7 36.5Z"
+            />
+          </svg>
+          <span className="fit-drop-title">{isDragging ? t.dropRelease : t.dropPhoto}</span>
+          <span className="fit-drop-pick">{t.dropPick}</span>
+        </label>
         <p className="fit-note">{t.choiceNote}</p>
 
         {/* Камера — на телефоне; с компьютера к ней ведёт код (П-5). */}

@@ -3056,7 +3056,11 @@
   .fit-photo {
     cursor: pointer;
   }
-  /* Перетащить фото в окно — только мышью, на компьютере. */
+  /* Зона «перетащите фото» — только мышью, на компьютере. Бросить фото
+     можно в любое место окна, зона показывает куда. По нажатию она
+     открывает тот же выбор файла, что кнопка над ней: пунктирная рамка
+     выглядит полем, и пустой клик по ней сбивал. Фон зоны — в
+     --drop-bg: им же залит лоток иконки, чтобы фото уходило за его край. */
   .fit-drop {
     display: none;
   }
@@ -3071,21 +3075,163 @@
       background: color-mix(in srgb, var(--color-btn) 85%, var(--color-bg));
     }
     .fit-drop {
-      display: grid;
-      min-height: 64px;
-      place-items: center;
+      --drop-bg: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
       margin-top: -2px;
-      padding: 0 16px;
-      font-size: 13.5px;
+      padding: 18px 16px 16px;
       text-align: center;
-      color: var(--color-ink-soft);
+      cursor: pointer;
+      background: var(--drop-bg);
       border: 1.5px dashed var(--color-divider);
       border-radius: 16px;
+      transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+    }
+    .fit-drop:hover {
+      --drop-bg: color-mix(in srgb, var(--color-surface) 55%, var(--color-bg));
+      border-color: var(--color-ink-faint);
     }
     .fit[data-dragging] .fit-drop {
-      color: var(--color-ink);
+      --drop-bg: var(--color-surface);
       border-color: var(--color-ink);
-      background: var(--color-surface);
+    }
+  }
+  .fit-drop-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+  .fit-drop-pick {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--color-ink-faint);
+  }
+  /* Пока файл над окном, строка прячется, но место держит — иначе зона
+     прыгала бы по высоте на каждый заход файла в окно. */
+  .fit[data-dragging] .fit-drop-pick {
+    visibility: hidden;
+  }
+
+  /* Иконка — фото над лотком. Живая (заказчик, 23.10.2026: «иконка чтобы
+     была живая»): раз в 4 с фото приподнимается и опускается к лотку,
+     при наведении — приподнято и теплеет, пока файл тащат над окном, —
+     падает в лоток раз за разом. Секунда движения на три покоя: рядом
+     картина, мельтешить ей нельзя. */
+  .fit-drop-icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 6px;
+    overflow: visible;
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.2s ease;
+  }
+  .fit-drop:hover .fit-drop-icon,
+  .fit[data-dragging] .fit-drop-icon {
+    stroke: var(--color-ink);
+  }
+  .fit-drop-tray {
+    fill: var(--drop-bg);
+    transition: fill 0.2s ease;
+  }
+  .fit-drop-photo {
+    transform-box: view-box;
+    transform-origin: 24px 14px;
+    animation: fit-drop-idle 4.2s ease-in-out infinite;
+  }
+  .fit-drop-photo rect {
+    fill: color-mix(in srgb, var(--color-accent) 16%, var(--drop-bg));
+    transition: fill 0.3s ease;
+  }
+  .fit-drop:hover .fit-drop-photo {
+    animation: fit-drop-lift 0.45s ease-out forwards;
+  }
+  .fit[data-dragging] .fit-drop-photo {
+    animation: fit-drop-fall 1s ease-in-out infinite;
+  }
+  .fit-drop:hover .fit-drop-photo rect,
+  .fit[data-dragging] .fit-drop-photo rect {
+    fill: color-mix(in srgb, var(--color-accent) 30%, var(--drop-bg));
+  }
+  @keyframes fit-drop-idle {
+    0%,
+    60%,
+    100% {
+      transform: none;
+    }
+    70% {
+      transform: translateY(-3px) rotate(-5deg);
+    }
+    82% {
+      transform: translateY(5px) rotate(0deg);
+    }
+    90% {
+      transform: translateY(-1px);
+    }
+  }
+  @keyframes fit-drop-lift {
+    to {
+      transform: translateY(-3px) rotate(-5deg);
+    }
+  }
+  /* Фото падает в лоток и гаснет в нём, следующее проявляется сверху —
+     без скачка снизу вверх на виду. */
+  @keyframes fit-drop-fall {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    18% {
+      opacity: 1;
+    }
+    60% {
+      transform: translateY(11px);
+    }
+    72% {
+      transform: translateY(9px);
+    }
+    84% {
+      opacity: 1;
+      transform: translateY(11px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(11px);
+    }
+  }
+  /* «Меньше движения» (у заказчика включено: в Windows выключены эффекты
+     анимации) — фото не двигается, а теплеет и остывает. Смена цвета на
+     месте сдвигом не считается, как проявление букв у видео на главной. */
+  @media (prefers-reduced-motion: reduce) {
+    .fit-drop-photo,
+    .fit-drop:hover .fit-drop-photo,
+    .fit[data-dragging] .fit-drop-photo {
+      animation: none;
+    }
+    .fit-drop-photo rect {
+      animation: fit-drop-warm 4.2s ease-in-out infinite;
+    }
+    .fit-drop:hover .fit-drop-photo rect,
+    .fit[data-dragging] .fit-drop-photo rect {
+      animation: none;
+    }
+  }
+  @keyframes fit-drop-warm {
+    0%,
+    55%,
+    100% {
+      fill: color-mix(in srgb, var(--color-accent) 16%, var(--drop-bg));
+    }
+    78% {
+      fill: color-mix(in srgb, var(--color-accent) 40%, var(--drop-bg));
     }
   }
   .fit-photo:has(input:focus-visible) {
