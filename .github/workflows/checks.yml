@@ -62,5 +62,21 @@ jobs:
       - name: Типы (TypeScript)
         run: npm run typecheck
 
+      # Отчёт github-actions — упавший тест пометкой на странице прогона:
+      # её видно без входа в GitHub и без раскрытия журнала. Вывод пишется
+      # и в файл — для следующего шага.
       - name: Тесты (Vitest)
-        run: npm test
+        run: |
+          set -o pipefail
+          npm test -- --reporter=default --reporter=github-actions 2>&1 | tee vitest.log
+
+      # Если упал не тест, а сам процесс тестов, пометок о тестах нет,
+      # а журнал и сводка без входа в GitHub не открываются. Конец журнала
+      # уходит в пометку — её видно на странице прогона всем.
+      - name: Конец журнала тестов — пометкой
+        if: failure()
+        run: |
+          tail -n 60 vitest.log \
+            | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r/%0D/g' \
+            | sed ':a;N;$!ba;s/\n/%0A/g' \
+            | sed 's/^/::error title=Конец журнала тестов::/'
