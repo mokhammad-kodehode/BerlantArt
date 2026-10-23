@@ -1780,12 +1780,21 @@
   }
 
   /* Компьютер: зал ровно в экран, лента внутри листается вниз. Слева
-     столбик миниатюр, над ним — «← Все работы · 12 / 203». Табличка —
-     слева от холста, прижата к его низу (заказчик, 23.10.2026: справа
-     она уводила взгляд от столбика миниатюр через всю картину). */
+     столбик миниатюр, над ним — «← Все работы · 12 / 203». Картина —
+     ровно посередине экрана, табличка — справа, её верх на 20% высоты
+     холста (заказчик, 23.10.2026, по наброску: прежде группа «табличка +
+     картина» стояла по центру целиком, и картина уезжала вбок, а табличка
+     была прижата к низу). Табличка висит сбоку и картину не сдвигает. */
   @media (min-width: 1024px) {
     .feed-stage {
       --thumbs-w: 160px;
+      /* Табличка: обычная ширина, с описанием — до широкой; зазор до холста. */
+      --label-w: 210px;
+      --label-w-long: 300px;
+      --label-gap: 32px;
+      /* Поля слева и справа одинаковые — тогда картина ровно посередине:
+         слева место под столбик миниатюр, справа — под табличку. */
+      --side: max(calc(var(--thumbs-w) + 40px), calc(var(--label-w) + var(--label-gap) + 24px));
       height: 100svh;
       overflow: hidden;
     }
@@ -1800,36 +1809,57 @@
     }
     /* content-visibility: невидимые картины браузер не рисует вовсе — в
        ленте из двухсот работ на экране всегда одна. */
+    /* Ширина картины считается здесь, а не у самой картины: по ней же
+       табличка с описанием узнаёт, сколько места справа. Не выше экрана
+       без полей и не шире места между полями. */
     .feed-slide {
+      --art-max-h: calc(100svh - 120px);
+      --art-max-w: min(calc(100vw - 2 * var(--side)), 820px);
+      --art-w: min(var(--art-max-w), calc(var(--art-max-h) * var(--ratio)));
       height: 100%;
       flex-direction: row;
       justify-content: center;
-      padding: 48px clamp(40px, 6vw, 120px) 56px calc(var(--thumbs-w) + 40px);
+      padding: 48px var(--side) 56px;
       content-visibility: auto;
       contain-intrinsic-size: auto 100svh;
     }
     .feed-work {
-      flex-direction: row-reverse;
-      align-items: flex-end;
-      gap: 56px;
+      position: relative;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 0;
       width: auto;
       max-width: none;
     }
-    /* Не выше экрана без полей и не шире места, что остаётся от
-       столбика миниатюр и таблички. */
     .feed-art {
-      --art-max-h: calc(100svh - 120px);
-      --art-max-w: min(calc(100vw - var(--thumbs-w) - 530px), 820px);
       align-self: auto;
-      width: min(var(--art-max-w), calc(var(--art-max-h) * var(--ratio)));
+      width: var(--art-w);
     }
     .wall-label-col {
-      flex: none;
+      position: absolute;
+      top: 20%;
+      left: calc(100% + var(--label-gap));
       align-self: auto;
-      width: 270px;
+      width: var(--label-w);
+    }
+    /* С описанием табличка шире (заказчик, 23.10.2026) — только вправо и
+       пока до края экрана есть место: от картины её отделяет тот же зазор. */
+    .wall-label-col[data-long] {
+      width: clamp(
+        var(--label-w),
+        calc((100vw - var(--art-w)) / 2 - var(--label-gap) - 24px),
+        var(--label-w-long)
+      );
     }
     .wall-label {
-      padding: 20px 22px 18px;
+      padding: 14px 16px 13px;
+    }
+    .wall-label-title {
+      font-size: 22px;
+    }
+    .wall-label-meta,
+    .wall-label-text {
+      font-size: 13px;
     }
 
     /* Шапка на компьютере спрятана — «Все работы» и номер стоят в левом

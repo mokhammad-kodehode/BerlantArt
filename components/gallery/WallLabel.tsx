@@ -94,7 +94,8 @@ export function WallLabel({
   const description = lang === "ru" ? work.description : null;
 
   return (
-    <div className="wall-label-col">
+    // data-long — табличка с описанием: на компьютере ей можно быть шире (globals.css).
+    <div className="wall-label-col" data-long={description ? true : undefined}>
       <div className="wall-label" data-nudging={isNudging || undefined}>
         {/* Напоминание о примерке — облачко над табличкой, носиком к
             значку. Видно только при data-nudging (globals.css,
