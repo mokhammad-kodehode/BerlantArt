@@ -2743,39 +2743,45 @@
     }
   }
 
+  /* Компьютер: картина слева на весь экран и стоит на месте, справа —
+     колонка с заголовком и выбором. Прокрутка одна — у страницы
+     (заказчик, 23.10.2026): у панели была своя, и справа стояли две
+     полосы, а заголовок висел поверх панели отдельно от неё, и при
+     прокрутке её текст наезжал на название картины. Теперь полоса
+     раскладывается по сетке: «К работе» — над картиной, заголовок —
+     в одной колонке с панелью и уезжает вместе с ней. */
   @media (min-width: 1024px) {
     .fit {
-      position: relative;
       display: grid;
       grid-template-columns: minmax(0, 1fr) 400px;
-      grid-template-rows: auto minmax(0, 1fr);
-      height: 100svh;
-      min-height: 560px;
+      grid-template-rows: auto 1fr;
+      min-height: 100svh;
     }
-    /* Полоса — не опора для заголовка: он встаёт над панелью справа,
-       от края всей страницы. */
     .fit-bar {
-      position: static;
-      grid-column: 1;
-      justify-content: flex-start;
-      padding: 16px 24px 0;
+      display: contents;
     }
     .fit-back {
-      position: static;
+      position: relative;
+      top: auto;
+      left: auto;
+      z-index: 2;
+      grid-column: 1;
+      grid-row: 1;
+      align-self: start;
+      justify-self: start;
+      margin: 16px 24px;
       padding: 0 16px 0 10px;
       transform: none;
     }
     .fit-back-text {
       display: inline;
     }
-    /* Заголовок — над панелью справа. */
     .fit-title {
-      position: absolute;
-      top: 28px;
-      right: 0;
-      width: 400px;
-      padding: 0 28px;
+      grid-column: 2;
+      grid-row: 1;
+      padding: 28px 28px 0;
       text-align: left;
+      border-left: 1px solid var(--color-divider);
     }
     .fit-title-main {
       font-size: 34px;
@@ -2787,16 +2793,20 @@
     .fit-stage {
       --fit-w: 78cqw;
       --fit-h: 82cqh;
+      position: sticky;
+      top: 0;
       grid-column: 1;
-      height: auto;
+      grid-row: 1 / 3;
+      align-self: start;
+      height: 100svh;
+      min-height: 560px;
     }
     .fit-panel {
       grid-column: 2;
-      grid-row: 1 / 3;
+      grid-row: 2;
       max-width: none;
       margin: 0;
-      padding: 118px 28px 28px;
-      overflow-y: auto;
+      padding: 20px 28px 32px;
       border-left: 1px solid var(--color-divider);
     }
     .fit-size {
@@ -3254,6 +3264,9 @@
     font-size: 11.5px;
   }
 
+  /* Компьютер: заголовок и панель — одной колонкой справа (раскладку
+     полосы задаёт блок .fit выше: те же классы). Прокручивается только
+     панель — страница под редактором стоит. */
   @media (min-width: 1024px) {
     .wall {
       grid-template-columns: minmax(0, 1fr) 400px;
@@ -3261,13 +3274,13 @@
     }
     .wall-stage {
       grid-column: 1;
-      grid-row: 2;
+      grid-row: 1 / 3;
     }
     .wall-panel {
       grid-column: 2;
-      grid-row: 1 / 3;
+      grid-row: 2;
       max-height: none;
-      padding: 118px 28px 28px;
+      padding: 20px 28px 28px;
       border-left: 1px solid var(--color-divider);
       border-radius: 0;
       box-shadow: none;
