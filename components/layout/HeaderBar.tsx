@@ -60,7 +60,6 @@ function itemDelay(index: number): CSSProperties & { "--i": number } {
  */
 export function HeaderBar({
   variant = "solid",
-  isWide = false,
   contacts = [],
 }: {
   /**
@@ -68,8 +67,6 @@ export function HeaderBar({
    * отвлекает от картины.
    */
   variant?: "solid" | "stage";
-  /** Шире обычного — над стеной галереи, чтобы края совпали (--wall-max). */
-  isWide?: boolean;
   /** Способы связи для меню бургера. Пусто — блока контактов нет. */
   contacts?: ContactLink[];
 }) {
@@ -191,14 +188,8 @@ export function HeaderBar({
       )}
     >
       {/* Шире --page-max содержимое шапки не растягивается — края стоят
-          над краями hero и сцены работы (globals.css, --page-max); над
-          галереей — шире, по краям стены (--wall-max). */}
-      <nav
-        className={cn(
-          "mx-auto px-[clamp(20px,5vw,64px)]",
-          isWide ? "max-w-(--wall-max)" : "max-w-(--page-max)",
-        )}
-      >
+          над краями hero и стены работ (globals.css, --page-max). */}
+      <nav className="mx-auto max-w-(--page-max) px-[clamp(20px,5vw,64px)]">
         {/* Телефон и планшет: имя по центру, бургер справа — продолжение
             варианта «Б» с компьютера (заказчик, 9.10.2026). Слева пустая
             клетка шириной с бургер: без неё имя стояло бы по центру

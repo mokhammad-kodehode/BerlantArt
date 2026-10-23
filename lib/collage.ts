@@ -24,7 +24,7 @@ export type CollageTile = {
  * и горизонтальная в нём занимает до ~45% ширины при трёх в ряд
  * (планшет), до ~34% при четырёх (со стены 1100px, окно ~1228px) и до
  * половины в паре на телефоне. Шире 1932px стена дальше не растёт
- * (--wall-max), её 34% — около 620px.
+ * (--page-max), её 34% — около 620px.
  */
 export function hangLayout<T extends { isLarge: boolean }>(
   items: readonly T[],
