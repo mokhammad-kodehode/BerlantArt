@@ -49,6 +49,16 @@ const ruOrdinals = [
   "двадцатый",
 ];
 
+/** «1 работа», «2 работы», «5 работ» — форма по правилам языка (Intl.PluralRules). */
+const workForms: Record<Intl.LDMLPluralRule, string> = {
+  zero: "работ",
+  one: "работа",
+  two: "работы",
+  few: "работы",
+  many: "работ",
+  other: "работы",
+};
+
 /** Раздел политики конфиденциальности: заголовок, абзацы, список и что после него. */
 export type PrivacySection = {
   title: string;
@@ -219,8 +229,9 @@ export const ru = {
     motto:
       "Эту фразу Берлант услышала в кино — и узнала в ней себя. Цели она перед собой не ставит: не пишет ради выставок, продаж или признания. Пишет, потому что это приносит ей удовлетворение.",
     quote: (slogan: string) => `«${slogan}»`,
-    latestTitle: "Последние работы",
-    seeAll: "Смотреть все работы",
+    worksCount: (count: number) =>
+      `${count} ${workForms[new Intl.PluralRules("ru").select(count)]} маслом`,
+    seeAll: "Смотреть всю галерею",
   },
 
   /**

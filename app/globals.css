@@ -2804,6 +2804,121 @@
     );
   }
 
+  /* — Две ленты работ внизу «О художнице» (components/about/ArtworkStrips.tsx) —
+     два ряда картин плывут навстречу друг другу; наведение и фокус их
+     останавливают. Движение — сдвиг слоя (transform), без перерисовки.
+     Каждый ряд — две одинаковые копии; отступ у каждой картины справа,
+     а не gap у ряда: тогда половина длины ряда — ровно одна копия, и
+     петля замыкается без скачка. Края ленты гаснут маской — картины
+     уходят в стену, а не обрываются о край окна. */
+  .strips {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+  }
+  .strip-rail {
+    overflow: hidden;
+  }
+  .strip {
+    --strip-h: 130px;
+    --strip-gap: 12px;
+    display: flex;
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    animation: strip-drift 55s linear infinite;
+  }
+  .strip > li {
+    flex: none;
+    margin-right: var(--strip-gap);
+  }
+  .strip[data-back] {
+    animation-direction: reverse;
+  }
+  .strips:hover .strip,
+  .strips:focus-within .strip {
+    animation-play-state: paused;
+  }
+  @keyframes strip-drift {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .strip-work {
+    position: relative;
+    display: block;
+  }
+  /* Подложка цвета стены — пока фото грузится, на его месте ровный
+     прямоугольник, а не пустое окно с одной тенью. */
+  .strip-art {
+    position: relative;
+    display: block;
+    height: var(--strip-h);
+    aspect-ratio: var(--ratio);
+    background: var(--color-surface);
+    box-shadow: var(--theme-shadow-tile);
+    transition: transform 0.3s ease;
+  }
+  .strip-work:hover .strip-art,
+  .strip-work:focus-visible .strip-art {
+    transform: translateY(-4px);
+  }
+  .strip-name {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--color-btn-ink);
+    pointer-events: none;
+    background: var(--color-btn);
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .strip-work:hover .strip-name,
+  .strip-work:focus-visible .strip-name {
+    opacity: 1;
+  }
+  @media (min-width: 1024px) {
+    .strips {
+      gap: 16px;
+    }
+    .strip {
+      --strip-h: 200px;
+      --strip-gap: 16px;
+      animation-duration: 70s;
+    }
+  }
+  /* «Меньше движения» (у заказчика включено): ленты стоят, копии нет,
+     ряд листается вбок — пальцем или колесом с Shift. */
+  @media (prefers-reduced-motion: reduce) {
+    .strip {
+      animation: none;
+    }
+    .strip > [data-copy] {
+      display: none;
+    }
+    .strip-rail {
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .strip-rail::-webkit-scrollbar {
+      display: none;
+    }
+    .strip-art {
+      transition: none;
+    }
+    .strip-work:hover .strip-art,
+    .strip-work:focus-visible .strip-art {
+      transform: none;
+    }
+  }
+
   /* — «Повесить у себя» на главной (components/home/HangTeaser.tsx) —
      на компьютере текст слева, стена с картиной справа; на телефоне
      столбиком: текст, стена, кнопка. Рамы лежат стопкой и проявляются по

@@ -17,6 +17,7 @@ components/
                         DictionaryEn (строки интерфейса своего языка для клиентских)
   pages/                тела публичных страниц с параметром lang — одно на оба языка
   home/                 блоки только для главной: Hero, HangTeaser («Повесить у себя»), PaintingReel
+  about/                блоки только для «О художнице»: ArtworkStrips (две ленты работ)
   gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkFeed (лента на странице работы),
                         WallLabel (табличка), FeedThumbs (миниатюры), ArtworkViewer,
                         ShareButton, FittingRoom, WorkPicker, FramePicker и FramedPainting (примерочная), ArCamera и ArGuide (камера);
@@ -65,6 +66,8 @@ public/                 всё отсюда доступно из интерне
   инструкция во встроенном `<dialog>`), `useArCamera`
   (`ArCamera`: выбор просмотрщика телефона — камеру открывает кнопка
   в примерочной, `ArGuide`: подготовка перед камерой),
+  `ArtworkStrips` (две ленты на «О художнице»: картины грузятся разом, когда
+  до лент остаётся 600px, — ленивая загрузка под бегущей лентой не работает),
   `ContactForm` (проверка полей, сборка сообщения), `AdminReturnBar`
   (возврат в панель) и `ThemeSwitch` (выбор зала). У последнего своего
   состояния нет — он только пишет атрибут на `<html>` и в localStorage,

@@ -178,8 +178,8 @@ export const en: Dictionary = {
     motto:
       "Berlant heard this phrase in a film — and recognised herself in it. She sets herself no goal: she doesn't paint for exhibitions, sales or recognition. She paints because it brings her fulfilment.",
     quote: (slogan) => `“${slogan}”`,
-    latestTitle: "Latest works",
-    seeAll: "See all works",
+    worksCount: (count) => `${count} oil ${count === 1 ? "painting" : "paintings"}`,
+    seeAll: "See the full gallery",
   },
 
   // Перевод русской политики, без новых утверждений. Показать юристу.

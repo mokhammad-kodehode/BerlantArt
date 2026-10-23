@@ -1,12 +1,12 @@
 import Image from "next/image";
 
+import { ArtworkStrips } from "@/components/about/ArtworkStrips";
 import { Header } from "@/components/layout/Header";
 import { Arrow } from "@/components/ui/Arrow";
-import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Tag } from "@/components/ui/Tag";
-import { galleryTile, getFeatured } from "@/lib/artworks";
+import { countArtworks, galleryTile, getFeatured } from "@/lib/artworks";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
 import { paintingYear, site } from "@/lib/site";
 
@@ -35,9 +35,10 @@ import { paintingYear, site } from "@/lib/site";
 export async function AboutPage({ lang }: { lang: Locale }) {
   const t = getDictionary(lang);
   const a = t.about;
-  // Четыре работы в конце страницы — вместо голой пары кнопок. Столько же,
-  // сколько в ряду сетки: пятая создала бы обрывок второй строки.
-  const featured = await getFeatured(4);
+  // Работы для двух лент в конце страницы — те, что отмечены для главной;
+  // шестнадцати хватает на два ряда без повтора на одном экране. Число
+  // работ — для заголовка «203 работы маслом». Запросы разом.
+  const [featured, total] = await Promise.all([getFeatured(16), countArtworks()]);
 
   return (
     <>
@@ -195,40 +196,37 @@ export async function AboutPage({ lang }: { lang: Locale }) {
           </p>
         </section>
 
-        <Container>
-          {/*
-            Лента работ вместо голой пары кнопок в конце. На референсе эту
-            роль играет сетка Instagram в подвале: страница заканчивается
-            не призывом, а живой работой. Тянуть настоящую ленту через
-            Instagram нельзя — нужен их API и согласия, — поэтому показаны
-            работы из нашей же базы, а ссылка ведёт в её профиль.
-          */}
-          <section className="pb-20">
-            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="m-0 text-[26px]">{a.latestTitle}</h2>
+        {/*
+          Конец страницы — не призыв, а живые работы: две ленты, плывущие
+          навстречу друг другу (заказчик, 23.10.2026, вместо четырёх
+          плиток). Ленты — во всю ширину окна, поэтому секция снаружи
+          Container, а заголовок и кнопка — внутри, по краям текста.
+          Ссылка на Instagram осталась у заголовка.
+        */}
+        <section aria-labelledby="about-works-title" className="pb-20">
+          <Container>
+            <div className="mb-7 flex flex-wrap items-baseline justify-between gap-3">
+              <h2 id="about-works-title" className="m-0 text-[clamp(28px,2.6vw,34px)]">
+                {a.worksCount(total)}
+              </h2>
               <ExternalButtonLink href={site.instagram.url} variant="ghost">
                 Instagram @{site.instagram.handle} <Arrow />
               </ExternalButtonLink>
             </div>
+          </Container>
 
-            {featured.length > 0 && (
-              <ul className="mb-8 grid grid-cols-2 gap-4 p-0 sm:grid-cols-4">
-                {featured.map((work) => (
-                  <ArtworkTile
-                    key={work.id}
-                    tile={galleryTile(work, lang)}
-                    lang={lang}
-                    sizes="(max-width: 639px) 50vw, (max-width: 1199px) 25vw, 264px"
-                  />
-                ))}
-              </ul>
-            )}
+          {featured.length > 0 && (
+            <ArtworkStrips tiles={featured.map((work) => galleryTile(work, lang))} lang={lang} />
+          )}
 
-            <ButtonLink href={localePath(lang, "/gallery")} variant="primary">
-              {a.seeAll}
-            </ButtonLink>
-          </section>
-        </Container>
+          <Container>
+            <div className="btn-row mt-8">
+              <ButtonLink href={localePath(lang, "/gallery")} variant="primary">
+                {a.seeAll} <Arrow />
+              </ButtonLink>
+            </div>
+          </Container>
+        </section>
       </main>
     </>
   );
