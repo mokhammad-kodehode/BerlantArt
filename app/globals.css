@@ -1804,11 +1804,12 @@
   }
 
   /* Компьютер: зал ровно в экран, лента внутри листается вниз. Слева
-     столбик миниатюр, над ним — «← Все работы · 12 / 203». Картина
-     с табличкой стоят рядом, табличка прижата к низу холста. */
+     столбик миниатюр, над ним — «← Все работы · 12 / 203». Табличка —
+     слева от холста, прижата к его низу (заказчик, 23.10.2026: справа
+     она уводила взгляд от столбика миниатюр через всю картину). */
   @media (min-width: 1024px) {
     .feed-stage {
-      --thumbs-w: 220px;
+      --thumbs-w: 160px;
       height: 100svh;
       overflow: hidden;
     }
@@ -1832,7 +1833,7 @@
       contain-intrinsic-size: auto 100svh;
     }
     .feed-work {
-      flex-direction: row;
+      flex-direction: row-reverse;
       align-items: flex-end;
       gap: 56px;
       width: auto;
@@ -1874,7 +1875,9 @@
       display: contents;
     }
     /* Столбик миниатюр со сдвигами вбок (FeedThumbs, --shift). Края
-       растворяются — видно, что столбик продолжается. */
+       растворяются — видно, что столбик продолжается. Миниатюры мельче,
+       чем были (заказчик, 23.10.2026): при ширине 112px в столбик
+       входило пять работ из двухсот, при 76px — около восьми. */
     /* Столбик начинается под «← Все работы» — иначе миниатюры при
        прокрутке проходили бы под надписью. */
     .feed-thumbs {
@@ -1888,7 +1891,7 @@
     .feed-thumbs-list {
       flex-direction: column;
       align-items: flex-start;
-      gap: 20px;
+      gap: 14px;
       height: 100%;
       padding: 24px 0 24px 14px;
       overflow: hidden auto;
@@ -1908,11 +1911,12 @@
         transparent
       );
     }
+    /* Сдвиги — в той же доле, что и сама миниатюра: 76 из 112px. */
     .feed-thumbs-list > li {
-      margin-left: var(--shift);
+      margin-left: calc(var(--shift) * 0.68);
     }
     .feed-thumb {
-      --thumb-w: 112px;
+      --thumb-w: 76px;
       width: var(--thumb-w);
       height: clamp(
         calc(var(--thumb-w) * 0.75),
@@ -1921,7 +1925,7 @@
       );
     }
     .feed-thumb[aria-current] {
-      --thumb-w: 148px;
+      --thumb-w: 104px;
     }
   }
 
