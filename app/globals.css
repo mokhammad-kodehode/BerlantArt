@@ -1258,6 +1258,9 @@
      а страница прокручивается обычно — к подвалу. */
   .feed-stage {
     --thumbs-w: 190px;
+    /* Полоса миниатюр на телефоне: по ней же считается середина экрана
+       для картины (.feed-slide). */
+    --dock-h: 124px;
     position: relative;
     background: var(--color-wall);
   }
@@ -1269,10 +1272,15 @@
     pointer-events: none;
     background: var(--theme-toplight);
   }
+  /* align-items: flex-start — у каждой картины своя высота. По умолчанию
+     все тянулись бы до самой высокой (вертикальной или с длинным
+     описанием), и под горизонтальной с короткой табличкой оставалось
+     пусто до самого низа. */
   .feed {
     position: relative;
     z-index: 1;
     display: flex;
+    align-items: flex-start;
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-x: contain;
@@ -1284,6 +1292,10 @@
   }
   /* scroll-snap-stop: always — один жест листает ровно одну картину:
      сильный свайп или рывок колесом не пролетает через несколько. */
+  /* Картина с табличкой — посередине между полосой шапки (48px) и
+     миниатюрами, а не у верха (заказчик, 23.10.2026, вариант А): пустое
+     место делится поровну сверху и снизу. Длинное описание сдвинет
+     картину вверх, как раньше, — слайд просто станет выше экрана. */
   .feed-slide {
     position: relative;
     flex: 0 0 100%;
@@ -1291,6 +1303,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    min-height: calc(100svh - 48px - var(--dock-h));
     padding: 16px 20px 24px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -1611,7 +1625,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 124px;
+    height: var(--dock-h);
     margin: 0;
     padding: 0 20px;
     overflow-x: auto;
