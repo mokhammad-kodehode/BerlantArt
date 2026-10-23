@@ -227,6 +227,27 @@ export function ArtworkFeed({
 
   return (
     <>
+      {/* Размытая копия картины — фон тёмного зала, один на всю ленту, а не
+          у каждой картины свой: прежде копия ехала вместе со своей картиной,
+          и при листании весь фон сменялся, будто переключалась страница
+          (заказчик, 23.10.2026). Теперь фон стоит на месте, а у новой
+          картины мягко меняет оттенок — копии соседних лежат стопкой и
+          проявляются по очереди. В светлом зале фона нет (CSS), и спрятанное
+          ленивое фото не грузится. */}
+      <div aria-hidden className="feed-backdrop">
+        {works.map((item, index) =>
+          Math.abs(index - current) <= nearby && item.src ? (
+            <div
+              key={item.id}
+              data-shown={index === current || undefined}
+              className="feed-backdrop-layer"
+            >
+              <ArtworkImage src={item.src} alt="" sizes={artSizes} />
+            </div>
+          ) : null,
+        )}
+      </div>
+
       <div ref={feedRef} onScroll={handleScroll} className="feed">
         {works.map((item, index) => {
           const isNear = Math.abs(index - current) <= nearby;
@@ -256,14 +277,6 @@ export function ArtworkFeed({
               style={style}
               className="feed-slide"
             >
-              {/* Размытая копия картины — фон тёмного зала; в светлом её
-                  нет (CSS), и спрятанное ленивое фото не грузится. */}
-              {isNear && item.src && (
-                <div aria-hidden className="feed-backdrop">
-                  <ArtworkImage src={item.src} alt="" sizes={artSizes} />
-                </div>
-              )}
-
               <div className="feed-work">
                 <div className="feed-art">
                   {isNear && item.src ? (
