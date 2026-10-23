@@ -20,7 +20,7 @@ components/
   gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkFeed (лента на странице работы),
                         WallLabel (табличка), FeedThumbs (миниатюры), ArtworkViewer,
                         ShareButton, FittingRoom, FramePicker и FramedPainting (примерочная), ArCamera и ArGuide (камера);
-    wall/               фото своей стены: WallEditor, MeasureLayer (мерка с лупой), AddWorkSheet,
+    wall/               фото своей стены: WallEditor, MeasureLayer (мерка с лупой и увеличением), AddWorkSheet,
                         WallHelp (значок «i» с инструкцией)
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации

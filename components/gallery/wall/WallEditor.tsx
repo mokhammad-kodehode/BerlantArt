@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -13,6 +14,7 @@ import { FramePicker } from "@/components/gallery/FramePicker";
 import { AddWorkSheet } from "@/components/gallery/wall/AddWorkSheet";
 import { MeasureLayer } from "@/components/gallery/wall/MeasureLayer";
 import { WallHelp } from "@/components/gallery/wall/WallHelp";
+import { Arrow } from "@/components/ui/Arrow";
 import { Button } from "@/components/ui/Button";
 import { roomPageUrl } from "@/lib/ar-links";
 import { framedSize, type PaintingImage } from "@/lib/frame-canvas";
@@ -38,12 +40,18 @@ import {
   type WallView,
   type WallWork,
 } from "@/lib/wall-scene";
+import { fitView } from "@/lib/wall-zoom";
 
 /** Чем мерили стену. */
 type Reference = "a4" | "door" | "custom";
 
-/** Шаги: мерка, редактор, готовый снимок. */
-type Step = "measure" | "edit" | "done";
+/**
+ * Шаги: что за мерка и её размер, углы мерки на фото, редактор, готовый
+ * снимок. Мерка — в два шага (заказчик, 23.10.2026, макет «Мерка: фото
+ * крупнее»): пока выбор и кружки стояли на одном экране, панель
+ * занимала больше половины, и фото сжималось до трети.
+ */
+type Step = "reference" | "corners" | "edit" | "done";
 
 /** Лист А4 — его размер вписывать не нужно, он у всех один. */
 const a4 = { width: 21, height: 29.7 };
@@ -121,7 +129,7 @@ export function WallEditor({
   const [photo, setPhoto] = useState<PaintingImage | null>(null);
   const [isPhotoBroken, setIsPhotoBroken] = useState(false);
 
-  const [step, setStep] = useState<Step>("measure");
+  const [step, setStep] = useState<Step>("reference");
   const [reference, setReference] = useState<Reference>("a4");
   const [doorSize, setDoorSize] = useState(doorDefault);
   const [customSize, setCustomSize] = useState({ width: "", height: "" });
@@ -160,6 +168,14 @@ export function WallEditor({
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  // Увеличенное фото на шаге углов — вместе с тем, для какого фото и окна
+  // оно посчитано: повернули телефон или сменили фото — снова целиком.
+  const [zoomed, setZoomed] = useState<{
+    view: WallView;
+    photo: PaintingImage;
+    size: { width: number; height: number };
+  } | null>(null);
+  const [hasZoomed, setHasZoomed] = useState(false);
 
   // Фото стены: читаем файл здесь, в браузере.
   useEffect(() => {
@@ -217,15 +233,23 @@ export function WallEditor({
     return () => observer.disconnect();
   }, []);
 
-  const view = useMemo<WallView | null>(() => {
-    if (photo === null || size.width === 0 || size.height === 0) return null;
-    const scale = Math.min(size.width / photo.width, size.height / photo.height);
-    return {
-      scale,
-      x: (size.width - photo.width * scale) / 2,
-      y: (size.height - photo.height * scale) / 2,
-    };
-  }, [photo, size]);
+  const fitted = useMemo<WallView | null>(
+    () => (photo === null || size.width === 0 || size.height === 0 ? null : fitView(photo, size)),
+    [photo, size],
+  );
+  const view =
+    step === "corners" && zoomed !== null && zoomed.photo === photo && zoomed.size === size
+      ? zoomed.view
+      : fitted;
+
+  const changeView = useCallback(
+    (next: WallView | null) => {
+      if (photo === null) return;
+      setZoomed(next === null ? null : { view: next, photo, size });
+      if (next !== null) setHasZoomed(true);
+    },
+    [photo, size],
+  );
 
   // Стена «на глаз»: масштаб от середины фото.
   const eyePlane = useMemo(
@@ -252,7 +276,7 @@ export function WallEditor({
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, element.width, element.height);
 
-    if (step === "measure" || wall === null) {
+    if (step === "reference" || step === "corners" || wall === null) {
       ctx.setTransform(
         view.scale * ratio,
         0,
@@ -302,6 +326,23 @@ export function WallEditor({
     return width === null || height === null ? null : { width, height };
   }
 
+  // Шаг 1 → 2: размер мерки проверяется здесь, на углах его уже не поправить.
+  function markCorners(): void {
+    if (referenceSize() === null) {
+      setMeasureError(t.wall.badSize);
+      return;
+    }
+    setMeasureError(null);
+    setStep("corners");
+  }
+
+  // Назад с углов — к выбору мерки: кружки остаются там, где их поставили.
+  function backToReference(): void {
+    setMeasureError(null);
+    setZoomed(null);
+    setStep("reference");
+  }
+
   function finishMeasure(): void {
     if (photo === null || shownCorners === null) return;
     const real = referenceSize();
@@ -323,6 +364,7 @@ export function WallEditor({
         ? applyHomography(measured.toWall, { x: photo.width / 2, y: photo.height / 2 })
         : { x: real.width / 2, y: real.height / 2 };
     setItems((current) => arrange(current, center));
+    setZoomed(null);
     setStep("edit");
   }
 
@@ -463,7 +505,8 @@ export function WallEditor({
     setPhoto(null);
     setCorners(null);
     setIsTouched(false);
-    setStep("measure");
+    setZoomed(null);
+    setStep("reference");
   }
 
   async function finish(): Promise<void> {
@@ -513,21 +556,39 @@ export function WallEditor({
     : undefined;
 
   const current = items.find((item) => item.key === selected);
+  const measured = referenceSize();
+  const referenceSummary = [
+    reference === "a4" ? t.wall.refA4 : reference === "door" ? t.wall.refDoor : t.wall.refCustom,
+    measured === null
+      ? null
+      : `${measured.width.toLocaleString(lang)} × ${measured.height.toLocaleString(lang)} ${t.cm}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const subtitle =
-    step === "measure"
+    step === "reference"
       ? t.wall.stepMeasure
-      : planeBy === "eye"
-        ? t.wall.byEye
-        : planeBy === "door"
-          ? t.wall.byDoor
-          : planeBy === "custom"
-            ? t.wall.byCustom
-            : t.wall.byA4;
+      : step === "corners"
+        ? t.wall.stepCorners
+        : planeBy === "eye"
+          ? t.wall.byEye
+          : planeBy === "door"
+            ? t.wall.byDoor
+            : planeBy === "custom"
+              ? t.wall.byCustom
+              : t.wall.byA4;
 
   return (
     <div className="wall" data-step={step}>
       <header className="fit-bar wall-bar">
-        <button type="button" className="fit-back" onClick={onClose} aria-label={t.wall.back}>
+        {/* С шага углов «назад» — к выбору мерки, а не к раме: так
+            меняют лист на дверь, не теряя фото (заказчик, 23.10.2026). */}
+        <button
+          type="button"
+          className="fit-back"
+          onClick={step === "corners" ? backToReference : onClose}
+          aria-label={step === "corners" ? t.wall.backToMeasure : t.wall.back}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true" className="arrow arrow-back size-5">
             <path
               d="M15 5l-7 7 7 7"
@@ -538,7 +599,9 @@ export function WallEditor({
               strokeLinejoin="round"
             />
           </svg>
-          <span className="fit-back-text">{t.wall.back}</span>
+          <span className="fit-back-text">
+            {step === "corners" ? t.wall.backToMeasure : t.wall.back}
+          </span>
         </button>
         <h1 className="fit-title">
           <span className="fit-title-main">{t.wall.title}</span>
@@ -560,13 +623,16 @@ export function WallEditor({
           onPointerCancel={pointerUp}
           onKeyDown={keyDown}
         />
-        {step === "measure" && shownCorners !== null && view !== null && photo !== null && (
+        {step === "corners" && shownCorners !== null && view !== null && photo !== null && (
           <>
             <MeasureLayer
               corners={shownCorners}
               view={view}
+              box={size}
               photo={photo}
               label={t.wall.measureHint}
+              zoomLabel={t.wall.zoomReset}
+              onView={changeView}
               onChange={(next) => {
                 setCorners(next);
                 setIsTouched(true);
@@ -574,6 +640,14 @@ export function WallEditor({
               }}
             />
             <p className="wall-bubble">{t.wall.measureHint}</p>
+            {/* Как увеличить — пока не увеличивали ни разу. Пальцами или
+                колесом — по тому, чем человек показывает (globals.css). */}
+            {!hasZoomed && (
+              <p className="wall-bubble wall-bubble-low">
+                <span className="wall-zoom-touch">{t.wall.zoomTouch}</span>
+                <span className="wall-zoom-mouse">{t.wall.zoomMouse}</span>
+              </p>
+            )}
           </>
         )}
         {step === "edit" && !hasMoved && items.length > 0 && (
@@ -583,7 +657,7 @@ export function WallEditor({
       </div>
 
       <div className="wall-panel">
-        {step === "measure" && (
+        {step === "reference" && (
           <>
             <h2 className="wall-panel-title">{t.wall.measureTitle}</h2>
             <p className="wall-panel-text">{t.wall.measureText}</p>
@@ -640,10 +714,15 @@ export function WallEditor({
               variant="primary"
               size="lg"
               block
-              onClick={finishMeasure}
+              onClick={markCorners}
               disabled={photo === null}
             >
-              {t.wall.measureDone}
+              {reference === "a4"
+                ? t.wall.markA4
+                : reference === "door"
+                  ? t.wall.markDoor
+                  : t.wall.markCustom}{" "}
+              <Arrow />
             </Button>
             <button
               type="button"
@@ -653,6 +732,34 @@ export function WallEditor({
             >
               {t.wall.eyeball}
             </button>
+          </>
+        )}
+
+        {/* Шаг 2: на телефоне — тонкая полоса, чтобы фото досталось почти
+            всё место; что за мерка — нажать и поменять. */}
+        {step === "corners" && (
+          <>
+            <div className="wall-corners">
+              <button
+                type="button"
+                className="wall-corners-ref"
+                onClick={backToReference}
+                aria-label={`${t.wall.changeMeasure}: ${referenceSummary}`}
+              >
+                <span>{referenceSummary}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 20l1-4.5L15.5 5a2 2 0 0 1 3 3L8 18.5zM13.5 7l3 3" />
+                </svg>
+              </button>
+              <Button variant="primary" size="lg" onClick={finishMeasure}>
+                {t.wall.measureDone}
+              </Button>
+            </div>
+            {measureError && (
+              <p className="wall-error" role="alert">
+                {measureError}
+              </p>
+            )}
           </>
         )}
 
@@ -687,7 +794,7 @@ export function WallEditor({
                 <ToolIcon name="add" />
                 {t.wall.toolAdd}
               </button>
-              <button type="button" className="wall-tool" onClick={() => setStep("measure")}>
+              <button type="button" className="wall-tool" onClick={() => setStep("reference")}>
                 <ToolIcon name="measure" />
                 {t.wall.toolMeasure}
               </button>

@@ -125,8 +125,8 @@ export const enUi: UiDictionary = {
     frame: "Frame",
     frameColor: "Colour",
     frameSummary: (label, width) => `${label} · ${width} cm`,
-    openCamera: "Open the camera",
-    photoWall: "Photo of your wall",
+    openCamera: "Try it on with the camera",
+    photoWall: "Try it on a photo of your wall",
     dropPhoto: "or drop a photo here",
     qrTitle: "The camera is on your phone",
     qrText:
@@ -168,11 +168,20 @@ export const enUi: UiDictionary = {
     wall: {
       title: "Your wall",
       back: "Back to frames",
-      stepMeasure: "measuring",
+      stepMeasure: "step 1 of 2 · reference",
+      stepCorners: "step 2 of 2 · corners",
+      backToMeasure: "Back to reference",
       measureHint: "Drag the dots to the corners",
       measureTitle: "What on the wall has a known size?",
       measureText:
-        "Mark the corners of an A4 sheet, a door or another rectangle on the wall — the site will work out the scale and angle of the wall from it.",
+        "An A4 sheet taped up, a closed door or anything you can measure — in this same wall. The site works out the scale and angle of the wall from it.",
+      markA4: "Mark the sheet's corners",
+      markDoor: "Mark the door's corners",
+      markCustom: "Mark the corners",
+      changeMeasure: "Change the reference",
+      zoomTouch: "Two fingers to zoom in",
+      zoomMouse: "Scroll to zoom in",
+      zoomReset: "Show the whole photo",
       refA4: "A4 sheet",
       refDoor: "Door",
       refCustom: "Other",
@@ -220,7 +229,7 @@ export const enUi: UiDictionary = {
         },
         {
           title: "Mark the reference",
-          text: "You need a rectangle of known size in the same wall. The easiest is an A4 sheet taped to it. No A4? A closed door works: choose “Door” and enter its width and height (usually 80 × 200 cm, but better measure it with a tape). Any other rectangle you can measure will do too — choose “Other”. Drag the four dots exactly to its corners — they tell the site the scale and angle of the wall.",
+          text: "You need a rectangle of known size in the same wall. The easiest is an A4 sheet taped to it. No A4? A closed door works: choose “Door” and enter its width and height (usually 80 × 200 cm, but better measure it with a tape). Any other rectangle you can measure will do too — choose “Other”. Drag the four dots exactly to its corners — they tell the site the scale and angle of the wall. Spread two fingers to zoom in: the corners come out more precise.",
         },
         {
           title: "Hang the painting",

@@ -3134,6 +3134,8 @@
     top: 14px;
     left: 50%;
     z-index: 3;
+    /* Без max-content подсказка от середины окна переносилась на две строки. */
+    width: max-content;
     max-width: calc(100% - 32px);
     margin: 0;
     padding: 8px 12px;
@@ -3205,6 +3207,63 @@
       0 6px 18px rgb(0 0 0 / 0.4);
     pointer-events: none;
   }
+  /* Увеличенное фото (MeasureLayer): один палец его двигает, в углу —
+     мини-карта, где вы на фото, и «1×» — вернуть целиком. */
+  .measure-layer[data-zoomed] {
+    cursor: grab;
+  }
+  .measure-map {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    border-radius: 6px;
+    box-shadow:
+      0 0 0 2px #fff,
+      0 4px 12px rgb(0 0 0 / 0.3);
+    pointer-events: none;
+  }
+  .measure-zoom {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 5px 5px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    background: rgb(28 24 20 / 0.78);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .measure-zoom span {
+    padding: 3px 9px;
+    color: #2b251f;
+    background: #fff;
+    border-radius: 999px;
+  }
+  /* Как увеличить — снизу, чтобы не спорить с «Потяните кружки» сверху;
+     пальцами на телефоне, колесом там, где мышь. */
+  .wall-bubble-low {
+    top: auto;
+    bottom: 14px;
+  }
+  .wall-zoom-mouse {
+    display: none;
+  }
+  @media (pointer: fine) {
+    .wall-zoom-touch {
+      display: none;
+    }
+    .wall-zoom-mouse {
+      display: inline;
+    }
+  }
 
   .wall-panel {
     display: flex;
@@ -3221,6 +3280,55 @@
     margin: 0;
     font-size: 22px;
     line-height: 1.15;
+  }
+  /* Шаг углов: на телефоне панель — тонкая полоса, фото — почти всё
+     место (заказчик, 23.10.2026). Слева — какая мерка (нажать —
+     вернуться к выбору), справа — «Готово». */
+  .wall[data-step="corners"] .wall-panel {
+    gap: 10px;
+    padding-top: 12px;
+  }
+  .wall-corners {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wall-corners .btn {
+    flex: none;
+    padding-inline: 28px;
+  }
+  .wall-corners-ref {
+    display: flex;
+    min-width: 0;
+    height: 52px;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .wall-corners-ref span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wall-corners-ref svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: none;
+    stroke: var(--color-ink-soft);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
   .wall-panel-text {
     margin: -6px 0 0;
@@ -3585,6 +3693,19 @@
       justify-self: end;
       margin: 28px 24px 0 0;
       transform: none;
+    }
+    /* На компьютере места хватает — мерка и «Готово» друг под другом. */
+    .wall-corners {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .wall-corners-ref {
+      flex: none;
+    }
+    /* Левый верхний угол занят «К мерке» — мини-карта уходит вниз. */
+    .measure-map {
+      top: auto;
+      bottom: 12px;
     }
     .wall-panel {
       grid-column: 2;
