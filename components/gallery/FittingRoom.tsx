@@ -3,7 +3,15 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 import { ArQuickLookLink, useArCamera, type ArCameraModel } from "@/components/gallery/ArCamera";
 import { ArGuide, hasSeenArGuide, rememberArGuide } from "@/components/gallery/ArGuide";
@@ -71,8 +79,11 @@ export function FittingRoom({
   work,
   siteUrl,
   whatsappPhone,
+  phoneCode,
 }: {
   work: FittingWork;
+  /** QR-код этой примерочной для телефона — его рисует сервер (lib/qr.ts). */
+  phoneCode: ReactNode;
   siteUrl: string;
   /** Для кнопки «Написать о картине» внутри камеры; нет — нет и кнопки. */
   whatsappPhone?: string;
@@ -320,6 +331,17 @@ export function FittingRoom({
           {t.dropPhoto}
         </p>
         <p className="fit-note">{t.choiceNote}</p>
+
+        {/* Камера — на телефоне; с компьютера к ней ведёт код (П-5). */}
+        {work.arVersion !== null && (
+          <div className="fit-qr">
+            {phoneCode}
+            <p className="fit-qr-text">
+              <b>{t.qrTitle}</b>
+              {t.qrText}
+            </p>
+          </div>
+        )}
 
         {hint && (
           <p className="fit-hint" role="status">

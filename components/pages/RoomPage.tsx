@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { FittingRoom } from "@/components/gallery/FittingRoom";
+import { roomPageUrl } from "@/lib/ar-links";
 import { artworkFeedItem, getArtworkById } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { localePath } from "@/lib/i18n/config";
+import { qrPath } from "@/lib/qr";
 
 export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> {
   const t = getDictionary(lang);
@@ -46,9 +48,25 @@ export async function RoomPage({ lang, id }: { lang: Locale; id: string }) {
     redirect(localePath(lang, `/gallery/${id}`));
   }
 
+  // Код для телефона — на эту же примерочную, без рамы: страница одна на
+  // все рамы и готовится заранее, выбор с компьютера ей не виден.
+  const qr = qrPath(`${clientEnv.NEXT_PUBLIC_SITE_URL}${roomPageUrl(id, null, lang)}`);
+
   return (
     <main>
       <FittingRoom
+        phoneCode={
+          <svg
+            viewBox={`0 0 ${qr.size} ${qr.size}`}
+            className="fit-qr-code"
+            role="img"
+            aria-label={getDictionary(lang).room.qrLabel}
+            shapeRendering="crispEdges"
+          >
+            <rect width={qr.size} height={qr.size} fill="#ffffff" />
+            <path d={qr.path} fill="#111111" />
+          </svg>
+        }
         work={{
           id: item.id,
           title: item.title,

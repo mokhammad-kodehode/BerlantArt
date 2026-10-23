@@ -2804,6 +2804,39 @@
     }
   }
 
+  /* Код для телефона — только там, где камеры нет: на компьютере с мышью.
+     Белое поле под кодом и в тёмном зале — без контраста камера его не прочтёт. */
+  .fit-qr {
+    display: none;
+  }
+  @media (pointer: fine) {
+    .fit-qr {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-top: 18px;
+      border-top: 1px solid var(--color-divider);
+    }
+  }
+  .fit-qr-code {
+    flex: none;
+    width: 96px;
+    height: 96px;
+    border-radius: 6px;
+  }
+  .fit-qr-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-ink-soft);
+  }
+  .fit-qr-text b {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 14px;
+    color: var(--color-ink);
+  }
+
   /* Подпись под кнопками: чем камера отличается от фото стены. */
   .fit-note {
     margin: -8px 0 0;

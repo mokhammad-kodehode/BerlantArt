@@ -128,6 +128,10 @@ export const enUi: UiDictionary = {
     openCamera: "Open the camera",
     photoWall: "Photo of your wall",
     dropPhoto: "or drop a photo here",
+    qrTitle: "The camera is on your phone",
+    qrText:
+      "Point your phone's camera at the code — this page will open, and you can try the painting right on your wall.",
+    qrLabel: "Code for this page on your phone",
     choiceNote:
       "The camera shows one painting right in your room. On a photo you can hang several.",
     noCarving: "In the camera the frame is plain: the same colour and width, but without carving.",
