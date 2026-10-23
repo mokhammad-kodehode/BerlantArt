@@ -349,18 +349,12 @@ export function FittingRoom({
             и пустой клик по ней сбивал бы. Скринридеру и клавиатуре она не
             нужна — для них есть кнопка. */}
         <label htmlFor={photoInputId} className="fit-drop" aria-hidden="true">
-          <svg viewBox="0 0 48 48" className="fit-drop-icon">
+          <svg viewBox="10 2 28 24" className="fit-drop-icon">
             <g className="fit-drop-photo">
               <rect x="14" y="6" width="20" height="16" rx="2" />
               <path d="m16.5 19.5 5-5 3.5 3.5 2.5-2.5 4 4" />
               <circle cx="28.5" cy="11" r="1.7" />
             </g>
-            {/* Лоток рисуется поверх фото и залит фоном зоны — опускаясь,
-                фото уходит за его край. */}
-            <path
-              className="fit-drop-tray"
-              d="M7 29h9l2.5 4h11l2.5-4h9v7.5a3.5 3.5 0 0 1-3.5 3.5h-27A3.5 3.5 0 0 1 7 36.5Z"
-            />
           </svg>
           <span className="fit-drop-title">{isDragging ? t.dropRelease : t.dropPhoto}</span>
           <span className="fit-drop-pick">{t.dropPick}</span>

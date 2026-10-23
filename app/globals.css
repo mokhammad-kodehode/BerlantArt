@@ -3060,7 +3060,7 @@
      можно в любое место окна, зона показывает куда. По нажатию она
      открывает тот же выбор файла, что кнопка над ней: пунктирная рамка
      выглядит полем, и пустой клик по ней сбивал. Фон зоны — в
-     --drop-bg: им же залит лоток иконки, чтобы фото уходило за его край. */
+     --drop-bg: с ним смешан цвет фото в иконке, чтобы оно было плотным. */
   .fit-drop {
     display: none;
   }
@@ -3117,19 +3117,19 @@
     visibility: hidden;
   }
 
-  /* Иконка — фото над лотком. Живая (заказчик, 23.10.2026: «иконка чтобы
-     была живая»): раз в 4 с фото приподнимается и опускается к лотку,
-     при наведении — приподнято и теплеет, пока файл тащат над окном, —
-     падает в лоток раз за разом. Секунда движения на три покоя: рядом
-     картина, мельтешить ей нельзя. */
+  /* Иконка — фото. Живая (заказчик, 23.10.2026: «иконка чтобы была
+     живая»): раз в 4 с фото приподнимается с наклоном и опускается на
+     место, при наведении — приподнято и теплеет, пока файл тащат над
+     окном, — покачивается. Секунда движения на три покоя: рядом картина,
+     мельтешить ей нельзя. Лоток под фото был — заказчик попросил убрать. */
   .fit-drop-icon {
-    width: 46px;
-    height: 46px;
-    margin-bottom: 6px;
+    width: 36px;
+    height: 31px;
+    margin-bottom: 8px;
     overflow: visible;
     fill: none;
     stroke: var(--color-ink-soft);
-    stroke-width: 1.5;
+    stroke-width: 1.2;
     stroke-linecap: round;
     stroke-linejoin: round;
     transition: stroke 0.2s ease;
@@ -3138,13 +3138,9 @@
   .fit[data-dragging] .fit-drop-icon {
     stroke: var(--color-ink);
   }
-  .fit-drop-tray {
-    fill: var(--drop-bg);
-    transition: fill 0.2s ease;
-  }
   .fit-drop-photo {
-    transform-box: view-box;
-    transform-origin: 24px 14px;
+    transform-box: fill-box;
+    transform-origin: center;
     animation: fit-drop-idle 4.2s ease-in-out infinite;
   }
   .fit-drop-photo rect {
@@ -3155,7 +3151,7 @@
     animation: fit-drop-lift 0.45s ease-out forwards;
   }
   .fit[data-dragging] .fit-drop-photo {
-    animation: fit-drop-fall 1s ease-in-out infinite;
+    animation: fit-drop-sway 1s ease-in-out infinite;
   }
   .fit-drop:hover .fit-drop-photo rect,
   .fit[data-dragging] .fit-drop-photo rect {
@@ -3168,43 +3164,27 @@
       transform: none;
     }
     70% {
-      transform: translateY(-3px) rotate(-5deg);
+      transform: translateY(-2.5px) rotate(-6deg);
     }
     82% {
-      transform: translateY(5px) rotate(0deg);
+      transform: translateY(0.5px) rotate(1deg);
     }
     90% {
-      transform: translateY(-1px);
+      transform: translateY(-0.5px) rotate(0deg);
     }
   }
   @keyframes fit-drop-lift {
     to {
-      transform: translateY(-3px) rotate(-5deg);
+      transform: translateY(-2.5px) rotate(-6deg);
     }
   }
-  /* Фото падает в лоток и гаснет в нём, следующее проявляется сверху —
-     без скачка снизу вверх на виду. */
-  @keyframes fit-drop-fall {
-    0% {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    18% {
-      opacity: 1;
-    }
-    60% {
-      transform: translateY(11px);
-    }
-    72% {
-      transform: translateY(9px);
-    }
-    84% {
-      opacity: 1;
-      transform: translateY(11px);
-    }
+  @keyframes fit-drop-sway {
+    0%,
     100% {
-      opacity: 0;
-      transform: translateY(11px);
+      transform: translateY(-2.5px) rotate(-6deg);
+    }
+    50% {
+      transform: translateY(0.5px) rotate(4deg);
     }
   }
   /* «Меньше движения» (у заказчика включено: в Windows выключены эффекты
