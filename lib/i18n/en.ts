@@ -39,6 +39,8 @@ const enOrdinals = [
 export const en: Dictionary = {
   ...enUi,
 
+  roomLoading: "Getting the fitting room ready…",
+
   footer: {
     sections: "Sections",
     contacts: "Contact",

@@ -1321,6 +1321,16 @@
     }
   }
 
+  /* Подвала нет в ленте работ и в примерочной (заказчик, 23.10.2026): это
+     полноэкранные просмотры, подвал под картиной отвлекал, а в
+     примерочной давал лишнюю прокрутку. Разделы и контакты остаются в
+     меню шапки. Подвал стоит в корневом layout, поэтому прячет его CSS
+     по тому, что на странице, — делить layout на две ветки ради двух
+     страниц незачем. Браузер без :has() просто покажет подвал. */
+  body:has(.feed-stage, .fit) .site-footer {
+    display: none;
+  }
+
   /* Пунктирная рамка пустого состояния — «здесь пока ничего нет». */
   .panel-dashed {
     border: 1.5px dashed var(--color-divider);
@@ -2875,6 +2885,74 @@
     margin-bottom: 3px;
     font-size: 14px;
     color: var(--color-ink);
+  }
+
+  /* Пока примерочная собирается в первый раз (RoomLoading): на месте
+     картины качается значок примерки — та же рамка на гвоздике, что на
+     табличке, — и строка «Готовим примерочную…». Полосы панели мягко
+     дышат. С «Уменьшить движение» — без качания, только строка. */
+  .room-loading {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    color: var(--color-ink-soft);
+  }
+  .room-loading-icon {
+    width: 56px;
+    height: 56px;
+    overflow: visible;
+    fill: none;
+    stroke: var(--color-ink);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .room-loading-nail {
+    fill: var(--color-ink);
+    stroke: none;
+  }
+  .room-loading-frame {
+    transform-box: view-box;
+    transform-origin: 12px 2.6px;
+    animation: room-loading-sway 1.6s ease-in-out infinite;
+  }
+  .room-loading-frame rect {
+    fill: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+  @keyframes room-loading-sway {
+    0%,
+    100% {
+      transform: rotate(7deg);
+    }
+    50% {
+      transform: rotate(-7deg);
+    }
+  }
+  .room-loading-pill {
+    width: 40px;
+    background: var(--color-surface);
+  }
+  .room-loading-line {
+    display: block;
+    height: 14px;
+    border-radius: 8px;
+    background: var(--color-surface);
+    animation: room-loading-breathe 1.6s ease-in-out infinite;
+  }
+  @keyframes room-loading-breathe {
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .room-loading-frame,
+    .room-loading-line {
+      animation: none;
+    }
   }
 
   /* Подпись под кнопками: чем камера отличается от фото стены. */

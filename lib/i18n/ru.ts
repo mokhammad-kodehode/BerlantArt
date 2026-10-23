@@ -65,6 +65,9 @@ export const ru = {
   // Строки интерфейса — в ru-ui.ts: их получает и браузер (тикет О-12).
   ...ruUi,
 
+  /** Пока примерочная собирается в первый раз (components/pages/RoomLoading.tsx). */
+  roomLoading: "Готовим примерочную…",
+
   footer: {
     sections: "Разделы",
     contacts: "Контакты",

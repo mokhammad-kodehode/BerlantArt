@@ -8,6 +8,8 @@ import { footerSections } from "@/lib/site";
 
 /**
  * Подвал одинаков на всех страницах, поэтому подключён в корневом layout.
+ * Кроме двух полноэкранных просмотров — ленты работ и примерочной: там
+ * его прячет CSS (globals.css, .site-footer), см. ниже.
  *
  * Внешнего отступа сверху нет: отступ до подвала задаёт сама страница.
  * Прежний mt-4 оставлял полосу фона между подвалом и блоком во весь экран —
@@ -17,7 +19,7 @@ export function Footer({ lang }: { lang: Locale }) {
   const t = getDictionary(lang);
 
   return (
-    <footer className="bg-wall text-ink">
+    <footer className="site-footer bg-wall text-ink">
       <Container className="flex flex-wrap justify-between gap-10 pt-14 pb-10">
         <div className="max-w-[32ch]">
           <div className="font-heading mb-2 text-xl">{t.site.artist}</div>
