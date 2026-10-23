@@ -49,7 +49,12 @@ export function isFeedList(value: unknown): value is ArtworkFeedItem[] {
         isBilingual(item.label) &&
         isBilingual(item.pageTitle) &&
         isBilingual(item.alt) &&
-        (item.description === null || typeof item.description === "string"),
+        (item.description === null || typeof item.description === "string") &&
+        // Без поля — список, собранный до 23.10.2026: камеры у такой
+        // картины просто нет, а лента цела.
+        (item.arVersion === undefined ||
+          item.arVersion === null ||
+          typeof item.arVersion === "string"),
     )
   );
 }

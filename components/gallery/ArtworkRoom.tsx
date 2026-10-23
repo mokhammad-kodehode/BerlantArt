@@ -348,7 +348,7 @@ export function ArtworkRoom({
           contactUrl: whatsappLink("camera"),
         };
 
-  const arCamera = useArCamera(camera, showHint);
+  const arCamera = useArCamera(showHint);
 
   // Упрощение рамы в камере (решение 5): резьбы и лепнины там нет.
   const isCarvedFrame = options.frame === "classic" || options.frame === "baroque";
@@ -362,19 +362,20 @@ export function ArtworkRoom({
   // и сказать об этом нужно до камеры, а не после. Где камеры нет, сразу
   // объясняем словами почему.
   function requestCamera() {
+    if (camera === null) return;
     const platform = arCamera.detect();
     const canOpen = platform === "ios" || platform === "android";
     if (canOpen && (!hasSeenArGuide() || isCarvedFrame)) {
       setIsGuideOpen(true);
       return;
     }
-    arCamera.launch(platform);
+    arCamera.launch(platform, camera);
   }
 
   function startFromGuide() {
     rememberArGuide();
     setIsGuideOpen(false);
-    arCamera.launch(arCamera.detect());
+    if (camera !== null) arCamera.launch(arCamera.detect(), camera);
   }
 
   return (

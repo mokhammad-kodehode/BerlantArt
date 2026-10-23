@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ArtworkRoom, type RoomThumb } from "@/components/gallery/ArtworkRoom";
-import { cameraTarget } from "@/lib/ar";
+import { cameraTarget } from "@/lib/ar-target";
 import {
   artworkDimensions,
   artworkTechnique,
@@ -12,7 +12,8 @@ import {
 } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { parseCanvasSides, parseRoomOptions } from "@/lib/room-options";
+import { localePath } from "@/lib/i18n/config";
+import { isRoomOn, parseCanvasSides, parseRoomOptions } from "@/lib/room-options";
 
 export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> {
   const t = getDictionary(lang);
@@ -49,6 +50,10 @@ export async function RoomPage({
   id: string;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Примерочная скрыта до переделки (lib/room-options.ts, isRoomOn):
+  // старые ссылки открывают саму работу.
+  if (!isRoomOn) redirect(localePath(lang, `/gallery/${id}`));
+
   const [work, all, rawOptions] = await Promise.all([
     getArtworkById(id),
     getArtworks(),

@@ -1395,16 +1395,28 @@
     min-width: 0;
     margin: 0;
     font-family: var(--font-heading);
-    font-size: 22px;
+    /* 26px — на 4px крупнее прежнего (заказчик, 23.10.2026). */
+    font-size: 26px;
     font-weight: var(--font-heading-weight);
     line-height: 1.1;
     color: var(--color-ink);
   }
   .wall-label-meta {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
     color: var(--color-ink-soft);
+  }
+  /* «Камера есть только на телефоне…» под подписью — после нажатия на
+     значок там, где камера не откроется. Пустая строка места не занимает. */
+  .wall-label-hint {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-ink);
+  }
+  .wall-label-hint:empty {
+    display: none;
   }
   .wall-label-text {
     margin: 12px 0 0;
@@ -1451,8 +1463,12 @@
     justify-content: center;
     width: 40px;
     height: 40px;
+    padding: 0;
     color: var(--color-ink);
+    background: none;
+    border: 0;
     border-radius: var(--radius-pill);
+    cursor: pointer;
     transition: background-color 0.18s ease;
   }
   .tryon:hover {
@@ -2222,6 +2238,18 @@
    Сверху вечером — свечения в режиме «экран»: ореол у лампы и блик
    на верхней планке рамы. */
 @layer components {
+  /* Цвета и ход, общие с экраном подготовки к камере (ArGuide): он
+     открывается и из ленты работ, вне примерочной (23.10.2026). */
+  .room,
+  .ar-guide {
+    --room-ink: #efe6d8;
+    --room-light-core: #fff5e6;
+    --room-light-warm: #ffe3bd;
+    --label-ink: #29231d;
+    /* Плавное торможение в конце: размер «доезжает», а не обрывается. */
+    --room-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
   .room {
     /* стены при полном свете */
     --wall-white: #f0ede7;
@@ -2233,15 +2261,12 @@
     --room-plaster: var(--wall-beige);
 
     --room-night: #0b0a09;
-    --room-ink: #efe6d8;
     --room-panel: rgb(20 17 15 / 0.72);
 
     /* Вечер. Свет лампы тёплый; в остальной комнате — рассеянный свет,
        отражённый от освещённой стены: полной темноты в жилой комнате
        не бывает, диван и пол видны в полумраке. --room-ambient — доля
        этого рассеянного света: примерно пятая часть. */
-    --room-light-core: #fff5e6;
-    --room-light-warm: #ffe3bd;
     --room-beam: #fff0da;
     --room-ambient: #3b3129;
     --room-off: #16120f;
@@ -2264,10 +2289,6 @@
     --floor-far: #4f3d2f;
 
     --label-paper: #e7dfd1;
-    --label-ink: #29231d;
-
-    /* Плавное торможение в конце: размер «доезжает», а не обрывается. */
-    --room-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
     position: relative;
     isolation: isolate;

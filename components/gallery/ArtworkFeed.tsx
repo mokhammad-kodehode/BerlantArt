@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
+import { ArQuickLookLink, useArCamera, type ArCameraModel } from "@/components/gallery/ArCamera";
+import { ArGuide, hasSeenArGuide, rememberArGuide } from "@/components/gallery/ArGuide";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { FeedThumbs } from "@/components/gallery/FeedThumbs";
 import { WallLabel } from "@/components/gallery/WallLabel";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { tileAnchor } from "@/components/ui/ArtworkTile";
+import { arFileUrl } from "@/lib/ar-links";
 import { fetchArtworkFeed, positionOf } from "@/lib/artwork-thumbs";
 import type { ArtworkFeedItem } from "@/lib/artworks";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
 import { localePath } from "@/lib/i18n/config";
+import { defaultRoomOptions, roomMessage } from "@/lib/room-options";
 
 /**
  * Сколько картин по обе стороны от текущей получают «тяжёлое»: просмотр
@@ -66,6 +70,15 @@ const backKeys = new Set(["ArrowUp", "ArrowLeft", "PageUp"]);
 type SlideStyle = CSSProperties & { "--ratio": number };
 
 /**
+ * Картина в камере из ленты — без рамы: раму выбирали в примерочной,
+ * а она скрыта до переделки (заказчик, 23.10.2026).
+ */
+const cameraFrame = { frame: defaultRoomOptions.frame, finish: defaultRoomOptions.finish };
+
+/** Сколько держится подсказка под табличкой. */
+const hintDuration = 6000;
+
+/**
  * Лента работ на странице работы (заказчик, 22.10.2026, по макету
  * «Лента с табличкой»): картины одна за другой, каждая — на весь экран.
  * На компьютере листается колесом вниз, слева столбик миниатюр; на
@@ -81,14 +94,21 @@ type SlideStyle = CSSProperties & { "--ratio": number };
  * и заголовок вкладки меняются на текущую картину (`replaceState`):
  * ссылкой можно поделиться, перезагрузка откроет ту же картину,
  * а «назад» ведёт туда, откуда пришли, а не через все пролистанные.
+ *
+ * Значок примерки на табличке сразу открывает камеру телефона с этой
+ * картиной (заказчик, 23.10.2026): ссылка Quick Look и экран подготовки —
+ * одни на всю ленту, модель выбирается в момент нажатия.
  */
 export function ArtworkFeed({
   initial,
   siteUrl,
+  whatsappPhone,
 }: {
   /** Работа, ради которой открыли страницу, — с неё лента начинается. */
   initial: ArtworkFeedItem;
   siteUrl: string;
+  /** Для кнопки «Написать о картине» внутри камеры; нет — нет и кнопки. */
+  whatsappPhone?: string;
 }) {
   const t = useDictionary();
   const lang = useLocale();
@@ -131,6 +151,66 @@ export function ArtworkFeed({
   }, [works]);
 
   const work = works[current] ?? initial;
+
+  // Подсказка под табличкой — у той картины, на которой нажали значок:
+  // почему камера здесь не откроется. Android без сервисов AR возвращает
+  // на страницу с меткой — тогда подсказка у картины, с которой ушли.
+  const [hint, setHint] = useState<{ id: string; text: string } | null>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const noticeFor = useRef(initial.id);
+  const showHint = useCallback((text: string) => {
+    clearTimeout(hintTimer.current);
+    setHint({ id: noticeFor.current, text });
+    hintTimer.current = setTimeout(() => setHint(null), hintDuration);
+  }, []);
+  useEffect(() => () => clearTimeout(hintTimer.current), []);
+
+  const arCamera = useArCamera(showHint);
+  // Картина, для которой открыт экран подготовки к камере.
+  const [guideWork, setGuideWork] = useState<ArtworkFeedItem | null>(null);
+
+  function cameraModel(item: ArtworkFeedItem, version: string): ArCameraModel {
+    const pageUrl = `${siteUrl}${localePath(lang, `/gallery/${item.id}`)}`;
+    const message = roomMessage({
+      title: item.title,
+      options: defaultRoomOptions,
+      pageUrl,
+      place: "camera",
+      t: t.room,
+    });
+    return {
+      usdzUrl: arFileUrl(item.id, "model.usdz", version, cameraFrame),
+      glbUrl: arFileUrl(item.id, "model.glb", version, cameraFrame),
+      title: item.title,
+      // Строка таблички — техника, размер, год: по размеру человек
+      // сверяет картину со стеной.
+      subtitle: item.label[lang],
+      contactUrl: whatsappPhone
+        ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`
+        : undefined,
+    };
+  }
+
+  // Экран подготовки — при первом открытии камеры на этом телефоне: без
+  // него на iPhone было непонятно, почему картина полупрозрачная и куда
+  // вести телефон. Камеру телефона браузер открывает только из нажатия,
+  // поэтому её запускает само нажатие на значок или «Понятно, открыть».
+  function tryOn(item: ArtworkFeedItem, version: string): void {
+    noticeFor.current = item.id;
+    const platform = arCamera.detect();
+    if ((platform === "ios" || platform === "android") && !hasSeenArGuide()) {
+      setGuideWork(item);
+      return;
+    }
+    arCamera.launch(platform, cameraModel(item, version));
+  }
+
+  function startFromGuide(): void {
+    rememberArGuide();
+    const item = guideWork;
+    setGuideWork(null);
+    if (item?.arVersion) arCamera.launch(arCamera.detect(), cameraModel(item, item.arVersion));
+  }
 
   // Адрес и заголовок вкладки — текущей картины. replaceState, а не
   // pushState: иначе «назад» шло бы через все пролистанные работы.
@@ -222,6 +302,7 @@ export function ArtworkFeed({
         {works.map((item, index) => {
           const isNear = Math.abs(index - current) <= nearby;
           const isMain = item.id === initial.id;
+          const version = item.arVersion;
           const style: SlideStyle = { "--ratio": item.ratio ?? 1 };
           const art = (
             <ArtworkImage
@@ -278,6 +359,8 @@ export function ArtworkFeed({
                   isNear={isNear}
                   isCurrent={index === current}
                   siteUrl={siteUrl}
+                  onTryOn={version ? () => tryOn(item, version) : undefined}
+                  hint={hint?.id === item.id ? hint.text : null}
                 />
               </div>
             </section>
@@ -308,6 +391,21 @@ export function ArtworkFeed({
       <div className="feed-dock">
         <FeedThumbs works={works} current={current} onPick={scrollToIndex} />
       </div>
+
+      <ArQuickLookLink
+        linkRef={arCamera.linkRef}
+        href={work.arVersion ? arFileUrl(work.id, "model.usdz", work.arVersion, cameraFrame) : "#"}
+      />
+      {guideWork?.src && (
+        <ArGuide
+          isOpen
+          photo={guideWork.src}
+          title={guideWork.title}
+          size={guideWork.label[lang]}
+          onStart={startFromGuide}
+          onClose={() => setGuideWork(null)}
+        />
+      )}
     </>
   );
 }

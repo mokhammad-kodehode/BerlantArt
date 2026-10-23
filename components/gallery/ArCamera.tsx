@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { noCameraHash, quickLookUrl, sceneViewerUrl } from "@/lib/ar-links";
 import { useDictionary } from "@/lib/i18n/client";
@@ -35,20 +35,28 @@ export type ArCameraModel = {
  * `link`. Без телефона для WhatsApp плашки нет: Apple не показывает её
  * без кнопки, а кнопка в никуда хуже никакой.
  */
-export function useArCamera(
-  model: ArCameraModel | null,
-  onNotice: (text: string) => void,
-): {
-  linkRef: RefObject<HTMLAnchorElement | null>;
+export function useArCamera(onNotice: (text: string) => void): {
+  /** Для ArQuickLookLink. */
+  linkRef: (node: HTMLAnchorElement | null) => void;
   detect: () => ArPlatform;
-  launch: (platform: ArPlatform) => void;
+  /** Модель — в момент нажатия: в ленте у каждой картины своя. */
+  launch: (platform: ArPlatform, model: ArCameraModel) => void;
 } {
   // Ссылка rel="ar" живёт в разметке постоянно (ArQuickLookLink), а не
   // создаётся на лету: нажатие на плашку Safari присылает событием именно
   // на неё, и с iOS 16 до оторванной от страницы ссылки оно не доходит.
+  // Ссылка — в состоянии, а не только в ref: подписка на нажатие плашки
+  // должна узнать, что ссылка появилась.
   const t = useDictionary().ar;
-  const linkRef = useRef<HTMLAnchorElement>(null);
-  const contactUrl = model?.contactUrl;
+  const linkElement = useRef<HTMLAnchorElement | null>(null);
+  const [link, setLink] = useState<HTMLAnchorElement | null>(null);
+  const linkRef = useCallback((node: HTMLAnchorElement | null) => {
+    linkElement.current = node;
+    setLink(node);
+  }, []);
+  // Какую картину открыли в камере последней — её WhatsApp и откроет
+  // кнопка плашки.
+  const launched = useRef<ArCameraModel | null>(null);
 
   // Android без ARCore возвращает на страницу с меткой в адресе.
   useEffect(() => {
@@ -58,17 +66,17 @@ export function useArCamera(
   }, [onNotice, t.noArcore]);
 
   useEffect(() => {
-    const link = linkRef.current;
-    if (link === null || contactUrl === undefined) return;
+    if (link === null) return;
 
     const onMessage = (event: Event) => {
-      if (event instanceof MessageEvent && event.data === quickLookTap) {
+      const contactUrl = launched.current?.contactUrl;
+      if (event instanceof MessageEvent && event.data === quickLookTap && contactUrl) {
         window.location.href = contactUrl;
       }
     };
     link.addEventListener("message", onMessage);
     return () => link.removeEventListener("message", onMessage);
-  }, [contactUrl]);
+  }, [link]);
 
   function detect(): ArPlatform {
     const agent = navigator.userAgent;
@@ -79,14 +87,12 @@ export function useArCamera(
     if (isApple) {
       // Поддержку выдаёт relList: во встроенных браузерах Instagram
       // и Telegram её нет.
-      return linkRef.current?.relList.supports("ar") ? "ios" : "ios-in-app";
+      return linkElement.current?.relList.supports("ar") ? "ios" : "ios-in-app";
     }
     return /Android/.test(agent) ? "android" : "desktop";
   }
 
-  function launch(platform: ArPlatform) {
-    if (model === null) return;
-
+  function launch(platform: ArPlatform, model: ArCameraModel) {
     if (platform === "desktop") {
       onNotice(t.desktop);
       return;
@@ -99,8 +105,10 @@ export function useArCamera(
     const page = new URL(window.location.href);
     page.hash = "";
 
+    launched.current = model;
+
     if (platform === "ios") {
-      const link = linkRef.current;
+      const link = linkElement.current;
       if (link === null) return;
       link.href = quickLookUrl(model.usdzUrl, {
         pageUrl: page.href,
@@ -134,7 +142,7 @@ export function ArQuickLookLink({
   linkRef,
   href,
 }: {
-  linkRef: RefObject<HTMLAnchorElement | null>;
+  linkRef: (node: HTMLAnchorElement | null) => void;
   href: string;
 }) {
   return (

@@ -75,11 +75,31 @@ describe("artworkFeedItem — картина ленты", () => {
   it("собранная картина проходит проверку формы, которой её встречает браузер", () => {
     expect(isFeedList([artworkFeedItem(work)])).toBe(true);
   });
+
+  it("значок камеры — только у картины, которую можно показать в настоящем размере", () => {
+    // Фото 1200 × 1500 — пропорции 4:5, как у холста 40 × 50.
+    expect(artworkFeedItem({ ...work, dimensions: "40 × 50 см" }).arVersion).toMatch(
+      /^[0-9a-f]{12}$/,
+    );
+    // Размер, вписанный от руки, тоже читается (23.10.2026).
+    const square = { ...work, images: [{ url: "/a.jpg", width: 1000, height: 1000 }] };
+    expect(artworkFeedItem({ ...square, dimensions: "120/120" }).arVersion).not.toBeNull();
+    // Квадратный холст на вытянутом фото — в камере вышла бы не та картина.
+    expect(artworkFeedItem(work).arVersion).toBeNull();
+    expect(artworkFeedItem({ ...work, dimensions: null }).arVersion).toBeNull();
+  });
 });
 
 describe("isFeedList — форма общего списка", () => {
   it("старая копия списка (только id, название и фото) не проходит — лента бы на ней упала", () => {
     expect(isFeedList([{ id: "a", title: "Город", src: "/a.jpg" }])).toBe(false);
+  });
+
+  it("список, собранный до 23.10.2026 (без версии модели), проходит — камеры просто нет", () => {
+    const { arVersion, ...old } = artworkFeedItem(work);
+    expect(arVersion).toBeNull();
+    expect(isFeedList([old])).toBe(true);
+    expect(isFeedList([{ ...old, arVersion: 12 }])).toBe(false);
   });
 
   it("не список — не проходит", () => {

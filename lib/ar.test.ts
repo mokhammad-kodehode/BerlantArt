@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { arTarget } from "@/lib/ar";
+import { arTarget } from "@/lib/ar-target";
 import type { ArtworkWithImages } from "@/lib/artworks";
 
 const created = new Date("2026-09-01");

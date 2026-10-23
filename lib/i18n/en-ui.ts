@@ -58,7 +58,7 @@ export const enUi: UiDictionary = {
   work: {
     notFound: "Work not found",
     backToAll: "← All works",
-    tryOnWall: "Try it on a wall",
+    tryOnCamera: "Try it with your camera",
     tryOnNudge: "Try it on your own wall",
     share: "Share",
     shareCopied: "Link copied",

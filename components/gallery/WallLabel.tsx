@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
@@ -32,6 +31,12 @@ const nudgeDuration = 4500;
  * как только что повешенная картина (заказчик: «чтобы было интересно
  * нажать», «иконку или что-то оригинальное»). Прежде здесь была
  * маленькая комната с этой картиной над диваном — заказчик её отклонил.
+ * С 23.10.2026 значок сразу открывает камеру телефона (`onTryOn`, его
+ * даёт ArtworkFeed), а не примерочную — та скрыта до переделки. У работы,
+ * которую в камере не показать, значка нет.
+ *
+ * `hint` — строка под подписью, когда камера здесь не откроется
+ * («только на телефоне», «откройте в Safari»).
  * Строки «Спросить о картине» нет по просьбе заказчика: написать
  * художнице можно из меню в шапке.
  *
@@ -49,6 +54,8 @@ export function WallLabel({
   isNear,
   isCurrent,
   siteUrl,
+  onTryOn,
+  hint,
 }: {
   work: ArtworkFeedItem;
   /** Картина, ради которой открыли страницу: её название — заголовок страницы. */
@@ -57,6 +64,9 @@ export function WallLabel({
   /** Картина сейчас на экране — только у неё может всплыть напоминание о примерке. */
   isCurrent: boolean;
   siteUrl: string;
+  /** Открыть камеру с этой картиной; нет — нет и значка. */
+  onTryOn?: () => void;
+  hint: string | null;
 }) {
   const t = useDictionary();
   const lang = useLocale();
@@ -64,9 +74,10 @@ export function WallLabel({
   // Табличка живёт, пока открыта лента, — «кубик» бросается один раз на
   // картину за посещение, сколько бы раз к ней ни возвращались.
   const hasRolled = useRef(false);
+  const canTryOn = onTryOn !== undefined;
 
   useEffect(() => {
-    if (!isCurrent || !work.src || hasRolled.current) return;
+    if (!isCurrent || !canTryOn || hasRolled.current) return;
     let hide: ReturnType<typeof setTimeout> | undefined;
     const show = setTimeout(() => {
       hasRolled.current = true;
@@ -80,7 +91,7 @@ export function WallLabel({
       clearTimeout(hide);
       setIsNudging(false);
     };
-  }, [isCurrent, work.src]);
+  }, [isCurrent, canTryOn]);
 
   const Heading = isMain ? "h1" : "h2";
   const pageUrl = `${siteUrl}${localePath(lang, `/gallery/${work.id}`)}`;
@@ -94,7 +105,7 @@ export function WallLabel({
             значку. Видно только при data-nudging (globals.css,
             .tryon-nudge); скринридеру оно ни к чему — у значка своя
             подпись, а внезапная фраза посреди чтения сбивала бы. */}
-        {work.src && (
+        {canTryOn && (
           <span aria-hidden className="tryon-nudge">
             {t.work.tryOnNudge}
           </span>
@@ -106,12 +117,12 @@ export function WallLabel({
         <div className="wall-label-head">
           <Heading className="wall-label-title">{work.title}</Heading>
           <div className="label-actions">
-            {/* Без фотографии примерять нечего — примерки нет. */}
-            {work.src && (
-              <Link
-                href={localePath(lang, `/gallery/${work.id}/room`)}
-                aria-label={t.work.tryOnWall}
-                title={t.work.tryOnWall}
+            {onTryOn && (
+              <button
+                type="button"
+                onClick={onTryOn}
+                aria-label={t.work.tryOnCamera}
+                title={t.work.tryOnCamera}
                 className="tryon"
               >
                 {/* Рамка на гвоздике: петля, холст с пейзажем внутри. При
@@ -126,12 +137,19 @@ export function WallLabel({
                   </g>
                   <circle cx="12" cy="2.6" r="1.2" className="tryon-nail" />
                 </svg>
-              </Link>
+              </button>
             )}
             {isNear && <ShareButton url={pageUrl} title={work.title} />}
           </div>
         </div>
         {work.label[lang] && <p className="wall-label-meta">{work.label[lang]}</p>}
+        {/* role="status" — скринридер зачитает подсказку, не сбивая фокус;
+            пустая строка не видна (globals.css, .wall-label-hint). */}
+        {canTryOn && (
+          <p className="wall-label-hint" role="status">
+            {hint}
+          </p>
+        )}
         {description && <p className="wall-label-text">{description}</p>}
       </div>
 

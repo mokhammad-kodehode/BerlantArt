@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import { cameraTarget } from "@/lib/ar-target";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
@@ -415,6 +416,11 @@ export type ArtworkFeedItem = {
   alt: Record<Locale, string>;
   /** Описание для таблички, только по-русски; null — нет или повторяет название. */
   description: string | null;
+  /**
+   * Версия модели для камеры телефона (lib/ar-target.ts); null — работу
+   * в камере не показать, и значка примерки на табличке нет.
+   */
+  arVersion: string | null;
 };
 
 /** Из чего собирается картина ленты: и выборка списка, и полная работа. */
@@ -474,6 +480,7 @@ export function artworkFeedItem(work: FeedSource): ArtworkFeedItem {
     pageTitle: both((lang) => artworkSeo(work, lang).title),
     alt: both((lang) => artworkImageAlt(work, lang)),
     description: labelDescription(work, "ru"),
+    arVersion: cameraTarget(work)?.version ?? null,
   };
 }
 

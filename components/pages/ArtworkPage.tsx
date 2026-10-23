@@ -119,7 +119,11 @@ export async function ArtworkPage({ lang, id }: { lang: Locale; id: string }) {
         <div aria-hidden className="stage-header-zone" />
         <Header variant="stage" />
         <main>
-          <ArtworkFeed initial={artworkFeedItem(work)} siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL} />
+          <ArtworkFeed
+            initial={artworkFeedItem(work)}
+            siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
+            whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
+          />
         </main>
       </div>
     </>
