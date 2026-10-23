@@ -1,7 +1,5 @@
 "use server";
 
-import { z } from "zod";
-
 import {
   addImage,
   artworkIdOfImage,
@@ -28,6 +26,7 @@ import {
   revalidateArtworkPage,
 } from "@/lib/revalidate";
 import { checkUpload, isOwnObjectKey } from "@/lib/upload-limits";
+import { z } from "@/lib/zod";
 
 /**
  * Фотографии работ: подпись загрузки, привязка к работе, порядок,

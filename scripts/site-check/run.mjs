@@ -5,6 +5,7 @@ import path from "node:path";
 import { startPgliteServer } from "../../lib/testing/pglite-server.mjs";
 
 import { crawl, open, serverErrorDigest } from "./crawl.mjs";
+import { cspProblems } from "./csp.mjs";
 
 /**
  * Проверка сайта целиком (тикет О-19): `npm run check:site`.
@@ -12,7 +13,8 @@ import { crawl, open, serverErrorDigest } from "./crawl.mjs";
  * Временная база (та же, что в тестах слоя данных) → пять работ из
  * prisma/seed.ts → сборка сайта, как для Vercel → запуск → обход по
  * ссылкам, как у поисковика (crawl.mjs) → отчёт. Битая ссылка, страница
- * с ответом не 200 и ошибка в журнале сервера роняют проверку.
+ * с ответом не 200, ресурс, который запретила бы политика безопасности
+ * (csp.mjs, О-15), и ошибка в журнале сервера роняют проверку.
  *
  * Боевую базу проверка не трогает: строка подключения подставляется
  * в окружение явно, а Next и prisma/seed.ts уже заданные переменные из
@@ -176,6 +178,7 @@ async function main() {
       start: ["/", "/en", "/sitemap.xml", "/robots.txt", "/manifest.webmanifest"],
       // Админку проверяем до входа, глубже — без пароля всё равно не пустит.
       follow: (url) => !new URL(url).pathname.startsWith("/admin/"),
+      inspect: cspProblems,
     });
     for (const expectation of expectations) {
       const problem = await checkExpectation(origin, expectation);

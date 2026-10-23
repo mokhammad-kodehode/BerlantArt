@@ -9,6 +9,19 @@ import nextTs from "eslint-config-next/typescript";
  * записанная только в .ai/rules/, забывается через месяц, а упавший
  * `npm run lint` не забывается никогда.
  */
+
+/**
+ * Zod — только через lib/zod.ts: там он настроен без eval, который
+ * запрещает политика безопасности сайта (О-15). Запрет один на два блока
+ * ниже: у правила с одним именем более поздний блок не дополняет, а
+ * заменяет настройки раннего.
+ */
+const zodThroughLib = {
+  regex: "^zod(/.*)?$",
+  message:
+    "Импортируй z из @/lib/zod: там Zod настроен без eval. Прямой импорт в браузере даёт ошибку политики безопасности — см. lib/zod.ts.",
+};
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -37,9 +50,18 @@ const eslintConfig = defineConfig([
               message:
                 "Запросы к базе живут в lib/artworks.ts. Страница, которая пишет Prisma-запрос сама, рано или поздно разойдётся с остальными — см. .ai/rules/architecture.md.",
             },
+            zodThroughLib,
           ],
         },
       ],
+    },
+  },
+
+  {
+    files: ["lib/**/*.ts", "scripts/**/*.{ts,mjs}", "prisma/**/*.ts"],
+    ignores: ["lib/zod.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [zodThroughLib] }],
     },
   },
 

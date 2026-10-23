@@ -1,11 +1,10 @@
 "use server";
 
-import { z } from "zod";
-
 import { artworkStatuses } from "@/lib/artwork-form";
 import { setArtworkStatus } from "@/lib/artworks";
 import { assertAdmin } from "@/lib/auth";
 import { revalidateAdminArtwork, revalidateArtworkPage } from "@/lib/revalidate";
+import { z } from "@/lib/zod";
 
 /**
  * Быстрая смена статуса прямо из списка работ.

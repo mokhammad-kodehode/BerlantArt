@@ -30,7 +30,7 @@ export function extractLinks(body) {
 }
 
 /** Разметка кодирует `&` в адресах как `&amp;`. */
-function decodeEntities(value) {
+export function decodeEntities(value) {
   return value.replaceAll("&amp;", "&").replaceAll("&#x27;", "'").replaceAll("&quot;", '"');
 }
 
@@ -92,7 +92,7 @@ function isParsable(contentType) {
  *
  * @param {string} url
  * @param {(url: string, init: RequestInit) => Promise<Response>} fetcher
- * @returns {Promise<{ status: number; finalUrl: string; redirects: string[]; contentType: string | null; body: string | null }>}
+ * @returns {Promise<{ status: number; finalUrl: string; redirects: string[]; headers: Headers; contentType: string | null; body: string | null }>}
  */
 export async function open(url, fetcher = fetch) {
   const redirects = [];
@@ -106,6 +106,7 @@ export async function open(url, fetcher = fetch) {
           status: response.status,
           finalUrl: current,
           redirects,
+          headers: response.headers,
           contentType: null,
           body: null,
         };
@@ -117,7 +118,14 @@ export async function open(url, fetcher = fetch) {
     const contentType = response.headers.get("content-type");
     const body = isParsable(contentType) ? await response.text() : null;
     if (body === null) await response.body?.cancel();
-    return { status: response.status, finalUrl: current, redirects, contentType, body };
+    return {
+      status: response.status,
+      finalUrl: current,
+      redirects,
+      headers: response.headers,
+      contentType,
+      body,
+    };
   }
 }
 
@@ -129,10 +137,13 @@ export async function open(url, fetcher = fetch) {
  *   start: string[];
  *   maxUrls?: number;
  *   follow?: (url: string) => boolean;
+ *   inspect?: (page: { url: string; body: string; headers: Headers }) => string[];
  *   fetcher?: (url: string, init: RequestInit) => Promise<Response>;
  * }} options
  *   follow — собирать ли ссылки со страницы; сама страница проверяется
  *   в любом случае (например, админка: вход проверяем, глубже не идём).
+ *   inspect — что ещё не так с открывшейся страницей, по строке на
+ *   ошибку (например, политика безопасности, csp.mjs).
  * @returns {Promise<{ checked: number; problems: { url: string; problem: string; from: string[] }[] }>}
  */
 export async function crawl({
@@ -140,6 +151,7 @@ export async function crawl({
   start,
   maxUrls = 1000,
   follow = () => true,
+  inspect = () => [],
   fetcher = fetch,
 }) {
   /** @type {Map<string, Set<string>>} адрес → страницы, которые на него ссылаются */
@@ -181,7 +193,12 @@ export async function crawl({
       problems.push({ url, problem: `ответ 200, но внутри ошибка сервера (${digest})`, from });
       continue;
     }
-    if (result.body === null || !follow(result.finalUrl)) continue;
+    if (result.body === null) continue;
+    if (/text\/html/.test(result.contentType ?? "")) {
+      const page = { url: result.finalUrl, body: result.body, headers: result.headers };
+      for (const problem of inspect(page)) problems.push({ url, problem, from });
+    }
+    if (!follow(result.finalUrl)) continue;
 
     for (const raw of extractLinks(result.body)) {
       const link = checkableUrl(raw, result.finalUrl, origin);

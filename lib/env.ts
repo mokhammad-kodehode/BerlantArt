@@ -1,6 +1,5 @@
-import { z } from "zod";
-
 import { isResizable } from "./image-resize";
+import { z } from "./zod";
 
 /**
  * Валидация переменных окружения на старте приложения.

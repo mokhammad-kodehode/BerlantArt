@@ -1,11 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { checkCredentials, destroySession, startSession } from "@/lib/auth";
 import { describeConfigError } from "@/lib/env";
 import { clearLoginAttempts, loginThrottleKey, registerLoginAttempt } from "@/lib/login-throttle";
+import { z } from "@/lib/zod";
 
 /**
  * Вход и выход администратора.

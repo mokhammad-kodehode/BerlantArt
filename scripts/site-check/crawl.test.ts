@@ -116,4 +116,25 @@ describe("crawl", () => {
     expect(checked).toBe(2);
     expect(problems).toEqual([]);
   });
+
+  it("inspect: ошибки страницы — с её адресом и тем, кто на неё ссылается", async () => {
+    const fetcher = fakeSite({
+      "/": { html: '<a href="/about">О художнице</a>' },
+      "/about": { html: "<main>плохая</main>" },
+    });
+    const { problems } = await crawl({
+      origin,
+      start: ["/"],
+      fetcher,
+      inspect: ({ url, body }) => (body.includes("плохая") ? [`плохая страница ${url}`] : []),
+    });
+
+    expect(problems).toEqual([
+      {
+        url: "http://site.test/about",
+        problem: "плохая страница http://site.test/about",
+        from: ["http://site.test/"],
+      },
+    ]);
+  });
 });

@@ -1,6 +1,5 @@
-import { z } from "zod";
-
 import type { UiDictionary } from "@/lib/i18n/ru-ui";
+import { z } from "@/lib/zod";
 
 /**
  * Рамы примерочной (TICKETS-primerka.md): какие модели и покрытия можно

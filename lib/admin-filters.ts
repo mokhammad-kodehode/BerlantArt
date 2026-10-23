@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { artworkStatuses } from "@/lib/artwork-form";
 import type { AdminArtworkFilters } from "@/lib/artworks";
+import { z } from "@/lib/zod";
 
 /**
  * Разбор параметров адреса для списка работ в админке.

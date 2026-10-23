@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import type { ArtworkInput, ArtworkStatus } from "@/lib/artworks";
 import { normalizeCanvasSize } from "@/lib/room-options";
+import { z } from "@/lib/zod";
 
 /**
  * Разбор и проверка данных формы работы.

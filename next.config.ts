@@ -30,6 +30,51 @@ const resize: NextConfig["images"] =
     : { unoptimized: true };
 
 /**
+ * Откуда странице можно брать скрипты, стили, картинки и куда слать
+ * запросы (тикет О-15). Всё, чего нет в списке, браузер не загрузит:
+ * чужой скрипт, подсунутый в страницу, не скачается, данные не уйдут
+ * на чужой сервер, форма не отправит пароль на чужой адрес.
+ *
+ * Встроенные скрипты разрешены ('unsafe-inline'): без них Next не
+ * работает — данные страницы приходят в ней же. Строже — только
+ * одноразовым ключом на каждый показ, а с ним Next собирает каждую
+ * страницу заново на каждый заход: кеш и ISR (О-1…О-11) пропали бы.
+ * От вписанного в страницу скрипта защищает React — он экранирует текст.
+ *
+ * - картинки — свои, из бакета и `blob:` (фото своей стены в
+ *   примерочной читается из файла прямо в браузере). Домен бакета — из
+ *   той же переменной, по которой собираются адреса картинок
+ *   (lib/artworks.ts, imageUrl): сменят домен — политика сменится с ним;
+ * - запросы — к своему сайту и к хранилищу Cloudflare: админка кладёт
+ *   фото туда напрямую (lib/r2.ts). Политика одна на весь сайт, а не
+ *   отдельная для админки: в панель ведёт кнопка с публичной страницы
+ *   (AdminReturnBar), переход идёт без перезагрузки, и у страницы
+ *   осталась бы публичная политика — загрузка фото молча сломалась бы.
+ *   Номер аккаунта в шаблоне не указан, чтобы не раздавать его в каждом
+ *   ответе;
+ * - 'unsafe-eval' — только при разработке: им React показывает, где на
+ *   сервере случилась ошибка. В боевой сборке его нет, это проверяет
+ *   npm run check:site (scripts/site-check/csp.mjs);
+ * - видео и шрифты — свои (default-src). Переедет видео в бакет (О-26) —
+ *   добавить media-src, иначе проверка сайта упадёт.
+ */
+function contentSecurityPolicy(): string {
+  const isDev = serverEnv.NODE_ENV === "development";
+  const images = r2PublicUrl ? ` ${new URL(r2PublicUrl).origin}` : "";
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src 'self' blob:${images}`,
+    "connect-src 'self' https://*.r2.cloudflarestorage.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+  ].join("; ");
+}
+
+/**
  * Защитные заголовки на каждый ответ сайта (тикет О-14, обзор проекта,
  * раздел 7). До 22.10.2026 сайт не отправлял ни одного.
  *
@@ -42,14 +87,14 @@ const resize: NextConfig["images"] =
  * - камера, микрофон и геолокация внутри страницы выключены — сайт ими не
  *   пользуется. Примерка через камеру открывает программу телефона
  *   (Quick Look, Scene Viewer), а на неё запрет не действует. «Поделиться»
- *   и копирование ссылки (ShareButton) не запрещены.
+ *   и копирование ссылки (ShareButton) не запрещены;
+ * - откуда странице можно что-то грузить — contentSecurityPolicy выше.
  *
- * Строгой Content-Security-Policy здесь нет: она отдельный тикет О-15,
- * её надо проверять на видео, примерке и камере. HSTS ставит Vercel.
+ * HSTS ставит Vercel.
  */
 const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
-  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy() },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
