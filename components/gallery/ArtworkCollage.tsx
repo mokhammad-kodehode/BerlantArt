@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ArtworkTile, tileAnchor } from "@/components/ui/ArtworkTile";
 import type { GalleryTile } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
-import { collageLayout, hangLayout, revealCountFor, revealStep } from "@/lib/collage";
+import { hangLayout, revealCountFor, revealStep } from "@/lib/collage";
 import type { Locale } from "@/lib/i18n/config";
 
 /** Якорь в адресе меняется и без перехода — например, кнопкой «назад». */
@@ -21,27 +21,21 @@ const readHash = (): string => decodeURIComponent(window.location.hash.slice(1))
 /** Задержка между соседними картинами развески, когда они проявляются вместе. */
 const revealStagger = 80;
 
-type HangStyle = CSSProperties & { "--r": number };
+/** Пропорции картины для развески (globals.css, .wall-hang): ширина к высоте. */
+export type HangStyle = CSSProperties & { "--r": number };
 const noHash = (): string => "";
 
 /**
- * Стена-коллаж: работы разного размера, плотно и без дыр.
+ * Стена работ — развеска: картины целиком, в своих пропорциях, разного
+ * размера и центром на одной линии, как на стене в зале (заказчик,
+ * 23.10.2026, вариант Д; lib/collage.ts, hangLayout; globals.css,
+ * .wall-hang). Одна и та же на главной и в галерее: в галерее она с того
+ * же дня (заказчик) — до этого там была плотная сетка, обрезавшая картины
+ * под ячейки.
  *
- * Вынесено из страницы галереи, когда появился второй потребитель —
- * главная. Абстракция заведена именно поэтому, а не «на будущее»
- * ([architecture.md](../../.ai/rules/architecture.md)).
- *
- * Высота строки считается от ширины столбца, а не от высоты экрана:
- * мелкая плитка всегда 4:3 (на телефоне — квадрат), крупная 2×2 — тоже
- * около 4:3. Прежде строки были `1fr` и растягивались под окно, и это
- * ломалось в обе стороны: на широком мониторе мелкие плитки сплющивались
- * в полоски 432×120 (почти 4:1), а шесть работ на главной, растянутые
- * на экран, превращались в две гигантские и четыре обрезанные.
- *
- * Ширину столбца даёт `@container` на обёртке: единица `cqw` — процент
- * ширины обёртки без её полей, то есть ровно ширина сетки. Сама сетка
- * контейнером быть не может — `cqw` элемента считается от предка.
- * 10px в формулах — зазор `gap-2.5`: 1 зазор на двух столбцах, 3 на четырёх.
+ * Размер картины — в долях ширины стены: `@container` на обёртке, единица
+ * `cqw` — процент её ширины без полей. Сама стена контейнером быть не
+ * может — `cqw` элемента считается от предка.
  *
  * **Порциями** (тикет О-11). Данные всех плиток лежат в странице — около
  * 300 байт на работу, — а рисуются сначала `revealStep`, следующие —
@@ -53,36 +47,23 @@ const noHash = (): string => "";
  * работ меньше порции, и он просто рисует все.
  *
  * `className` уходит обёртке: поля и `flex-1` задаёт вызывающая сторона.
- *
- * `layout="hang"` — развеска на главной (заказчик, 23.10.2026): картины
- * целиком, разного размера, центром на одной линии, много стены вокруг
- * (lib/collage.ts, hangLayout; globals.css, .wall-hang). Галерея остаётся
- * плотной сеткой: там из двухсот работ выбирают, и в развеске их пришлось
- * бы листать в разы дольше.
  */
 export function ArtworkCollage({
   tiles,
   lang,
   className,
   moreLabel,
-  layout: mode = "grid",
 }: {
   tiles: GalleryTile[];
   lang: Locale;
   className?: string;
-  layout?: "grid" | "hang";
   /**
    * Надпись кнопки «Показать ещё». Приходит со страницы, со словарём
    * языка: тащить в браузер словари ради одной надписи незачем (О-12).
    */
   moreLabel: string;
 }) {
-  // Порядок берётся из раскладки, а не из `tiles`: крупные работы могли
-  // переехать в крупные ячейки.
-  const layout = useMemo(
-    () => (mode === "hang" ? hangLayout(tiles) : collageLayout(tiles)),
-    [mode, tiles],
-  );
+  const layout = useMemo(() => hangLayout(tiles), [tiles]);
   const [shown, setShown] = useState(() => Math.min(layout.length, revealStep));
   const sentinel = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLUListElement>(null);
@@ -146,10 +127,26 @@ export function ArtworkCollage({
   // Без скрипта пометок нет и картины просто стоят на местах. То, что уже
   // на экране при загрузке, не прячется. У кого в системе включено
   // «Уменьшить движение» — тоже без анимации.
+  //
+  // Возврат со страницы работы к её плитке — тоже без анимации: якорь
+  // прочитан уже после первой разметки, к плитке стена доезжает кадром
+  // позже, и картина, к которой вернулись, всплывала бы на глазах.
+  // Пометки «ждёт» снимаются, стена просто стоит.
   useEffect(() => {
     const wall = list.current;
-    if (mode !== "hang" || !wall || !("IntersectionObserver" in window)) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!wall) return;
+    const tiles = [...wall.children].filter((tile) => tile instanceof HTMLElement);
+
+    const isStill =
+      returnIndex !== -1 ||
+      !("IntersectionObserver" in window) ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isStill) {
+      for (const tile of tiles) {
+        if (tile.dataset.reveal === "pending") tile.dataset.reveal = "static";
+      }
+      return;
+    }
 
     // Картины, вошедшие в экран вместе (ряд), проявляются по очереди.
     let order = 0;
@@ -167,8 +164,7 @@ export function ArtworkCollage({
       quiet = setTimeout(() => (order = 0), 120);
     });
 
-    for (const tile of wall.children) {
-      if (!(tile instanceof HTMLElement)) continue;
+    for (const tile of tiles) {
       if (tile.dataset.reveal === "shown" || tile.dataset.reveal === "static") continue;
       // Новая плитка (первая отрисовка или очередная порция) уже на экране —
       // её не трогаем: проявиться заново значило бы мигнуть.
@@ -184,21 +180,11 @@ export function ArtworkCollage({
       observer.disconnect();
       clearTimeout(quiet);
     };
-  }, [mode, visible]);
+  }, [visible, returnIndex]);
 
   return (
     <div className={cn("@container", className)}>
-      {/* dense только на телефоне: мелкая работа закрывает клетку рядом
-          с одиночной мелкой перед крупной (lib/collage.ts, mobileSpans).
-          На компьютере раскладка блоками без дыр и так. */}
-      <ul
-        ref={list}
-        className={
-          mode === "hang"
-            ? "wall-hang"
-            : "wall m-0 grid list-none grid-flow-row-dense auto-rows-[calc((100cqw-10px)/2)] grid-cols-2 gap-2.5 p-0 md:grid-flow-row md:auto-rows-[calc((100cqw-30px)*3/16)] md:grid-cols-4"
-        }
-      >
+      <ul ref={list} className="wall-hang">
         {layout.slice(0, visible).map((tile) => {
           // Без размера фото — квадрат: обрезка терпима для любого холста.
           const hang: HangStyle = { "--r": tile.item.ratio ?? 1 };
@@ -208,7 +194,7 @@ export function ArtworkCollage({
               tile={tile.item}
               lang={lang}
               className={tile.className}
-              style={mode === "hang" ? hang : undefined}
+              style={hang}
               sizes={tile.sizes}
             />
           );

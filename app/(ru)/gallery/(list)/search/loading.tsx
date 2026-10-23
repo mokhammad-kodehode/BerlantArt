@@ -1,15 +1,16 @@
-import { collageLayout } from "@/lib/collage";
+import type { HangStyle } from "@/components/gallery/ArtworkCollage";
 
 /**
  * Скелет поиска по галерее на время ожидания данных.
  *
- * Повторяет ровно ту стену, которая появится, — поэтому страница не
- * «прыгает», когда данные приходят. Раскладка берётся той же функцией
- * (lib/collage.ts), что и у настоящего коллажа: иначе скелет и стена
- * разошлись бы при первой же правке формулы.
+ * Повторяет ту стену, которая появится, — поэтому страница не «прыгает»,
+ * когда данные приходят. Развеска та же — класс `.wall-hang` в обёртке
+ * `@container`, что и у настоящей стены (ArtworkCollage): иначе скелет
+ * и стена разошлись бы при первой же правке размеров.
  *
- * Плиток четыре — один полный блок раскладки. Сколько работ найдётся,
- * скелет знать не может: он рисуется до того, как пришёл ответ.
+ * Плиток четыре, пропорции — типичные для холстов: квадрат, вертикаль,
+ * горизонталь. Сколько работ найдётся и какие, скелет знать не может:
+ * он рисуется до того, как пришёл ответ.
  *
  * Только у поиска (тикет О-11): вся галерея и категории готовы заранее
  * и приходят сразу, скелет им лишний — он добавлял подмену содержимого
@@ -21,9 +22,10 @@ import { collageLayout } from "@/lib/collage";
  * 200 вместо 404. Заголовки уже отправлены, статус не переписать
  * (документация Next, loading.js → Status Codes).
  */
-export default function GalleryLoading() {
-  const tiles = collageLayout(Array.from({ length: 4 }, () => ({ isLarge: false })));
+/** Пропорции плиток скелета: квадрат, вертикаль, горизонталь, квадрат. */
+const tiles: HangStyle[] = [1, 0.8, 1.25, 1].map((ratio) => ({ "--r": ratio }));
 
+export default function GalleryLoading() {
   return (
     <main className="flex flex-1 flex-col">
       {/* Шапка — как в GalleryPage: надстрочник, строка поиска, ряд категорий. */}
@@ -39,14 +41,16 @@ export default function GalleryLoading() {
         </div>
       </div>
 
-      <ul
+      <div
         aria-hidden
-        className="m-0 grid flex-1 list-none auto-rows-[minmax(150px,1fr)] grid-cols-2 gap-2.5 p-0 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)] md:auto-rows-[minmax(120px,1fr)] md:grid-cols-4"
+        className="@container flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
       >
-        {tiles.map((tile, index) => (
-          <li key={index} className={`bg-ink/10 animate-pulse ${tile.className}`} />
-        ))}
-      </ul>
+        <ul className="wall-hang">
+          {tiles.map((style, index) => (
+            <li key={index} className="bg-ink/10 animate-pulse" style={style} />
+          ))}
+        </ul>
+      </div>
     </main>
   );
 }
