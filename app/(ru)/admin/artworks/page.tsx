@@ -7,6 +7,8 @@ import { StatusSelect } from "@/components/admin/StatusSelect";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { adminArtworksHref, parseAdminFilters } from "@/lib/admin-filters";
 import { artworkStatusNames, artworkStatuses } from "@/lib/artwork-form";
+import { tryOnNotice } from "@/lib/admin-try-on";
+import { tryOnIssue } from "@/lib/ar-target";
 import { formatPrice, getArtworksForAdmin, primaryImageUrl } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
 
@@ -139,6 +141,9 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
             {works.map((work) => {
               const src = primaryImageUrl(work);
               const price = formatPrice(work.price);
+              // Почему нет примерки — коротко; полностью — на странице работы.
+              const issue = tryOnIssue(work);
+              const noTryOn = issue === null ? null : `примерки нет: ${tryOnNotice(issue).short}`;
 
               return (
                 <li
@@ -166,7 +171,7 @@ export default async function AdminArtworksPage({ searchParams }: PageProps<"/ad
                       {work.title}
                     </Link>
                     <p className="text-ink-soft text-sm">
-                      {[work.category, price, `фото: ${work.images.length}`]
+                      {[work.category, price, `фото: ${work.images.length}`, noTryOn]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>

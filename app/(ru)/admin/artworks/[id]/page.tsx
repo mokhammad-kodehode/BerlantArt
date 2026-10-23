@@ -6,6 +6,8 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { ArtworkForm, type ArtworkFormInitial } from "@/components/admin/ArtworkForm";
 import { ArtworkImages, type AdminImage } from "@/components/admin/ArtworkImages";
 import { DeleteArtwork } from "@/components/admin/DeleteArtwork";
+import { tryOnNotice } from "@/lib/admin-try-on";
+import { tryOnIssue } from "@/lib/ar-target";
 import { dimensionsFields } from "@/lib/artwork-form";
 import { getArtworkById, imageUrl } from "@/lib/artworks";
 import { requireAdmin } from "@/lib/auth";
@@ -53,6 +55,11 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
     },
   };
 
+  // По сохранённым данным: поправили размер или фото — после сохранения
+  // страница пересоберётся, и подсказка уйдёт сама.
+  const issue = tryOnIssue(artwork);
+  const notice = issue === null ? null : tryOnNotice(issue);
+
   // Адреса собираются здесь, а не в клиентском компоненте: imageUrl
   // лежит в слое доступа к базе, и его импорт утащил бы в браузер всё,
   // что этот слой за собой тянет.
@@ -78,6 +85,16 @@ export default async function EditArtworkPage({ params }: PageProps<"/admin/artw
       }
     >
       <div className="max-w-[760px]">
+        {/* Почему у работы нет примерки на стене (заказчик, 23.10.2026):
+            на сайте значок просто не появляется, и причину — чаще всего
+            форму фото, а не его качество — было не угадать. */}
+        {notice !== null && (
+          <div className="bg-surface rounded-tile mb-6 p-4 text-sm">
+            <p className="m-0 mb-1 font-medium">У этой работы нет примерки на стене</p>
+            <p className="text-ink-soft m-0">{notice.text}</p>
+          </div>
+        )}
+
         <ArtworkForm
           initial={initial}
           photos={

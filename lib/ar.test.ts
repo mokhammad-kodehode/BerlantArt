@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { arTarget } from "@/lib/ar-target";
+import { arTarget, tryOnIssue } from "@/lib/ar-target";
 import type { ArtworkWithImages } from "@/lib/artworks";
 
 const created = new Date("2026-09-01");
@@ -74,5 +74,43 @@ describe("arTarget", () => {
     expect(arTarget(work())?.version).toBe(base);
     expect(arTarget(work({}, { url: "artworks/other.webp" }))?.version).not.toBe(base);
     expect(arTarget(work({ dimensions: "41 × 51 см" }))?.version).not.toBe(base);
+  });
+});
+
+describe("tryOnIssue", () => {
+  // Все случаи из arTarget выше: и годные, и нет.
+  const cases = [
+    work(),
+    work({ dimensions: null }),
+    work({ dimensions: "  " }),
+    work({ dimensions: "около метра" }),
+    work({ images: [] }),
+    work({}, { width: null, height: null }),
+    work({}, { width: 1000, height: 1000 }),
+    work({ dimensions: "50/40" }, { width: 1000, height: 800 }),
+  ];
+
+  it("причина есть ровно тогда, когда примерки нет — подсказка не врёт", () => {
+    for (const each of cases) {
+      expect(tryOnIssue(each) === null, each.dimensions ?? "без размера").toBe(
+        arTarget(each) !== null,
+      );
+    }
+  });
+
+  it("называет причину", () => {
+    expect(tryOnIssue(work({ dimensions: null }))).toEqual({ kind: "noSize" });
+    expect(tryOnIssue(work({ dimensions: "около метра" }))).toEqual({
+      kind: "badSize",
+      dimensions: "около метра",
+    });
+    expect(tryOnIssue(work({ images: [] }))).toEqual({ kind: "noPhoto" });
+    expect(tryOnIssue(work({}, { width: null, height: null }))).toEqual({ kind: "noPhotoSize" });
+    expect(tryOnIssue(work({}, { width: 1000, height: 1000 }))).toEqual({
+      kind: "shape",
+      dimensions: "40 × 50 см",
+      sides: { short: 40, long: 50 },
+      photo: { width: 1000, height: 1000 },
+    });
   });
 });
