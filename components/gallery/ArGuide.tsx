@@ -198,10 +198,10 @@ export function ArGuide({
         {note && <p className="ar-guide-tip">{note}</p>}
 
         <div className="ar-guide-actions">
-          <button type="button" className="room-cta" onClick={onStart}>
+          <button type="button" className="ar-guide-cta" onClick={onStart}>
             {t.open}
           </button>
-          <button type="button" className="room-cta" data-secondary onClick={onClose}>
+          <button type="button" className="ar-guide-cta" data-secondary onClick={onClose}>
             {t.close}
           </button>
         </div>

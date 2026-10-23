@@ -88,6 +88,22 @@ describe("artworkFeedItem — картина ленты", () => {
     expect(artworkFeedItem(work).arVersion).toBeNull();
     expect(artworkFeedItem({ ...work, dimensions: null }).arVersion).toBeNull();
   });
+
+  it("холст для примерочной — в сантиметрах и с ориентацией фото", () => {
+    // Фото вертикальное (1200 × 1500): ширина — короткая сторона.
+    expect(artworkFeedItem({ ...work, dimensions: "50 × 40 см" }).canvas).toEqual({
+      width: 40,
+      height: 50,
+    });
+    // Неровный размер не превращается в 70.00000000000001.
+    const wide = { ...work, images: [{ url: "/a.jpg", width: 1400, height: 1000 }] };
+    expect(artworkFeedItem({ ...wide, dimensions: "70 × 50" }).canvas).toEqual({
+      width: 70,
+      height: 50,
+    });
+    // Форма фото и холста расходятся — примерять нечестно.
+    expect(artworkFeedItem(work).canvas).toBeNull();
+  });
 });
 
 describe("isFeedList — форма общего списка", () => {
@@ -100,6 +116,14 @@ describe("isFeedList — форма общего списка", () => {
     expect(arVersion).toBeNull();
     expect(isFeedList([old])).toBe(true);
     expect(isFeedList([{ ...old, arVersion: 12 }])).toBe(false);
+  });
+
+  it("список без холста (до примерочной) проходит, а кривой холст — нет", () => {
+    const { canvas, ...old } = artworkFeedItem(work);
+    expect(canvas).toBeNull();
+    expect(isFeedList([old])).toBe(true);
+    expect(isFeedList([{ ...old, canvas: { width: 40 } }])).toBe(false);
+    expect(isFeedList([{ ...old, canvas: { width: 40, height: 0 } }])).toBe(false);
   });
 
   it("не список — не проходит", () => {

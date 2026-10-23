@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
-import { ArtworkRoom, type RoomThumb } from "@/components/gallery/ArtworkRoom";
-import { cameraTarget } from "@/lib/ar-target";
-import {
-  artworkDimensions,
-  artworkTechnique,
-  getArtworkById,
-  getArtworks,
-  primaryImageUrl,
-} from "@/lib/artworks";
+import { FittingRoom } from "@/components/gallery/FittingRoom";
+import { artworkFeedItem, getArtworkById } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { localePath } from "@/lib/i18n/config";
-import { isRoomOn, parseCanvasSides, parseRoomOptions } from "@/lib/room-options";
 
 export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> {
   const t = getDictionary(lang);
@@ -29,71 +21,44 @@ export async function roomMetadata(lang: Locale, id: string): Promise<Metadata> 
 }
 
 /**
- * Примерочная — по просьбе заказчика: посмотреть картину на стене, выбрать
- * раму, цвет стены и свет, сменить картину, не выходя из комнаты.
- * Устройство — в components/gallery/ArtworkRoom.tsx, варианты выбора
- * и разбор адреса — в lib/room-options.ts.
+ * Примерочная (TICKETS-primerka.md): картина и рама, дальше — камера
+ * телефона или фото своей стены. Устройство — в
+ * components/gallery/FittingRoom.tsx, рамы — в lib/room-options.ts.
  *
- * Страница читает параметры адреса, поэтому готовится при каждом заходе,
- * а не заранее — как галерея с фильтрами. Запросов в базу два, разом:
- * сама работа и список работ для полосы «другая картина».
+ * Параметров адреса страница не читает: выбор рамы из ссылки читает
+ * браузер. Поэтому она готовится один раз, при первом заходе, и дальше
+ * отдаётся готовой (решение 4) — один запрос в базу на работу, а не на
+ * каждый заход.
  *
- * Шапки сайта здесь нет, как в полноэкранном просмотре: комната — это
- * весь экран. Путь назад — «К работе» в углу.
+ * Работу, которую нельзя примерить честно — размер не читается или
+ * расходится с фото, — примерочная не показывает и ведёт к самой работе:
+ * значка на её табличке и так нет, сюда приходят только по старой ссылке.
+ *
+ * Шапки сайта здесь нет, как в полноэкранном просмотре: путь назад —
+ * «К работе» в углу.
  */
-export async function RoomPage({
-  lang,
-  id,
-  searchParams,
-}: {
-  lang: Locale;
-  id: string;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  // Примерочная скрыта до переделки (lib/room-options.ts, isRoomOn):
-  // старые ссылки открывают саму работу.
-  if (!isRoomOn) redirect(localePath(lang, `/gallery/${id}`));
-
-  const [work, all, rawOptions] = await Promise.all([
-    getArtworkById(id),
-    getArtworks(),
-    searchParams,
-  ]);
+export async function RoomPage({ lang, id }: { lang: Locale; id: string }) {
+  const work = await getArtworkById(id);
   if (!work) notFound();
 
-  // Без фотографии вешать на стену нечего: комната из одной рамы
-  // выглядела бы поломкой.
-  const src = primaryImageUrl(work);
-  if (src === undefined) notFound();
-
-  const works: RoomThumb[] = all.flatMap((item) => {
-    const thumb = primaryImageUrl(item);
-    return thumb === undefined ? [] : [{ id: item.id, title: item.title, src: thumb }];
-  });
-
-  const details = [
-    artworkTechnique(work.technique, lang),
-    artworkDimensions(work.dimensions, lang),
-    work.year,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const item = artworkFeedItem(work);
+  if (item.src === undefined || item.canvas === null) {
+    redirect(localePath(lang, `/gallery/${id}`));
+  }
 
   return (
     <main>
-      <ArtworkRoom
+      <FittingRoom
         work={{
-          id: work.id,
-          title: work.title,
-          src,
-          details: details || undefined,
-          sides: parseCanvasSides(work.dimensions),
+          id: item.id,
+          title: item.title,
+          src: item.src,
+          alt: item.alt[lang],
+          canvas: item.canvas,
+          arVersion: item.arVersion,
         }}
-        works={works}
-        initialOptions={parseRoomOptions(rawOptions)}
-        arVersion={cameraTarget(work)?.version ?? null}
-        whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
         siteUrl={clientEnv.NEXT_PUBLIC_SITE_URL}
+        whatsappPhone={clientEnv.NEXT_PUBLIC_WHATSAPP_PHONE}
       />
     </main>
   );

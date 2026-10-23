@@ -1495,17 +1495,6 @@
     line-height: 1.5;
     color: var(--color-ink-soft);
   }
-  /* «Камера есть только на телефоне…» под подписью — после нажатия на
-     значок там, где камера не откроется. Пустая строка места не занимает. */
-  .wall-label-hint {
-    margin: 8px 0 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--color-ink);
-  }
-  .wall-label-hint:empty {
-    display: none;
-  }
   .wall-label-text {
     margin: 12px 0 0;
     font-size: 14px;
@@ -1545,18 +1534,16 @@
      «иконку или что-то очень оригинальное»; маленькую комнату с диваном
      отклонил). Свет — не движение, его видят и те, у кого анимации
      выключены. */
+  /* Значок — ссылка в примерочную (TICKETS-primerka.md), на телефоне и
+     на компьютере: там и камера, и фото своей стены. */
   .tryon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    padding: 0;
     color: var(--color-ink);
-    background: none;
-    border: 0;
     border-radius: var(--radius-pill);
-    cursor: pointer;
     transition: background-color 0.18s ease;
   }
   .tryon:hover {
@@ -1655,17 +1642,6 @@
     opacity: 1;
     transform: none;
   }
-  /* Камера — у телефона и планшета. На компьютере, где указатель — мышь,
-     значка и облачка нет (заказчик, 23.10.2026): нажать было бы можно,
-     а открыть нечего. По типу указателя, а не по ширине экрана: у iPad
-     в альбомной ориентации экран как у ноутбука, а камера есть. */
-  @media (pointer: fine) {
-    .tryon,
-    .tryon-nudge {
-      display: none;
-    }
-  }
-
   /* «Поделиться» — та же кнопка с меню (ShareButton), одним значком; вид
      кнопки здесь снят, чтобы значок не спорил с примеркой. */
   .label-actions .btn {
@@ -2321,28 +2297,16 @@
   }
 }
 
-/* — примерочная: картина на стене в выбранной раме, при дневном свете
-     или под лампой (components/gallery/ArtworkRoom.tsx) —
+/* — примерочная: картина и рама, камера телефона, фото своей стены
+     (components/gallery/FittingRoom.tsx, TICKETS-primerka.md) —
 
-   Отдельный блок @layer components: всё про примерочную лежит в одном
-   месте. Что выбрал посетитель, приходит атрибутами на .room: data-wall,
-   data-frame, data-mode (день или вечер), data-light (горит ли лампа),
-   data-sofa. Варианты и их подписи — в lib/room-options.ts.
-
-   Цвета комнаты свои, а не из залов сайта: стены — это стены, а не тема
-   интерфейса. Заданы переменными на .room — в разметке ни одного hex.
-
-   Как устроен свет. Всё в сцене нарисовано «при полном свете», а поверх
-   лежит слой .room-light в режиме умножения с центром у лампы. Вечером
-   это конус от тёплого белого к почти чёрному: стена, рама и холст
-   затемняются одинаково по расстоянию от лампы, и свет читается одним
-   источником. Днём тот же слой — едва заметный спад к углам комнаты.
-   Сверху вечером — свечения в режиме «экран»: ореол у лампы и блик
-   на верхней планке рамы. */
+   Отдельный блок @layer components: всё про примерочную в одном месте.
+   Цвета страницы — из залов сайта: примерочная — та же стена галереи,
+   а не нарисованная комната. Свои цвета только у рамы — их передаёт
+   разметка переменными (lib/frame-look.ts, frameStyle), и у листа
+   подготовки к камере. */
 @layer components {
-  /* Цвета и ход, общие с экраном подготовки к камере (ArGuide): он
-     открывается и из ленты работ, вне примерочной (23.10.2026). */
-  .room,
+  /* Цвета и ход листа подготовки к камере (ArGuide). */
   .ar-guide {
     --room-ink: #efe6d8;
     --room-light-core: #fff5e6;
@@ -2352,502 +2316,44 @@
     --room-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
-  .room {
-    /* стены при полном свете */
-    --wall-white: #f0ede7;
-    --wall-beige: #d9c7ad;
-    --wall-grey: #c4c2bd;
-    --wall-olive: #7c8363;
-    --wall-terracotta: #b06a4c;
-    --wall-graphite: #3b3b3e;
-    --room-plaster: var(--wall-beige);
-
-    --room-night: #0b0a09;
-    --room-panel: rgb(20 17 15 / 0.72);
-
-    /* Вечер. Свет лампы тёплый; в остальной комнате — рассеянный свет,
-       отражённый от освещённой стены: полной темноты в жилой комнате
-       не бывает, диван и пол видны в полумраке. --room-ambient — доля
-       этого рассеянного света: примерно пятая часть. */
-    --room-beam: #fff0da;
-    --room-ambient: #3b3129;
-    --room-off: #16120f;
-
-    /* день: ровный свет из окна, чуть темнее по углам */
-    --day-core: #ffffff;
-    --day-mid: #f5f1eb;
-    --day-edge: #ddd6cc;
-    --day-far: #c3bbb0;
-
-    --brass-deep: #241a0c;
-    --brass-shadow: #5a4320;
-    --brass-mid: #9a7a45;
-    --brass-light: #d9bf86;
-    --brass-shine: #f6e7bd;
-
-    --baseboard: #e8e3da;
-    --baseboard-shadow: #b9b1a5;
-    --floor-near: #7a604a;
-    --floor-far: #4f3d2f;
-
-    --label-paper: #e7dfd1;
-
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    min-height: 100svh;
-    flex-direction: column;
-    overflow: hidden;
-    color: var(--room-ink);
-    /* Штукатурка: мелкое зерно и крупные неровности поверх цвета стены.
-       Шум рисует SVG-фильтр прямо в CSS — файл-текстура весил бы больше
-       и размывался при растяжении. */
-    background-color: var(--room-plaster);
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .08 0 0 0 0 .06 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .1 0 0 0 0 .08 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    transition: background-color 0.4s ease;
-  }
-
-  .room[data-wall="white"] {
-    --room-plaster: var(--wall-white);
-  }
-  .room[data-wall="grey"] {
-    --room-plaster: var(--wall-grey);
-  }
-  .room[data-wall="olive"] {
-    --room-plaster: var(--wall-olive);
-  }
-  .room[data-wall="terracotta"] {
-    --room-plaster: var(--wall-terracotta);
-  }
-  .room[data-wall="graphite"] {
-    --room-plaster: var(--wall-graphite);
-  }
-
-  /* — рамы. Ширина и зазор — в сантиметрах, как у настоящих рам
-     (lib/room-options.ts, frameModels); в пиксели их переводит --cm. — */
-  .room {
-    --t-cm: 7;
-    --gap-cm: 0;
-  }
-  .room[data-frame="none"] {
-    --t-cm: 0;
-  }
-  .room[data-frame="thin"] {
-    --t-cm: 1.2;
-  }
-  .room[data-frame="floater"] {
-    --t-cm: 1.5;
-    --gap-cm: 0.8;
-  }
-  .room[data-frame="modern"] {
-    --t-cm: 4;
-  }
-  .room[data-frame="reverse"] {
-    --t-cm: 5;
-  }
-  .room[data-frame="baroque"] {
-    --t-cm: 10;
-  }
-
-  /* — покрытия рам: пять тонов от тени до блика. Селектор по одному
-     атрибуту — те же тона нужны и самой раме (атрибут на .room),
-     и образцам в панели (атрибут на образце). — */
-  [data-finish="gold"] {
-    --f-deep: #2b1d0a;
-    --f-shadow: #684a1b;
-    --f-mid: #a7803a;
-    --f-light: #deba6c;
-    --f-shine: #fbeab3;
-  }
-  [data-finish="old-gold"] {
-    --f-deep: #231a0c;
-    --f-shadow: #57401c;
-    --f-mid: #8a6e3a;
-    --f-light: #b89a5e;
-    --f-shine: #d9c38a;
-  }
-  [data-finish="silver"] {
-    --f-deep: #1f2224;
-    --f-shadow: #5b6166;
-    --f-mid: #9aa1a6;
-    --f-light: #d2d7da;
-    --f-shine: #f5f7f8;
-  }
-  [data-finish="bronze"] {
-    --f-deep: #22150b;
-    --f-shadow: #5a3a1f;
-    --f-mid: #8f6238;
-    --f-light: #b98a5a;
-    --f-shine: #dcb88c;
-  }
-  [data-finish="oak-light"] {
-    --f-deep: #7a5a35;
-    --f-shadow: #b08b5c;
-    --f-mid: #cfae80;
-    --f-light: #e2c8a0;
-    --f-shine: #f0dfc0;
-  }
-  [data-finish="oak"] {
-    --f-deep: #5a3c22;
-    --f-shadow: #8c6440;
-    --f-mid: #b88e5e;
-    --f-light: #d6b182;
-    --f-shine: #e8cfa8;
-  }
-  [data-finish="walnut"] {
-    --f-deep: #2a1a10;
-    --f-shadow: #4a2f1e;
-    --f-mid: #6b4630;
-    --f-light: #8a5f43;
-    --f-shine: #a87b5c;
-  }
-  [data-finish="wenge"] {
-    --f-deep: #140e0b;
-    --f-shadow: #2a1e18;
-    --f-mid: #3c2c24;
-    --f-light: #54402f;
-    --f-shine: #6d5543;
-  }
-  [data-finish="cherry"] {
-    --f-deep: #3a150c;
-    --f-shadow: #6b2a17;
-    --f-mid: #8f3e22;
-    --f-light: #b3593a;
-    --f-shine: #cc7a5a;
-  }
-  [data-finish="white"] {
-    --f-deep: #b7b1a8;
-    --f-shadow: #d8d3cb;
-    --f-mid: #ece8e1;
-    --f-light: #f7f5f1;
-    --f-shine: #ffffff;
-  }
-  [data-finish="black"] {
-    --f-deep: #050505;
-    --f-shadow: #141414;
-    --f-mid: #1d1d1d;
-    --f-light: #333333;
-    --f-shine: #4a4a4a;
-  }
-  [data-finish="graphite"] {
-    --f-deep: #1c1d1f;
-    --f-shadow: #34363a;
-    --f-mid: #4a4d52;
-    --f-light: #62666c;
-    --f-shine: #7d8187;
-  }
-  [data-finish="navy"] {
-    --f-deep: #0c1424;
-    --f-shadow: #16233d;
-    --f-mid: #213257;
-    --f-light: #2e4470;
-    --f-shine: #45598a;
-  }
-  [data-finish="burgundy"] {
-    --f-deep: #250a0e;
-    --f-shadow: #43131a;
-    --f-mid: #5e1c25;
-    --f-light: #7a2733;
-    --f-shine: #96394a;
-  }
-  [data-finish="olive"] {
-    --f-deep: #1f2213;
-    --f-shadow: #3a3f22;
-    --f-mid: #545a33;
-    --f-light: #6d7446;
-    --f-shine: #899060;
-  }
-
-  /* — геометрия комнаты и камера —
-
-     Все размеры сцены — от одного числа: --pw, ширины холста в пикселях.
-     Из неё выводится --cm, пикселей в сантиметре, а от --cm — рама, лампа,
-     свет, диван, пол и даже зерно штукатурки. Поэтому смена --pw — это
-     движение камеры: при включении дивана камера отъезжает, вся комната
-     уменьшается разом, кадр смещается вниз, и диван с полом, всё время
-     стоявшие под картиной, въезжают в кадр снизу.
-
-     Считается на .room, а не на картине: штукатурка — фон самой комнаты,
-     и ей тоже нужен масштаб. */
-  .room {
-    /* Боковая панель на компьютере; на телефоне панель снизу — место
-       под неё резервирует --sheet-space. */
-    --panel-w: 0px;
-    --sheet-space: 0px;
-    --scene-w: calc(100vw - var(--panel-w));
-    /* Доли экрана под картину крупным планом и под картину с диваном. */
-    --w-art: 0.6;
-    --v-art: 58svh;
-    --v-room: 60svh;
-    /* С диваном: какая доля ширины сцены отдана комнате и сколько
-       сантиметров обязано поместиться по ширине. */
-    --w-room: 0.8;
-    --sofa-fit: 240;
-
-    /* Под экран вписывается картина вместе с рамой, а не один холст:
-       барокко в 10 см на холсте 50 см прибавляет по 20% с каждой стороны.
-       --k — сколько рамы и зазора приходится на сантиметр ширины холста
-       с одной стороны. */
-    --k: calc((var(--t-cm) + var(--gap-cm)) / var(--wref));
-    --frame-cm: calc(2 * (var(--t-cm) + var(--gap-cm)));
-
-    /* Масштаб с диваном: в кадр входят картина с рамой, 25 см стены,
-       диван шириной 210 см и высотой 85. --wcm и --hcm — ширина и высота
-       холста в сантиметрах, их выставляет компонент по размеру из базы. */
-    --unit: min(
-      calc(
-        var(--scene-w) * var(--w-room) /
-          max(var(--sofa-fit), calc(var(--wcm) + var(--frame-cm) + 30))
-      ),
-      calc(var(--v-room) / calc(var(--hcm) + var(--frame-cm) + 125))
-    );
+  /* — рама — картина вместе с рамой вписывается в место, которое даёт
+     родитель (--fit-w, --fit-h; по умолчанию — вся ширина и высота
+     контейнера), а ширина рамы — в сантиметрах от ширины холста, как у
+     настоящих рам. Числа приходят переменными с разметки: --t-cm и
+     --gap-cm — ширина и зазор, --wcm — ширина холста в сантиметрах,
+     --ar — его пропорции, --profile и узоры — вид (lib/frame-look.ts). */
+  .framed {
+    --k: calc((var(--t-cm) + var(--gap-cm)) / var(--wcm));
     --pw: min(
-      calc(var(--scene-w) * var(--w-art) / (1 + 2 * var(--k))),
-      calc(var(--v-art) / (1 / var(--ar) + 2 * var(--k))),
-      820px
+      calc(var(--fit-w, 100cqw) / (1 + 2 * var(--k))),
+      calc(var(--fit-h, 100cqh) / (1 / var(--ar) + 2 * var(--k)))
     );
-    --ph: calc(var(--pw) / var(--ar));
-    /* Пикселей в сантиметре холста. --wref — ширина холста в сантиметрах;
-       размер неизвестен — 60 см, средний из списка админки. С диваном
-       --pw = --wcm × --unit, и --cm совпадает с масштабом дивана. */
-    --cm: calc(var(--pw) / var(--wref));
+    /* Пикселей в сантиметре холста — от него рама и зазор. */
+    --cm: calc(var(--pw) / var(--wcm));
     --t: calc(var(--t-cm) * var(--cm));
     --gap: calc(var(--gap-cm) * var(--cm));
-    /* Вынос лампы от стены: 0.7 высоты картины. От него зависит, как
-       быстро гаснет свет вниз по стене. При 0.45 низ холста уходил в тень:
-       подсветку так не ставят, для больших картин берут длинную ручку. */
-    --lh: calc(var(--ph) * 0.7);
-    /* Лампа — чуть больше двух третей ширины картины, как их и подбирают.
-       Без нижнего предела в пикселях: иначе при отъезде камеры лампа
-       переставала бы уменьшаться вместе с комнатой. */
-    --lw: calc(var(--pw) * 0.72);
-
-    /* Зерно штукатурки уменьшается вместе с комнатой — без этого стена
-       при отъезде камеры выглядела бы наклеенной на экран. */
-    background-size:
-      calc(var(--cm) * 27.5) calc(var(--cm) * 27.5),
-      calc(var(--cm) * 112) calc(var(--cm) * 112);
-
-    /* Камера: плавный разгон и торможение, как у настоящего отъезда. */
-    --camera: 1.1s cubic-bezier(0.65, 0, 0.35, 1);
-    transition:
-      background-color 0.4s ease,
-      --pw var(--camera),
-      --t var(--camera),
-      --gap var(--camera);
-  }
-  .room[data-sofa="true"] {
-    --pw: calc(var(--wcm) * var(--unit));
-  }
-  @media (min-width: 1024px) {
-    .room {
-      --panel-w: 360px;
-    }
-  }
-  /* Надписи — поверх всего, и света, и темноты. */
-  .room-bar {
     position: relative;
-    z-index: 6;
-  }
-  .room-pill {
-    display: inline-flex;
-    min-height: 40px;
-    align-items: center;
-    gap: 8px;
-    padding: 0 16px;
-    font: inherit;
-    color: var(--room-ink);
-    text-decoration: none;
-    cursor: pointer;
-    background: var(--room-panel);
-    border: 0;
-    border-radius: 999px;
-    backdrop-filter: blur(10px);
-  }
-  .room-pill:hover,
-  .room-pill[aria-expanded="true"] {
-    background: rgb(20 17 15 / 0.9);
-  }
-  .room-pill:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-
-  /* «Примерить через камеру»: светлая таблетка в тёмном кольце — кольцо
-     держит кнопку и на белой стене, и на графитовой. Высота 44px, как у
-     прежнего переключателя «Камера | На стене»: под неё рассчитана
-     картина на телефоне (.room[data-camera]). На телефоне — своей
-     строкой во всю ширину. */
-  .room-camera {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 0 20px;
-    font-size: 15px;
-    color: var(--room-night);
-    background: var(--room-ink);
-    background-clip: padding-box;
-    border: 4px solid var(--room-panel);
-    border-radius: 999px;
-    cursor: pointer;
-    transition: filter 0.2s ease;
-  }
-  .room-camera:hover {
-    filter: brightness(1.06);
-  }
-  .room-camera:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-  @media (max-width: 1023px) {
-    .room-camera {
-      order: 1;
-      width: 100%;
-    }
-  }
-
-  .room-scene {
-    display: grid;
-    flex: 1;
-    place-items: center;
-    /* Сверху запас под лампу, справа — под панель, снизу — под нижнюю
-       панель на телефоне. */
-    padding: clamp(96px, 15svh, 170px) calc(var(--panel-w) + 20px)
-      max(clamp(40px, 8svh, 96px), var(--sheet-space)) 20px;
-  }
-
-  /* Картина вместе с рамой, лампой и светом.
-
-     z-index здесь нет намеренно: без него блок не создаёт своего слоя,
-     и умножение света смешивается со стеной комнаты, а не только
-     с рамой. */
-  .room-piece {
-    position: relative;
-    width: calc(var(--pw) + 2 * (var(--t) + var(--gap)));
-    opacity: 0;
-    /* Отступ снизу — место под диван. Растёт вместе с отъездом камеры,
-       и центр кадра плавно смещается вниз, к дивану. */
-    transition:
-      opacity 0.6s ease,
-      margin-bottom var(--camera);
-  }
-  .room[data-ready="true"] .room-piece {
-    opacity: 1;
-  }
-  .room[data-sofa="true"] .room-piece {
-    margin-bottom: calc(110 * var(--cm));
-  }
-
-  /* Рама из четырёх планок со скосами в углах, как у настоящего багета.
-     Каждая планка — стопка фонов: два пояса орнамента, волокно дерева
-     и профиль. Профиль — поперечный срез рамы от наружного края к холсту,
-     записанный тонами покрытия (--f-*): где выпуклость — блик, где
-     впадина — тень. Модель рамы задаёт профиль и узор, покрытие — тона. */
-  .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-mid) 5%, var(--f-shine) 12%, var(--f-light) 19%,
-      var(--f-shadow) 31%, var(--f-mid) 42%, var(--f-light) 52%, var(--f-shadow) 71%,
-      var(--f-mid) 80%, var(--f-shine) 86%, var(--f-shadow) 93%, var(--f-deep) 100%;
-    /* Узоры рисуются светом и тенью поверх тона, а не своим цветом, —
-       поэтому один узор годится для любого покрытия. */
-    --beads:
-      rgb(0 0 0 / 0.55) 0 1.5px, transparent 1.5px 3px, rgb(255 255 255 / 0.4) 3px 4px,
-      transparent 4px 7px;
-    --band1: var(--beads);
-    --band1-size: 16%;
-    --band1-pos: 62%;
-    --band2: transparent 0 1px;
-    --band2-size: 0%;
-    --band2-pos: 0%;
-    --grain: transparent 0 1px;
-    --figure: transparent 0 1px;
-    position: relative;
-    z-index: 1;
+    flex: none;
     padding: calc(var(--t) + var(--gap));
     /* Зазор парящей рамы — тёмная щель между холстом и рамой. */
-    background: var(--room-night);
-    /* Тень рамы на стене — вниз: свет падает сверху. */
-    box-shadow:
-      0 calc(var(--t) * 0.9 + 6px) calc(var(--t) * 1.5 + 12px) rgb(0 0 0 / 0.5),
-      0 3px 6px rgb(0 0 0 / 0.5);
+    background: #141210;
+    /* Тень сажает картину на стену — та же, что у картин в ленте. */
+    filter: var(--theme-shadow-art)
+      drop-shadow(0 calc(var(--t) * 0.6 + 6px) calc(var(--t) * 0.8 + 8px) rgb(30 20 10 / 0.22));
+    transition:
+      --pw 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      --t 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      --gap 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
-
-  /* Тонкая алюминиевая: плоская грань и одна острая полоса блика. */
-  .room[data-frame="thin"] .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-light) 18%, var(--f-shine) 30%, var(--f-mid) 55%,
-      var(--f-shadow) 88%, var(--f-deep) 100%;
-    --band1: transparent 0 1px;
-  }
-  /* Парящая рама-короб: узкая плоская грань, холст висит внутри с зазором. */
-  .room[data-frame="floater"] .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-light) 12%, var(--f-mid) 35%, var(--f-mid) 80%, var(--f-shadow) 100%;
-    --band1: transparent 0 1px;
-  }
-  /* Модерн: ровная грань и бусина — узкий валик у самого холста. */
-  .room[data-frame="modern"] .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-mid) 10%, var(--f-light) 25%, var(--f-light) 55%, var(--f-mid) 72%,
-      var(--f-shadow) 80%, var(--f-shine) 87%, var(--f-shadow) 94%, var(--f-deep) 100%;
-    --band1: transparent 0 1px;
-  }
-  /* Обратный профиль: рама поднимается к холсту, а не к стене, — картина
-     будто выступает вперёд. */
-  .room[data-frame="reverse"] .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-shadow) 8%, var(--f-mid) 30%, var(--f-light) 62%,
-      var(--f-shine) 82%, var(--f-light) 90%, var(--f-deep) 100%;
-    --band1: transparent 0 1px;
-  }
-  /* Барокко: несколько выпуклостей, широкий пояс лиственного орнамента
-     и ряд мелких бусин ближе к холсту. */
-  .room[data-frame="baroque"] .room-frame {
-    --profile:
-      var(--f-deep) 0%, var(--f-light) 4%, var(--f-shine) 9%, var(--f-mid) 15%, var(--f-shadow) 22%,
-      var(--f-light) 30%, var(--f-shine) 36%, var(--f-mid) 44%, var(--f-shadow) 54%,
-      var(--f-mid) 62%, var(--f-light) 70%, var(--f-shadow) 80%, var(--f-shine) 87%,
-      var(--f-shadow) 94%, var(--f-deep) 100%;
-    --band1:
-      rgb(0 0 0 / 0.5) 0 2px, rgb(255 255 255 / 0.35) 2px 4px, transparent 4px 7px,
-      rgb(0 0 0 / 0.3) 7px 8px, rgb(255 255 255 / 0.25) 8px 10px, transparent 10px 15px;
-    --band1-size: 22%;
-    --band1-pos: 34%;
-    --band2:
-      rgb(0 0 0 / 0.5) 0 1px, transparent 1px 2px, rgb(255 255 255 / 0.4) 2px 3px,
-      transparent 3px 5px;
-    --band2-size: 9%;
-    --band2-pos: 80%;
-  }
-
-  /* Дерево: волокно вдоль планки — тонкие неровные линии — и крупный
-     рисунок, меняющийся по длине. У металла и краски его нет. */
-  .room[data-finish-kind="wood"] .room-frame {
-    --grain:
-      rgb(0 0 0 / 0.14) 0 1px, transparent 1px 3px, rgb(255 255 255 / 0.08) 3px 4px,
-      transparent 4px 7px, rgb(0 0 0 / 0.08) 7px 8px, transparent 8px 12px;
-    --figure:
-      rgb(0 0 0 / 0.06) 0 13px, transparent 13px 31px, rgb(255 255 255 / 0.05) 31px 40px,
-      transparent 40px 67px;
-  }
-
-  /* Без рамы холст висит сам: тень от подрамника на стене. */
-  .room[data-frame="none"] .room-frame {
+  .framed[data-frame="none"] {
     background: none;
-    box-shadow:
-      0 10px 24px rgb(0 0 0 / 0.42),
-      0 2px 4px rgb(0 0 0 / 0.45);
   }
 
-  .room-rail {
+  .framed-rail {
     position: absolute;
     background-repeat: no-repeat;
   }
-  .room-rail-top {
+  .framed-rail-top {
     inset: 0 0 auto;
     height: var(--t);
     clip-path: polygon(0 0, 100% 0, calc(100% - var(--t)) 100%, var(--t) 100%);
@@ -2870,7 +2376,7 @@
       0 0;
     filter: brightness(1.14);
   }
-  .room-rail-bottom {
+  .framed-rail-bottom {
     inset: auto 0 0;
     height: var(--t);
     clip-path: polygon(var(--t) 0, calc(100% - var(--t)) 0, 100% 100%, 0 100%);
@@ -2893,7 +2399,7 @@
       0 0;
     filter: brightness(0.62);
   }
-  .room-rail-left {
+  .framed-rail-left {
     inset: 0 auto 0 0;
     width: var(--t);
     clip-path: polygon(0 0, 100% var(--t), 100% calc(100% - var(--t)), 0 100%);
@@ -2915,7 +2421,7 @@
       0 0;
     filter: brightness(0.94);
   }
-  .room-rail-right {
+  .framed-rail-right {
     inset: 0 0 0 auto;
     width: var(--t);
     clip-path: polygon(0 var(--t), 100% 0, 100% 100%, 0 calc(100% - var(--t)));
@@ -2940,14 +2446,14 @@
 
   /* Холст утоплен в раму: верхняя планка отбрасывает на него тень
      полосой — у картины в раме это видно всегда. */
-  .room-canvas {
+  .framed-canvas {
     position: relative;
     width: var(--pw);
     aspect-ratio: var(--ar);
     overflow: hidden;
-    background: var(--room-night);
+    background: #141210;
   }
-  .room-canvas::after {
+  .framed:not([data-frame="none"]) .framed-canvas::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -2963,565 +2469,109 @@
       );
   }
 
-  /* — диван и пол для масштаба —
-
-     Стоят всегда, в сантиметрах под картиной: диван в 25 см под рамой,
-     пол — от уровня его ножек. Крупным планом они за нижним краем кадра;
-     камера отъезжает — и они въезжают в кадр снизу. Прозрачность
-     нарастает по ходу отъезда, чтобы на высоком экране крупным планом
-     край дивана не маячил внизу. Работа без известного размера дивана
-     не получает вовсе (data-has-size). */
-  /* Диван — снимок 3D-модели строго спереди (public/room/sofa.webp):
-     210 × 86 см, ножки внизу кадра. Верх — на 24 см ниже рамы, чтобы
-     ножки стояли на линии пола (110 см под рамой). */
-  .room-sofa {
-    position: absolute;
-    top: calc(100% + 24 * var(--cm));
-    left: 50%;
-    z-index: 1;
-    width: calc(210 * var(--cm));
-    transform: translateX(-50%);
-  }
-  .room-sofa img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-  /* Плинтус и пол — во всю ширину комнаты, от уровня ножек дивана вниз. */
-  .room-floor {
-    position: absolute;
-    top: calc(100% + 101 * var(--cm));
-    left: 50%;
-    z-index: 0;
-    width: 400vw;
-    height: 200svh;
-    margin-left: -200vw;
-    background: linear-gradient(
-      to bottom,
-      var(--baseboard) 0,
-      var(--baseboard) calc(9 * var(--cm)),
-      var(--baseboard-shadow) calc(9 * var(--cm)),
-      var(--floor-near) calc(9 * var(--cm) + 3px),
-      var(--floor-far) 40%
-    );
-  }
-  .room-sofa,
-  .room-floor {
-    transition: opacity 0.9s ease 0.15s;
-  }
-  .room:not([data-sofa="true"]) :is(.room-sofa, .room-floor) {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
-  .room:not([data-has-size="true"]) :is(.room-sofa, .room-floor) {
-    display: none;
-  }
-
-  /* — лампа — */
-  .room-lamp {
-    position: absolute;
-    bottom: calc(100% + var(--t) * 0.3 + 4px);
-    left: 50%;
-    z-index: 3;
-    width: var(--lw);
-    transform: translateX(-50%);
-    filter: drop-shadow(0 6px 8px rgb(0 0 0 / 0.5));
-  }
-  .room-lamp svg {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-  .room-lamp-slot {
-    opacity: 0;
-  }
-  .room[data-light="on"] .room-lamp-slot {
-    opacity: 1;
-    animation: room-glow-on 1.4s ease-out;
-  }
-
-  /* — свет — */
-
-  /* Слой света — в режиме умножения: всё в сцене нарисовано «при полном
-     свете», а этот слой говорит, сколько света досталось каждой точке.
-     Огромный, чтобы при любом положении картины закрывать всю комнату.
-
-     Вечером в нём два слагаемых. Фон — рассеянный свет комнаты
-     (--room-ambient). Поверх — луч лампы (.room-beam): его прозрачность
-     и есть освещённость, так что тона складываются, как складывается свет.
-     Внутри слоя луч смешивается обычным образом, а на комнату слой
-     ложится целиком одним умножением. */
-  .room-light {
-    position: absolute;
-    top: calc(var(--t) * -0.3);
-    left: 50%;
-    z-index: 2;
-    width: 320vmax;
-    height: 320vmax;
-    margin: -160vmax 0 0 -160vmax;
-    pointer-events: none;
-    mix-blend-mode: multiply;
-    background: var(--room-ambient);
-  }
-
-  /* Днём — ровный свет из окна: едва заметный спад к краям комнаты.
-     Размеры в долях экрана, а не картины: дневной свет освещает комнату,
-     а не холст. */
-  .room[data-mode="day"] .room-light {
-    background: radial-gradient(
-      ellipse 70vmax 55vmax at 50% 50%,
-      var(--day-core) 0%,
-      var(--day-mid) 40%,
-      var(--day-edge) 78%,
-      var(--day-far) 100%
-    );
-  }
-
-  /* Луч лампы-трубки на стене.
-
-     Освещённость стены от длинной лампы, вынесенной от стены на h,
-     на глубине d под ней: E ≈ h² / (h² + d²) — закон обратных квадратов
-     с поправкой на косой угол падения. По этой формуле посчитаны точки
-     градиентов (d в долях h):
-       d = 0 → 1,  0.5 → 0.8,  1 → 0.5,  1.5 → 0.31,  2 → 0.2,
-       3 → 0.1,  4 → 0.06,  6 → 0.03.
-     Поэтому верх картины самый яркий, к низу свет мягко гаснет, а до пола
-     доходит только слабый отблеск.
-
-     Вверх отражатель лампы свет почти не пускает: над лампой лишь слабая
-     засветка, которая тянется по стене к потолку и гаснет.
-
-     По ширине — ровная полоса во всю длину лампы, по краям затухающая
-     по той же формуле. Итог — вытянутое пятно, а не круг: у трубки
-     свет и должен быть таким.
-
-     Вертикаль — фон луча, горизонталь — маска; их произведение и даёт
-     освещённость в каждой точке. Размеры — от --lh (вынос лампы), то есть
-     от высоты картины: в масштабе дивана луч уменьшается вместе с ней. */
-  .room-beam {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: calc(var(--lw) + 12 * var(--lh));
-    height: calc(14 * var(--lh));
-    transform: translate(-50%, calc(-4 * var(--lh)));
-    background: linear-gradient(
-      to bottom,
-      rgb(255 240 218 / 0) 0%,
-      rgb(255 240 218 / 0.02) 7.1%,
-      rgb(255 240 218 / 0.05) 14.3%,
-      rgb(255 240 218 / 0.12) 21.4%,
-      rgb(255 240 218 / 0.3) 26.4%,
-      rgb(255 240 218 / 1) 28.6%,
-      rgb(255 240 218 / 0.8) 32.1%,
-      rgb(255 240 218 / 0.5) 35.7%,
-      rgb(255 240 218 / 0.31) 39.3%,
-      rgb(255 240 218 / 0.2) 42.9%,
-      rgb(255 240 218 / 0.1) 50%,
-      rgb(255 240 218 / 0.06) 57.1%,
-      rgb(255 240 218 / 0.03) 71.4%,
-      rgb(255 240 218 / 0) 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      rgb(0 0 0 / 0) 0,
-      rgb(0 0 0 / 0.1) calc(3 * var(--lh)),
-      rgb(0 0 0 / 0.2) calc(4 * var(--lh)),
-      rgb(0 0 0 / 0.5) calc(5 * var(--lh)),
-      rgb(0 0 0 / 0.8) calc(5.5 * var(--lh)),
-      rgb(0 0 0) calc(6 * var(--lh)),
-      rgb(0 0 0) calc(100% - 6 * var(--lh)),
-      rgb(0 0 0 / 0.8) calc(100% - 5.5 * var(--lh)),
-      rgb(0 0 0 / 0.5) calc(100% - 5 * var(--lh)),
-      rgb(0 0 0 / 0.2) calc(100% - 4 * var(--lh)),
-      rgb(0 0 0 / 0.1) calc(100% - 3 * var(--lh)),
-      rgb(0 0 0 / 0) 100%
-    );
-  }
-  .room[data-mode="day"] .room-beam {
-    display: none;
-  }
-
-  /* Ореол у лампы и блик на верхней планке — прибавление света, «экран». */
-  .room-glow,
-  .room-shine {
-    position: absolute;
-    left: 50%;
-    z-index: 3;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: 0;
-    transform: translateX(-50%);
-  }
-  .room-glow {
-    top: calc(var(--t) * -1.4 - 10px);
-    width: calc(var(--lw) * 1.5);
-    height: calc(var(--t) * 3 + var(--ph) * 0.35);
-    background: radial-gradient(
-      ellipse 50% 45% at 50% 30%,
-      rgb(255 214 150 / 0.5),
-      rgb(255 190 120 / 0.16) 55%,
-      rgb(255 190 120 / 0) 78%
-    );
-  }
-  .room-shine {
-    top: 0;
-    width: calc(var(--pw) * 0.85);
-    height: var(--t);
-    background: radial-gradient(
-      ellipse 50% 70% at 50% 45%,
-      rgb(255 238 190 / 0.55),
-      rgb(255 238 190 / 0) 70%
-    );
-  }
-  .room[data-light="on"] .room-glow,
-  .room[data-light="on"] .room-shine {
-    opacity: 1;
-    animation: room-glow-on 1.4s ease-out;
-  }
-
-  /* Темнота вечером, пока лампа не загорелась. Выключается мгновенно, как
-     настоящий выключатель: у анимации нет обратного хода. */
-  .room-dark {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    pointer-events: none;
-    mix-blend-mode: multiply;
-    background: var(--room-off);
-  }
-  .room[data-light="on"] .room-dark {
-    opacity: 0;
-    animation: room-light-on 1.4s ease-out;
-  }
-
-  /* Днём лампы нет вовсе — ни её самой, ни темноты, ни ореолов. */
-  .room[data-mode="day"] :is(.room-lamp, .room-glow, .room-shine, .room-dark) {
-    display: none;
-  }
-
-  /* Лампа загорается с запинкой: так включается настоящая лампа
-     накаливания, и глаз читает это как свет, а не как смену картинки. */
-  @keyframes room-light-on {
-    0% {
-      opacity: 1;
-    }
-    9% {
-      opacity: 0.35;
-    }
-    14% {
-      opacity: 0.92;
-    }
-    22% {
-      opacity: 0.2;
-    }
-    28% {
-      opacity: 0.55;
-    }
-    42% {
-      opacity: 0.08;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-  @keyframes room-glow-on {
-    0% {
-      opacity: 0;
-    }
-    9% {
-      opacity: 0.65;
-    }
-    14% {
-      opacity: 0.08;
-    }
-    22% {
-      opacity: 0.8;
-    }
-    28% {
-      opacity: 0.45;
-    }
-    42% {
-      opacity: 0.92;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  /* Музейная табличка справа от рамы. Вечером она выше слоя света: иначе
-     на таком расстоянии от лампы текст ушёл бы в темноту. Своя
-     притушенность — чтобы не светилась ярче картины. */
-  .room-label {
-    position: absolute;
-    bottom: 4%;
-    left: calc(100% + clamp(24px, 3vw, 48px));
-    z-index: 3;
-    width: 190px;
-    padding: 14px 16px;
-    color: var(--label-ink);
-    background: var(--label-paper);
-    box-shadow: 0 6px 14px rgb(0 0 0 / 0.35);
-    filter: brightness(0.62);
-  }
-  .room[data-mode="day"] .room-label {
-    filter: none;
-  }
-  /* С диваном — это уже дом, а не музей: табличек у картин дома не бывает,
-     и табличка в 190px была бы больше самой картины в 50 см. */
-  .room[data-sofa="true"] .room-label {
-    display: none;
-  }
-  /* Уже 1100px справа от рамы места нет — табличка встаёт под раму
-     у правого края, компактнее, как её вешают в музее под небольшой
-     работой. Прежде на узком экране её просто не было. */
-  @media (max-width: 1099px) {
-    .room-label {
-      position: relative;
-      bottom: auto;
-      left: auto;
-      width: max-content;
-      max-width: min(100%, 240px);
-      margin: calc(var(--t) * 0.3 + 16px) 0 0 auto;
-      padding: 8px 11px;
-    }
-  }
-
-  /* — панель настроек —
-
-     Устроена как конфигураторы рам в онлайн-мастерских. На компьютере —
-     боковая панель: сцену она не перекрывает, разделы идут сверху вниз,
-     в заголовке раздела видно, что выбрано, внизу — итог и одна главная
-     кнопка. На телефоне — нижняя панель с вкладками: одновременно виден
-     один ряд вариантов, а не вся стена кнопок.
-
-     Прежде панель была одной плашкой поверх сцены: семь безымянных
-     квадратиков, девять кружков, шесть кружков и четыре кнопки разом —
-     заказчик назвал это «много кнопок», и по делу: рамы угадывались
-     только по картинке, а главная кнопка терялась. */
-  .room-panel {
-    position: absolute;
-    z-index: 6;
+  /* — выбор рамы (FramePicker) — радиокнопки спрятаны, видны образцы;
+     выбранный — в обводке, фокус с клавиатуры — тоже обводкой. */
+  .frame-picker {
     display: flex;
     flex-direction: column;
-    color: var(--room-ink);
-    background: rgb(22 19 17 / 0.93);
-    backdrop-filter: blur(14px);
+    gap: 18px;
   }
-  @media (min-width: 1024px) {
-    .room-panel {
-      inset: 0 0 0 auto;
-      width: var(--panel-w);
-      gap: 16px;
-      padding: 22px 22px 0;
-      overflow-y: auto;
-      border-left: 1px solid rgb(255 255 255 / 0.08);
-    }
-  }
-
-  .room-panel-head {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .room-kicker {
+  .frame-picker-group {
+    min-width: 0;
     margin: 0;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    opacity: 0.6;
+    padding: 0;
+    border: 0;
   }
-  .room-panel-title {
-    margin: 0;
-    font-family: var(--font-heading);
-    font-size: 24px;
-    font-weight: var(--font-heading-weight);
-    line-height: 1.2;
-  }
-
-  .room-section {
+  .frame-picker-legend {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .room-section-title {
-    display: flex;
-    align-items: baseline;
+    width: 100%;
     justify-content: space-between;
     gap: 12px;
-    margin: 0;
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    padding: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    color: var(--color-ink-faint);
   }
-  .room-section-value {
-    font-size: 14px;
-    font-weight: 400;
+  .frame-picker-value {
+    font-size: 13.5px;
+    font-weight: 600;
     letter-spacing: 0;
-    text-align: right;
     text-transform: none;
-    opacity: 0.8;
+    text-align: right;
+    color: var(--color-ink);
   }
-
-  /* Цвет рамы — второй ряд раздела «Рама». */
-  .room-finishes {
+  .frame-models {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .frame-model {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 4px;
-  }
-  .room-subtitle {
-    margin: 0;
-    font-size: 12px;
-    opacity: 0.7;
-  }
-  @media (max-width: 1023px) {
-    /* На телефоне подпись не нужна — цвет и так под своей рамой,
-       а выбранный назван в заголовке раздела. */
-    .room-subtitle {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-    .room-finishes {
-      margin-top: 0;
-    }
-    .room-finishes .room-swatches {
-      padding: 2px 4px;
-    }
-  }
-
-  /* Карточки моделей рам: образец, название, ширина. */
-  .room-models {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .room-model {
-    position: relative;
-    display: grid;
-    grid-template-columns: 30px 1fr;
-    column-gap: 10px;
     align-items: center;
-    padding: 7px 10px;
-    cursor: pointer;
-    border: 1px solid rgb(255 255 255 / 0.12);
-    border-radius: 12px;
-    transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
-  }
-  .room-model .room-swatch {
-    grid-row: 1 / span 2;
-    pointer-events: none;
-  }
-  .room-model-name {
-    font-size: 14px;
+    gap: 6px;
+    font-size: 10.5px;
     line-height: 1.2;
+    text-align: center;
+    color: var(--color-ink-soft);
+    cursor: pointer;
   }
-  .room-model-meta {
-    font-size: 12px;
-    opacity: 0.6;
+  .frame-model:has(input:checked) {
+    font-weight: 650;
+    color: var(--color-ink);
   }
-  .room-model:hover {
-    border-color: rgb(255 255 255 / 0.32);
+  .frame-model .swatch-frame {
+    width: min(100%, 44px);
+    aspect-ratio: 1;
   }
-  .room-model:has(input:checked) {
-    background: rgb(255 255 255 / 0.07);
-    border-color: var(--room-ink);
+  .frame-model:has(input:checked) .swatch-frame,
+  .frame-finish:has(input:checked) .swatch-finish {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
   }
-  .room-model:has(input:focus-visible) {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
+  .frame-model:has(input:focus-visible) .swatch-frame,
+  .frame-finish:has(input:focus-visible) .swatch-finish {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
-  .room-model input {
+  .frame-model input,
+  .frame-finish input {
     position: absolute;
     width: 0;
     height: 0;
     opacity: 0;
+    pointer-events: none;
   }
-  @media (max-width: 1023px) {
-    /* На телефоне карточки — одним рядом с прокруткой вбок. */
-    .room-models {
-      grid-template-columns: none;
-      grid-auto-columns: 84px;
-      grid-auto-flow: column;
-      overflow-x: auto;
-      padding: 2px 2px 4px;
-      scrollbar-width: none;
-    }
-    .room-model {
-      grid-template-columns: none;
-      justify-items: center;
-      row-gap: 6px;
-      padding: 8px 4px;
-      text-align: center;
-    }
-    .room-model .room-swatch {
-      grid-row: auto;
-    }
-    .room-model-name {
-      font-size: 12px;
-    }
-    .room-model-meta {
-      font-size: 11px;
-    }
-  }
-
-  /* Ряды образцов: покрытия и стены. */
-  .room-swatches {
+  .frame-finishes {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    padding: 4px;
+    gap: 12px;
   }
-  @media (max-width: 1023px) {
-    .room-swatches {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-  }
-
-  /* Кружок-образец. Сам переключатель — скрытая радиокнопка внутри:
-     стрелки клавиатуры и скринридер работают как у обычной группы. */
-  .room-swatch {
+  .frame-finish {
     position: relative;
-    display: inline-grid;
+    cursor: pointer;
+  }
+  .swatch-frame,
+  .swatch-finish {
+    position: relative;
+    display: block;
+  }
+  .swatch-finish {
     width: 34px;
     height: 34px;
-    flex: none;
-    place-items: center;
-    cursor: pointer;
     border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
-  }
-  .room-swatch input {
-    position: absolute;
-    width: 0;
-    height: 0;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .room-swatch:has(input:checked) {
-    outline: 2px solid var(--room-ink);
-    outline-offset: 3px;
-  }
-  .room-swatch:has(input:focus-visible) {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 3px;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
   }
 
   /* Образец модели рамы — квадратик холста в раме: толщина рамки
      на образце растёт вместе с шириной настоящей рамы, у резных — точечный
      поясок, у парящей — щель. Тон — того покрытия, которое достанется
      при выборе модели. */
-  .room-swatch-frame {
+  .swatch-frame {
     --m: 6px;
     border-radius: 6px;
     background: linear-gradient(
@@ -3532,42 +2582,42 @@
       var(--f-deep)
     );
   }
-  .room-swatch-frame::after {
+  .swatch-frame::after {
     content: "";
     position: absolute;
     inset: var(--m);
-    background: var(--room-plaster);
+    background: var(--color-wall);
     border-radius: 1px;
     box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
   }
-  .room-swatch-frame[data-frame="none"] {
+  .swatch-frame[data-frame="none"] {
     --m: 5px;
     background: transparent;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.45);
   }
-  .room-swatch-frame[data-frame="thin"] {
+  .swatch-frame[data-frame="thin"] {
     --m: 3px;
   }
-  .room-swatch-frame[data-frame="floater"] {
+  .swatch-frame[data-frame="floater"] {
     --m: 4px;
   }
-  .room-swatch-frame[data-frame="floater"]::after {
-    outline: 1.5px solid var(--room-night);
+  .swatch-frame[data-frame="floater"]::after {
+    outline: 1.5px solid #141210;
     outline-offset: -1px;
   }
-  .room-swatch-frame[data-frame="modern"] {
+  .swatch-frame[data-frame="modern"] {
     --m: 6px;
   }
-  .room-swatch-frame[data-frame="reverse"] {
+  .swatch-frame[data-frame="reverse"] {
     --m: 7px;
   }
-  .room-swatch-frame[data-frame="classic"] {
+  .swatch-frame[data-frame="classic"] {
     --m: 8px;
   }
-  .room-swatch-frame[data-frame="baroque"] {
+  .swatch-frame[data-frame="baroque"] {
     --m: 10px;
   }
-  .room-swatch-frame:is([data-frame="classic"], [data-frame="baroque"])::before {
+  .swatch-frame:is([data-frame="classic"], [data-frame="baroque"])::before {
     content: "";
     position: absolute;
     inset: calc(var(--m) * 0.45);
@@ -3576,7 +2626,7 @@
   }
 
   /* Образец покрытия — кружок в тонах покрытия, с бликом. */
-  .room-swatch-finish {
+  .swatch-finish {
     background: linear-gradient(
       135deg,
       var(--f-shadow),
@@ -3587,79 +2637,176 @@
     );
   }
 
-  /* Итог и главная кнопка — внизу боковой панели и всегда на виду:
-     если разделы не помещаются по высоте, прокручиваются они, а кнопка
-     остаётся прижатой к низу. */
-  .room-summary {
-    position: sticky;
-    bottom: 0;
+  /* — экран «Картина и рама» — на телефоне колонкой: полоса с «К работе»,
+     картина на стене, под ней выбор и кнопки. На компьютере — картина
+     слева на всю высоту, выбор — панелью справа. */
+  .fit {
+    min-height: 100svh;
+    background: var(--color-bg);
+  }
+  .fit-bar {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin: auto -22px 0;
-    padding: 16px 22px 22px;
-    background: rgb(22 19 17);
-    border-top: 1px solid rgb(255 255 255 / 0.1);
-  }
-  .room-sizes {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 4px 12px;
-    margin: 0;
-    font-size: 14px;
-  }
-  .room-sizes dt {
-    opacity: 0.65;
-  }
-  .room-sizes dd {
-    margin: 0;
-    text-align: right;
-  }
-  .room-cta {
-    display: inline-flex;
-    min-height: 48px;
+    min-height: 56px;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-size: 15px;
+    padding: 8px 64px;
+  }
+  .fit-back {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    display: inline-flex;
+    height: 40px;
+    min-width: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 10px;
+    font-size: 14.5px;
     font-weight: 600;
-    color: var(--label-ink);
+    color: var(--color-ink);
     text-decoration: none;
-    background: var(--room-ink);
+    background: var(--color-surface);
     border-radius: 999px;
+    transform: translateY(-50%);
   }
-  .room-cta:hover {
-    background: var(--room-light-core);
+  .fit-back-text {
+    display: none;
   }
-  .room-cta:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 3px;
+  .fit-title {
+    margin: 0;
+    text-align: center;
+    line-height: 1.2;
   }
-  /* Кнопкой бывает и <button> — «Открыть камеру» (AR-4). */
-  button.room-cta {
-    border: 0;
-    cursor: pointer;
+  .fit-title-main {
+    display: block;
+    font-size: 21px;
   }
-  /* В камере главная — «Открыть камеру», WhatsApp под ней вторым:
-     две одинаковые светлые кнопки спорили бы, какую нажать. */
-  .room-cta[data-secondary] {
-    color: var(--room-ink);
-    background: transparent;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  .fit-title-work {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--color-ink-soft);
   }
-  .room-cta[data-secondary]:hover {
-    background: rgb(255 255 255 / 0.08);
+  /* Стена под картиной — контейнер: от его размеров CSS вписывает
+     картину с рамой (.framed). */
+  .fit-stage {
+    --fit-w: 82cqw;
+    --fit-h: 84cqh;
+    position: relative;
+    display: grid;
+    height: clamp(280px, 44svh, 460px);
+    place-items: center;
+    container-type: size;
+    background: var(--color-wall);
   }
-  .room-note {
-    margin: -4px 0 0;
+  .fit-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--theme-toplight);
+  }
+  .fit-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 14px 18px calc(32px + env(safe-area-inset-bottom));
+  }
+  .fit-size {
+    margin: 0;
+    font-size: 13.5px;
+    text-align: center;
+    color: var(--color-ink-soft);
+  }
+  .fit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fit-hint {
+    margin: -6px 0 0;
     font-size: 13px;
     line-height: 1.45;
-    opacity: 0.7;
+    text-align: center;
+    color: var(--color-ink-soft);
+  }
+  /* Камера — только на телефоне: её открывает просмотрщик телефона,
+     на компьютере с мышью открыть нечего. */
+  @media (pointer: fine) {
+    .fit-camera {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .fit {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 400px;
+      grid-template-rows: auto minmax(0, 1fr);
+      height: 100svh;
+      min-height: 560px;
+    }
+    /* Полоса — не опора для заголовка: он встаёт над панелью справа,
+       от края всей страницы. */
+    .fit-bar {
+      position: static;
+      grid-column: 1;
+      justify-content: flex-start;
+      padding: 16px 24px 0;
+    }
+    .fit-back {
+      position: static;
+      padding: 0 16px 0 10px;
+      transform: none;
+    }
+    .fit-back-text {
+      display: inline;
+    }
+    /* Заголовок — над панелью справа. */
+    .fit-title {
+      position: absolute;
+      top: 28px;
+      right: 0;
+      width: 400px;
+      padding: 0 28px;
+      text-align: left;
+    }
+    .fit-title-main {
+      font-size: 34px;
+    }
+    .fit-title-work {
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    .fit-stage {
+      --fit-w: 78cqw;
+      --fit-h: 82cqh;
+      grid-column: 1;
+      height: auto;
+    }
+    .fit-panel {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      max-width: none;
+      margin: 0;
+      padding: 118px 28px 28px;
+      overflow-y: auto;
+      border-left: 1px solid var(--color-divider);
+    }
+    .fit-size {
+      text-align: left;
+    }
   }
 
   /* Подготовка к камере (ArGuide). На телефоне — лист снизу, как
      системные листы iOS и Android; на компьютере — карточка по центру.
-     Цвета — примерочной: диалог лежит внутри .room и берёт её переменные. */
+     Цвета свои, тёмные: лист поверх светлой страницы выделяется сам. */
   .ar-guide {
     width: min(100%, 440px);
     max-width: none;
@@ -3790,505 +2937,39 @@
     flex-direction: column;
     gap: 8px;
   }
-
-  /* Что видно на какой ширине. Эти правила — после общих намеренно:
-     при равной специфичности побеждает то, что ниже, и раньше вкладки
-     оставались на компьютере, а неактивные разделы — на телефоне. */
-  @media (max-width: 1023px) {
-    .room-section[data-active="false"],
-    .room-panel-head,
-    .room-summary {
-      display: none;
-    }
-    /* Название раздела — на кнопке инструмента, в заголовке остаётся выбранное. */
-    .room-section-name {
-      display: none;
-    }
-  }
-
-  /* Переключатель света: солнце слева, луна справа, светлый кружок
-     уезжает под выбранный значок. role="switch" на кнопке — скринридер
-     читает «Вечерний свет, включено / выключено». */
-  .room-daynight {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-self: flex-start;
-    width: 88px;
-    height: 42px;
-    padding: 4px;
-    color: inherit;
-    cursor: pointer;
-    background: rgb(255 255 255 / 0.06);
-    border: 1px solid rgb(255 255 255 / 0.18);
-    border-radius: 999px;
-  }
-  .room-daynight::before {
-    content: "";
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 40px;
-    height: 34px;
-    background: var(--room-ink);
-    border-radius: 999px;
-    transition: transform 0.25s ease;
-  }
-  .room-daynight[aria-checked="true"]::before {
-    transform: translateX(40px);
-  }
-  .room-daynight svg {
-    position: relative;
-    width: 18px;
-    height: 18px;
-    place-self: center;
-    transition: color 0.25s ease;
-  }
-  .room-daynight[aria-checked="false"] svg:first-child,
-  .room-daynight[aria-checked="true"] svg:last-child {
-    color: var(--label-ink);
-  }
-  .room-daynight:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .room-daynight::before,
-    .room-daynight svg {
-      transition: none;
-    }
-  }
-  .room-far {
-    display: flex;
-    min-height: 42px;
+  .ar-guide-cta {
+    display: inline-flex;
+    min-height: 48px;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 12px;
-    font: inherit;
-    font-size: 14px;
-    color: inherit;
-    cursor: pointer;
-    background: transparent;
-    border: 1px solid rgb(255 255 255 / 0.18);
-    border-radius: 12px;
-    transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
-  }
-  .room-far:hover {
-    border-color: rgb(255 255 255 / 0.45);
-  }
-  .room-far[aria-pressed="true"] {
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
     color: var(--label-ink);
+    text-decoration: none;
     background: var(--room-ink);
-    border-color: var(--room-ink);
+    border-radius: 999px;
   }
-  .room-far:focus-visible {
+  .ar-guide-cta:hover {
+    background: var(--room-light-core);
+  }
+  .ar-guide-cta:focus-visible {
     outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
-
-  /* «Настройки» — вернуть убранную панель, правый нижний угол. */
-  .room-panel-open {
-    position: absolute;
-    right: clamp(12px, 4vw, 48px);
-    bottom: 24px;
-    z-index: 6;
-  }
-
-  /* Убрать панель. На компьютере она уезжает вправо, на телефоне вниз,
-     и картина плавно занимает освободившееся место: ширина сцены
-     зависит от --panel-w и --sheet-space, а размер картины — от неё,
-     и её перестройка анимирована так же, как отъезд камеры. */
-  .room-panel {
-    transition:
-      transform 0.45s var(--room-ease),
-      visibility 0s linear 0s;
-  }
-  @media (min-width: 1024px) {
-    .room[data-panel="closed"] {
-      --panel-w: 0px;
-    }
-    .room[data-panel="closed"] .room-panel {
-      visibility: hidden;
-      transform: translateX(100%);
-      transition:
-        transform 0.45s var(--room-ease),
-        visibility 0s linear 0.45s;
-    }
-  }
-
-  .room-panel-close {
-    position: absolute;
-    top: 16px;
-    right: 14px;
-    z-index: 1;
-    display: inline-grid;
-    width: 36px;
-    height: 36px;
-    place-items: center;
-    padding: 0;
-    color: inherit;
+  button.ar-guide-cta {
+    border: 0;
     cursor: pointer;
+  }
+  /* «Закрыть» — второй: две одинаковые светлые кнопки спорили бы,
+     какую нажать. */
+  .ar-guide-cta[data-secondary] {
+    color: var(--room-ink);
     background: transparent;
-    border: 1px solid rgb(255 255 255 / 0.18);
-    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
   }
-  .room-panel-close:hover {
-    border-color: rgb(255 255 255 / 0.5);
-  }
-  .room-panel-close:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-  /* Миниатюры «другая картина» — поверх сцены, над кнопкой вида. */
-  .room-strip-wrap {
-    position: absolute;
-    right: var(--panel-w);
-    bottom: max(80px, calc(var(--sheet-space) + 80px));
-    left: 0;
-    z-index: 6;
-    display: flex;
-    justify-content: center;
-    padding: 0 16px;
-    pointer-events: none;
-  }
-  .room-strip {
-    display: flex;
-    max-width: 100%;
-    gap: 8px;
-    margin: 0;
-    padding: 10px;
-    overflow-x: auto;
-    list-style: none;
-    pointer-events: auto;
-    background: rgb(22 19 17 / 0.93);
-    border-radius: 16px;
-    backdrop-filter: blur(14px);
-    scrollbar-width: thin;
-  }
-  .room-thumb {
-    position: relative;
-    display: block;
-    width: 64px;
-    height: 64px;
-    flex: none;
-    overflow: hidden;
-    border-radius: 8px;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
-  }
-  .room-thumb[aria-current="page"] {
-    outline: 2px solid var(--room-ink);
-    outline-offset: 2px;
-  }
-  .room-thumb:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-
-  /* — телефон: строка инструментов —
-
-     На телефоне всё управление — в одной строке внизу, как в редакторе
-     фото: Картина, Рама, Цвет, Стена открывают один ряд вариантов над
-     строкой, Свет и «Издали» переключают сразу. Макет согласован
-     с заказчиком. Прежде управление было в трёх местах — панель,
-     кнопки над ней, «Настройки» в углу — и на iPhone 15 всё это
-     наезжало друг на друга, а картина сжималась до 130 px: место под
-     закрытую панель и табличку резервировалось всегда.
-
-     Примерочная на телефоне ровно в высоту видимого экрана (svh — высота
-     при показанной адресной строке Safari), иначе низ уходил под неё. */
-  .room-toolbar,
-  .room-info {
-    display: none;
-  }
-  .room-heading {
-    color: var(--view-ink);
-  }
-  .room {
-    --view-ink: var(--label-ink);
-  }
-  .room[data-mode="evening"],
-  .room[data-wall="graphite"],
-  .room[data-wall="olive"],
-  .room[data-wall="terracotta"] {
-    --view-ink: var(--room-ink);
-  }
-
-  @media (max-width: 1023px) {
-    .room {
-      --toolbar-h: calc(60px + env(safe-area-inset-bottom));
-      --tray-h: 0px;
-      --sheet-space: calc(var(--toolbar-h) + var(--tray-h));
-      --w-art: 0.84;
-      /* 150 — верхняя строка и лампа над рамой; остальное — картине. */
-      --v-art: calc(100svh - var(--sheet-space) - 150px);
-      --v-room: calc(100svh - var(--sheet-space) - 130px);
-      /* Диван может выходить за края кадра, как на снимке с телефона:
-         иначе ради 210 см по ширине картина сжималась до точки. */
-      --w-room: 1;
-      --sofa-fit: 175;
-      height: 100svh;
-      min-height: 0;
-    }
-    /* Строка кнопки камеры: 44px таблетки и 12px отступа. Без поправки
-       картина с рамой не помещалась бы над строкой инструментов. */
-    .room[data-camera] {
-      --v-art: calc(100svh - var(--sheet-space) - 206px);
-      --v-room: calc(100svh - var(--sheet-space) - 186px);
-    }
-    /* Открыт ряд вариантов — картина плавно уменьшается над ним. */
-    .room[data-tool] {
-      --tray-h: 112px;
-    }
-    /* У рамы два ряда: модели и цвет выбранной рамы. */
-    .room[data-tool="frame"] {
-      --tray-h: 180px;
-    }
-    .room[data-tool="frame"][data-frame="none"] {
-      --tray-h: 112px;
-    }
-
-    .room-scene {
-      /* Сверху — место под лампу над рамой; верхняя строка стоит
-         в общем потоке выше, её высоту считать не нужно. */
-      padding: 64px 16px calc(var(--sheet-space) + 20px);
-    }
-
-    /* На телефоне нет ни таблички на стене, ни кнопок вида в углу,
-       ни боковой панели с её кнопками — всё это в строке инструментов
-       и в карточке «о картине». */
-    .room-label,
-    .room-panel-open,
-    .room-panel-close {
-      display: none;
-    }
-
-    .room-toolbar {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 8;
-      display: grid;
-      height: var(--toolbar-h);
-      grid-auto-columns: 1fr;
-      grid-auto-flow: column;
-      padding: 6px 4px env(safe-area-inset-bottom);
-      color: var(--room-ink);
-      background: rgb(22 19 17);
-      border-top: 1px solid rgb(255 255 255 / 0.08);
-    }
-    .room-tool {
-      display: flex;
-      min-height: 48px;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      padding: 0;
-      font: inherit;
-      font-size: 11px;
-      color: inherit;
-      cursor: pointer;
-      background: none;
-      border: 0;
-      border-radius: 10px;
-      opacity: 0.72;
-    }
-    .room-tool[aria-pressed="true"] {
-      background: rgb(255 255 255 / 0.1);
-      opacity: 1;
-    }
-    .room-tool:focus-visible {
-      outline: 2px solid var(--room-light-warm);
-      outline-offset: -2px;
-    }
-
-    /* Ряд вариантов — та же панель, что на компьютере, но одним разделом
-       и над строкой инструментов. Закрыт — уезжает за неё. */
-    .room-panel {
-      inset: auto 0 var(--toolbar-h);
-      z-index: 7;
-      height: var(--tray-h);
-      gap: 8px;
-      padding: 10px 14px 12px;
-      overflow: hidden;
-      visibility: hidden;
-      border-radius: 16px 16px 0 0;
-      box-shadow: 0 -8px 24px rgb(0 0 0 / 0.3);
-      transform: translateY(calc(100% + var(--toolbar-h)));
-      transition:
-        transform 0.35s var(--room-ease),
-        visibility 0s linear 0.35s;
-    }
-    .room:is([data-tool="frame"], [data-tool="wall"]) .room-panel {
-      visibility: visible;
-      transform: none;
-      transition:
-        transform 0.35s var(--room-ease),
-        visibility 0s linear 0s;
-    }
-    .room-section {
-      gap: 8px;
-    }
-    .room-section-title {
-      font-size: 13px;
-    }
-    .room-models {
-      grid-auto-columns: 74px;
-      gap: 6px;
-    }
-    .room-model {
-      row-gap: 4px;
-      padding: 6px 2px;
-    }
-    .room-model-meta {
-      display: none;
-    }
-
-    /* Миниатюры — тоже рядом над строкой инструментов. */
-    .room-strip-wrap {
-      right: 0;
-      bottom: calc(var(--toolbar-h) + 10px);
-      padding: 0 10px;
-    }
-
-    /* Карточка «о картине» — под верхней строкой, по кнопке «i». */
-    .room-info {
-      position: absolute;
-      top: 64px;
-      right: 12px;
-      left: 12px;
-      z-index: 9;
-      display: block;
-      padding: 16px 44px 16px 18px;
-      color: var(--room-ink);
-      background: rgb(22 19 17 / 0.96);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
-    }
-    .room-info-title {
-      margin: 0 0 4px;
-      font-family: var(--font-heading);
-      font-size: 20px;
-      font-weight: var(--font-heading-weight);
-      line-height: 1.25;
-    }
-    .room-info-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: inline-grid;
-      width: 34px;
-      height: 34px;
-      place-items: center;
-      padding: 0;
-      color: inherit;
-      cursor: pointer;
-      background: none;
-      border: 1px solid rgb(255 255 255 / 0.18);
-      border-radius: 50%;
-    }
-    .room-info-close:focus-visible {
-      outline: 2px solid var(--room-light-warm);
-      outline-offset: 2px;
-    }
-  }
-
-  /* Одна прокрутка вместо двух. Примерочная — полноэкранный инструмент
-     ровно в высоту окна, и страница под ней не прокручивается: иначе
-     крутились и страница (под примерочной стоит подвал сайта), и панель
-     внутри себя (заказчик). Правило живёт, пока примерочная на странице. */
-  html:has(.room) {
-    overflow: hidden;
-  }
-  .room {
-    height: 100svh;
-    min-height: 0;
-  }
-  .room-panel {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
-  }
-
-  /* Подпись к модели дивана (CC BY 4.0) — мелко, в правом нижнем углу
-     сцены, над полом. Не спорит с картиной, но читается. */
-  .room-credit {
-    position: absolute;
-    right: calc(var(--panel-w) + 16px);
-    bottom: calc(max(12px, var(--sheet-space)) + 8px);
-    z-index: 6;
-    margin: 0;
-    padding: 3px 8px;
-    font-size: 11px;
-    color: var(--room-ink);
-    background: rgb(22 19 17 / 0.55);
-    border-radius: 6px;
-  }
-  .room-credit a {
-    color: inherit;
-  }
-  .room-credit a:focus-visible {
-    outline: 2px solid var(--room-light-warm);
-    outline-offset: 2px;
-  }
-
-  /* Подсказка над сценой: появляется на несколько секунд и гаснет.
-     Пустая — не видна и места не занимает. */
-  .room-hint {
-    position: absolute;
-    bottom: calc(max(24px, var(--sheet-space)) + 64px);
-    left: 50%;
-    z-index: 9;
-    /* Без явной ширины блок с left: 50% сжимается до половины экрана
-       и переносит каждое второе слово. */
-    width: max-content;
-    max-width: min(88vw, 420px);
-    margin: 0;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: var(--room-ink);
-    text-align: center;
-    background: rgb(22 19 17 / 0.94);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
-    transform: translateX(-50%);
-  }
-  .room-hint:empty {
-    display: none;
-  }
-  @media (min-width: 1024px) {
-    .room-hint {
-      left: calc((100% - var(--panel-w)) / 2);
-    }
-  }
-
-  /* «Меньше движения» в настройках системы: отъезд камеры — именно
-     то движение, от которого у части людей кружится голова. Масштаб
-     меняется сразу, диван просто проявляется. */
-  @media (prefers-reduced-motion: reduce) {
-    .room {
-      transition: background-color 0.4s ease;
-    }
-    .room-piece,
-    .room-sofa,
-    .room-floor {
-      transition: opacity 0.3s ease;
-    }
-    .room-dark,
-    .room-glow,
-    .room-shine,
-    .room-lamp-slot {
-      transition: opacity 0.6s ease;
-    }
-    .room[data-light="on"] .room-dark,
-    .room[data-light="on"] .room-glow,
-    .room[data-light="on"] .room-shine,
-    .room[data-light="on"] .room-lamp-slot {
-      animation: none;
-    }
+  .ar-guide-cta[data-secondary]:hover {
+    background: rgb(255 255 255 / 0.08);
   }
 }
 

@@ -2,6 +2,19 @@ import type { Metadata } from "next";
 
 import { RoomPage, roomMetadata } from "@/components/pages/RoomPage";
 
+/**
+ * Готовится при первом заходе и дальше отдаётся готовой (TICKETS-primerka.md,
+ * решение 4): пустой список — ни одной примерочной при сборке, все по
+ * запросу. Без него страница с параметром в пути собиралась бы на каждый
+ * заход. Сбрасывается вместе со страницей работы (lib/revalidate.ts);
+ * раз в сутки — подстраховка, как у неё.
+ */
+export function generateStaticParams(): { id: string }[] {
+  return [];
+}
+
+export const revalidate = 86400;
+
 export async function generateMetadata({
   params,
 }: PageProps<"/gallery/[id]/room">): Promise<Metadata> {
@@ -9,7 +22,7 @@ export async function generateMetadata({
   return roomMetadata("ru", id);
 }
 
-export default async function Page({ params, searchParams }: PageProps<"/gallery/[id]/room">) {
+export default async function Page({ params }: PageProps<"/gallery/[id]/room">) {
   const { id } = await params;
-  return <RoomPage lang="ru" id={id} searchParams={searchParams} />;
+  return <RoomPage lang="ru" id={id} />;
 }

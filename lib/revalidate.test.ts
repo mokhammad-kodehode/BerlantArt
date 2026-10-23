@@ -83,22 +83,32 @@ describe("revalidateSharedPages", () => {
 });
 
 /**
- * Мелкая правка сбрасывает две страницы, а не четыреста: иначе каждое
+ * Мелкая правка сбрасывает страницы одной работы (с примерочной — четыре), а не четыреста: иначе каждое
  * сохранение в админке пересобирало весь сайт (записи в кеш Vercel,
  * 21.10.2026).
  */
 describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
-  it("страница работы — на обоих языках и с адресом, у которого есть файл", () => {
+  it("страница работы и её примерочная — на обоих языках и с адресом, у которого есть файл", () => {
     vi.mocked(revalidatePath).mockClear();
     revalidateArtworkPage("abc");
-    expect(calls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
+    expect(calls()).toEqual([
+      "/gallery/abc",
+      "/gallery/abc/room",
+      "/en/gallery/abc",
+      "/en/gallery/abc/room",
+    ]);
     for (const url of calls()) expect(hasPageForUrl(url.replace("abc", "[id]")), url).toBe(true);
   });
 
   it("главное фото не менялось — только своя страница", () => {
     vi.mocked(revalidatePath).mockClear();
     revalidateAfterImageChange("abc", "img1", "img1");
-    expect(calls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
+    expect(calls()).toEqual([
+      "/gallery/abc",
+      "/gallery/abc/room",
+      "/en/gallery/abc",
+      "/en/gallery/abc/room",
+    ]);
   });
 
   it("главное фото сменилось или появилось — своя страница и общие, но не чужие", () => {
@@ -112,7 +122,12 @@ describe("revalidateArtworkPage и revalidateAfterImageChange", () => {
       expect(calls()).toEqual(
         expect.arrayContaining([...publicPaths, "/gallery/abc", "/en/gallery/abc"]),
       );
-      expect(artworkCalls()).toEqual(["/gallery/abc", "/en/gallery/abc"]);
+      expect(artworkCalls()).toEqual([
+        "/gallery/abc",
+        "/gallery/abc/room",
+        "/en/gallery/abc",
+        "/en/gallery/abc/room",
+      ]);
     }
   });
 });

@@ -364,13 +364,13 @@ export function buildPaintingScene({
 
   if (frame !== "none") {
     const { widthCm, gapCm } = frameModel(frame);
-    const { kind, tone } = frameFinish(finish);
+    const { kind, tones } = frameFinish(finish);
     const gap = gapCm / 100;
     const border = gap + widthCm / 100;
 
     const framePart = emptyPart("Frame", {
       name: "Frame",
-      color: linearColor(tone),
+      color: linearColor(tones.mid),
       ...finishSurface[kind],
       hasPhoto: false,
     });

@@ -4,7 +4,7 @@ import { buildArFile } from "@/lib/ar";
 import { cameraTarget } from "@/lib/ar-target";
 import { arFiles, arFileUrl, isArFile } from "@/lib/ar-links";
 import { getArtworkById } from "@/lib/artworks";
-import { parseRoomOptions } from "@/lib/room-options";
+import { parseFrameChoice } from "@/lib/room-options";
 
 /**
  * Файл модели для камеры телефона: `model.usdz` для iPhone, `model.glb`
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/gallery/[id]
 
   const { searchParams } = request.nextUrl;
   // Мусор в раме или покрытии откатывается к умолчанию, как в примерочной.
-  const options = parseRoomOptions(Object.fromEntries(searchParams));
+  const options = parseFrameChoice(Object.fromEntries(searchParams));
   const canonical = arFileUrl(id, file, target.version, options);
 
   if (`${request.nextUrl.pathname}${request.nextUrl.search}` !== canonical) {

@@ -81,7 +81,12 @@ export function revalidateSharedPages(): void {
  * лента берёт из общего списка (`artworkThumbsPath`).
  */
 export function revalidateArtworkPage(artworkId: string): void {
-  for (const lang of locales) revalidatePath(localePath(lang, `/gallery/${artworkId}`));
+  for (const lang of locales) {
+    revalidatePath(localePath(lang, `/gallery/${artworkId}`));
+    // Примерочная той же работы: фото и размер у неё те же (TICKETS-primerka.md).
+    // Сброс — не пересборка: запись в кеш будет, только если её откроют.
+    revalidatePath(localePath(lang, `/gallery/${artworkId}/room`));
+  }
 }
 
 /**

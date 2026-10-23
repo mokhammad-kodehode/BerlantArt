@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { arFileUrl, isArFile, quickLookUrl, roomPageUrl, sceneViewerUrl } from "@/lib/ar-links";
-import { parseRoomOptions } from "@/lib/room-options";
+import { parseFrameChoice } from "@/lib/room-options";
 
 describe("адрес модели", () => {
   it("пишет выбор всегда и в одном порядке", () => {
@@ -20,6 +20,7 @@ describe("адрес модели", () => {
 
 describe("адреса страниц", () => {
   it("примерочная не пишет умолчаний", () => {
+    expect(roomPageUrl("w1")).toBe("/gallery/w1/room");
     expect(roomPageUrl("w1", { frame: "none", finish: "gold" })).toBe("/gallery/w1/room");
     expect(roomPageUrl("w1", { frame: "thin", finish: "black" })).toBe(
       "/gallery/w1/room?frame=thin",
@@ -28,11 +29,11 @@ describe("адреса страниц", () => {
 
   it("старая ссылка на камеру открывает примерочную с той же рамой", () => {
     // Так страница /gallery/[id]/ar перенаправляет с 22.10.2026.
-    const query = { frame: "thin", finish: "white" };
-    expect(roomPageUrl("w1", parseRoomOptions(query))).toBe(
+    const query = { frame: "thin", finish: "white", wall: "olive" };
+    expect(roomPageUrl("w1", parseFrameChoice(query))).toBe(
       "/gallery/w1/room?frame=thin&finish=white",
     );
-    expect(roomPageUrl("w1", parseRoomOptions(query), "en")).toBe(
+    expect(roomPageUrl("w1", parseFrameChoice(query), "en")).toBe(
       "/en/gallery/w1/room?frame=thin&finish=white",
     );
   });

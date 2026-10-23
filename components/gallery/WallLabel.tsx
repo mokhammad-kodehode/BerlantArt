@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
@@ -31,13 +32,11 @@ const nudgeDuration = 4500;
  * как только что повешенная картина (заказчик: «чтобы было интересно
  * нажать», «иконку или что-то оригинальное»). Прежде здесь была
  * маленькая комната с этой картиной над диваном — заказчик её отклонил.
- * С 23.10.2026 значок сразу открывает камеру телефона (`onTryOn`, его
- * даёт ArtworkFeed), а не примерочную — та скрыта до переделки. У работы,
- * которую в камере не показать, значка нет; на компьютере с мышью его
- * прячет CSS (globals.css, .tryon) — камеры там нет.
+ * Значок ведёт в примерочную (TICKETS-primerka.md): там рама, камера
+ * телефона и фото своей стены — на телефоне и на компьютере. У работы,
+ * которую честно не примерить (размер не читается или расходится
+ * с фото, `canvas`), значка нет.
  *
- * `hint` — строка под подписью, когда камера здесь не откроется
- * («только на телефоне», «откройте в Safari»).
  * Строки «Спросить о картине» нет по просьбе заказчика: написать
  * художнице можно из меню в шапке.
  *
@@ -55,8 +54,6 @@ export function WallLabel({
   isNear,
   isCurrent,
   siteUrl,
-  onTryOn,
-  hint,
 }: {
   work: ArtworkFeedItem;
   /** Картина, ради которой открыли страницу: её название — заголовок страницы. */
@@ -65,9 +62,6 @@ export function WallLabel({
   /** Картина сейчас на экране — только у неё может всплыть напоминание о примерке. */
   isCurrent: boolean;
   siteUrl: string;
-  /** Открыть камеру с этой картиной; нет — нет и значка. */
-  onTryOn?: () => void;
-  hint: string | null;
 }) {
   const t = useDictionary();
   const lang = useLocale();
@@ -75,7 +69,7 @@ export function WallLabel({
   // Табличка живёт, пока открыта лента, — «кубик» бросается один раз на
   // картину за посещение, сколько бы раз к ней ни возвращались.
   const hasRolled = useRef(false);
-  const canTryOn = onTryOn !== undefined;
+  const canTryOn = work.canvas !== null;
 
   useEffect(() => {
     if (!isCurrent || !canTryOn || hasRolled.current) return;
@@ -118,10 +112,12 @@ export function WallLabel({
         <div className="wall-label-head">
           <Heading className="wall-label-title">{work.title}</Heading>
           <div className="label-actions">
-            {onTryOn && (
-              <button
-                type="button"
-                onClick={onTryOn}
+            {canTryOn && (
+              // prefetch={false} — как у плиток стены: иначе лента из двухсот
+              // картин заранее собирала бы их примерочные (записи в кеш Vercel).
+              <Link
+                href={localePath(lang, `/gallery/${work.id}/room`)}
+                prefetch={false}
                 aria-label={t.work.tryOnCamera}
                 title={t.work.tryOnCamera}
                 className="tryon"
@@ -138,19 +134,12 @@ export function WallLabel({
                   </g>
                   <circle cx="12" cy="2.6" r="1.2" className="tryon-nail" />
                 </svg>
-              </button>
+              </Link>
             )}
             {isNear && <ShareButton url={pageUrl} title={work.title} />}
           </div>
         </div>
         {work.label[lang] && <p className="wall-label-meta">{work.label[lang]}</p>}
-        {/* role="status" — скринридер зачитает подсказку, не сбивая фокус;
-            пустая строка не видна (globals.css, .wall-label-hint). */}
-        {canTryOn && (
-          <p className="wall-label-hint" role="status">
-            {hint}
-          </p>
-        )}
         {description && <p className="wall-label-text">{description}</p>}
       </div>
 

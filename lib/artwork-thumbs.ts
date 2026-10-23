@@ -23,6 +23,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+/** Холст в сантиметрах — `{ width, height }`, оба положительные. */
+function isCanvas(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.width === "number" &&
+    typeof value.height === "number" &&
+    value.width > 0 &&
+    value.height > 0
+  );
+}
+
 /** Строка на обоих языках сайта — `{ ru, en }`. */
 function isBilingual(value: unknown): boolean {
   return isRecord(value) && typeof value.ru === "string" && typeof value.en === "string";
@@ -50,11 +61,12 @@ export function isFeedList(value: unknown): value is ArtworkFeedItem[] {
         isBilingual(item.pageTitle) &&
         isBilingual(item.alt) &&
         (item.description === null || typeof item.description === "string") &&
-        // Без поля — список, собранный до 23.10.2026: камеры у такой
-        // картины просто нет, а лента цела.
+        // Без поля — список, собранный до 23.10.2026: камеры и примерки
+        // у такой картины просто нет, а лента цела.
         (item.arVersion === undefined ||
           item.arVersion === null ||
-          typeof item.arVersion === "string"),
+          typeof item.arVersion === "string") &&
+        (item.canvas === undefined || item.canvas === null || isCanvas(item.canvas)),
     )
   );
 }

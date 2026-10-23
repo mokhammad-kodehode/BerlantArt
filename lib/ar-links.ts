@@ -1,5 +1,5 @@
 import { localePath, type Locale } from "@/lib/i18n/config";
-import { defaultRoomOptions, roomQuery, type RoomOptions } from "@/lib/room-options";
+import { frameQuery, type FrameChoice } from "@/lib/room-options";
 
 /**
  * Адреса примерки через камеру (AR-3, AR-4, TICKETS-ar.md). Отдельно от
@@ -19,9 +19,6 @@ export function isArFile(name: string): name is ArFile {
   return Object.hasOwn(arFiles, name);
 }
 
-/** Выбор, от которого зависит модель: только рама. Стена и свет в камере — настоящие. */
-export type ArOptions = Pick<RoomOptions, "frame" | "finish">;
-
 /**
  * Адрес модели. Выбор рамы пишется всегда и в одном порядке: одинаковая
  * модель — один адрес, и CDN не хранит её копии под разными.
@@ -30,18 +27,23 @@ export function arFileUrl(
   workId: string,
   file: ArFile,
   version: string,
-  options: ArOptions,
+  options: FrameChoice,
 ): string {
   const query = new URLSearchParams({ v: version, frame: options.frame, finish: options.finish });
   return `/gallery/${workId}/ar/${file}?${query}`;
 }
 
 /**
- * Примерочная с той же рамой. Умолчания в адрес не пишутся. Сюда же ведут
- * старые ссылки на страницу камеры /gallery/[id]/ar (до 22.10.2026).
+ * Примерочная с той же рамой (TICKETS-primerka.md). Умолчания в адрес не
+ * пишутся. Сюда же ведут старые ссылки на страницу камеры
+ * /gallery/[id]/ar (до 22.10.2026).
  */
-export function roomPageUrl(workId: string, options: ArOptions, lang: Locale = "ru"): string {
-  return `${localePath(lang, `/gallery/${workId}/room`)}${roomQuery({ ...defaultRoomOptions, ...options })}`;
+export function roomPageUrl(
+  workId: string,
+  choice: FrameChoice | null = null,
+  lang: Locale = "ru",
+): string {
+  return `${localePath(lang, `/gallery/${workId}/room`)}${choice === null ? "" : frameQuery(choice)}`;
 }
 
 /** Метка в адресе, с которой Android возвращает на страницу, если Scene Viewer недоступен. */

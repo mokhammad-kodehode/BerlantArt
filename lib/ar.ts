@@ -1,11 +1,12 @@
 import sharp from "sharp";
 
-import type { ArFile, ArOptions } from "@/lib/ar-links";
+import type { ArFile } from "@/lib/ar-links";
 import { buildPaintingScene } from "@/lib/ar-model";
 import type { ArTarget } from "@/lib/ar-target";
 import { imageUrl } from "@/lib/artworks";
 import { clientEnv } from "@/lib/env";
 import { buildGlb } from "@/lib/glb";
+import type { FrameChoice } from "@/lib/room-options";
 import { buildUsdz } from "@/lib/usdz";
 
 /**
@@ -53,7 +54,7 @@ export async function buildArFile({
 }: {
   target: ArTarget;
   file: ArFile;
-  options: ArOptions;
+  options: FrameChoice;
 }): Promise<Uint8Array<ArrayBuffer>> {
   const src = imageUrl(target.photo);
   if (src === undefined) {

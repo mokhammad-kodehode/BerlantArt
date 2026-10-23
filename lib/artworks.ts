@@ -1,13 +1,13 @@
 import { cache } from "react";
 
-import { cameraTarget } from "@/lib/ar-target";
+import { arTarget, cameraTarget } from "@/lib/ar-target";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { ArtworkStatus } from "@/lib/generated/prisma/enums";
 import { likePattern } from "@/lib/gallery-search";
 import { getDictionary, translateValue, type Locale } from "@/lib/i18n";
 import { publicUrl } from "@/lib/r2";
-import { normalizeCanvasSize } from "@/lib/room-options";
+import { normalizeCanvasSize, type CanvasCm } from "@/lib/room-options";
 import type { SitemapArtwork } from "@/lib/seo";
 
 // Переэкспорт: страницы и компоненты не импортируют lib/generated напрямую
@@ -424,9 +424,12 @@ export type ArtworkFeedItem = {
   /** Описание для таблички, только по-русски; null — нет или повторяет название. */
   description: string | null;
   /**
-   * Версия модели для камеры телефона (lib/ar-target.ts); null — работу
-   * в камере не показать, и значка примерки на табличке нет.
+   * Холст на стене, ширина и высота в сантиметрах, — для примерочной
+   * (TICKETS-primerka.md). null — размер не читается или расходится
+   * с фото: такую картину честно не примерить, и значка на табличке нет.
    */
+  canvas: CanvasCm | null;
+  /** Версия модели для камеры телефона (lib/ar-target.ts); null — работу в камере не показать. */
   arVersion: string | null;
 };
 
@@ -487,8 +490,23 @@ export function artworkFeedItem(work: FeedSource): ArtworkFeedItem {
     pageTitle: both((lang) => artworkSeo(work, lang).title),
     alt: both((lang) => artworkImageAlt(work, lang)),
     description: labelDescription(work, "ru"),
+    canvas: canvasCm(work),
     arVersion: cameraTarget(work)?.version ?? null,
   };
+}
+
+/**
+ * Холст в сантиметрах — по тем же правилам, что модель для камеры
+ * (arTarget): размер читается уверенно и форма фото с ним сходится.
+ * Не зависит от выключателя камеры — фото своей стены работает и без неё.
+ */
+function canvasCm(work: FeedSource): CanvasCm | null {
+  const placement = arTarget(work)?.canvas;
+  if (placement === undefined) return null;
+  // Метры обратно в сантиметры с округлением: 0.7 × 100 в числах
+  // с плавающей точкой — 70.00000000000001.
+  const cm = (meters: number) => Math.round(meters * 1000) / 10;
+  return { width: cm(placement.widthM), height: cm(placement.heightM) };
 }
 
 /**

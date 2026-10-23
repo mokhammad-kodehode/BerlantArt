@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-
 import { describe, expect, it } from "vitest";
 
 import {
@@ -11,13 +8,7 @@ import {
   linearColor,
   type ArPart,
 } from "@/lib/ar-model";
-import {
-  frameFinish,
-  frameModel,
-  framedSides,
-  roomFrames,
-  type RoomFinish,
-} from "@/lib/room-options";
+import { frameModel, framedSides, roomFrames, type RoomFinish } from "@/lib/room-options";
 
 const sides = { short: 40, long: 50 };
 
@@ -58,19 +49,6 @@ describe("linearColor", () => {
 
   it("не принимает цвет в другой записи", () => {
     expect(() => linearColor("gold")).toThrow();
-  });
-});
-
-describe("тон покрытия", () => {
-  it("совпадает с --f-mid в globals.css", () => {
-    const css = readFileSync(path.join(import.meta.dirname, "../app/globals.css"), "utf8");
-    const finishes = new Set(roomFrames.flatMap((frame) => frame.finishes));
-
-    for (const finish of finishes) {
-      const block = new RegExp(`\\[data-finish="${finish}"\\]\\s*\\{([^}]*)\\}`).exec(css);
-      const mid = block && /--f-mid:\s*(#[0-9a-f]{6})/i.exec(block[1]);
-      expect(mid?.[1].toLowerCase(), finish).toBe(frameFinish(finish).tone);
-    }
   });
 });
 

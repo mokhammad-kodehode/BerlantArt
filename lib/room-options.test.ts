@@ -3,67 +3,70 @@ import { describe, expect, it } from "vitest";
 import { ruUi } from "@/lib/i18n/ru-ui";
 
 import {
-  defaultRoomOptions,
+  defaultFrameChoice,
   finishFor,
+  fittingMessage,
+  frameFinish,
   framedSides,
+  frameQuery,
   normalizeCanvasSize,
   parseCanvasSides,
-  parseRoomOptions,
+  parseFrameChoice,
   roomFrames,
-  roomMessage,
-  roomQuery,
-  type RoomOptions,
+  type FrameChoice,
 } from "@/lib/room-options";
 
 /**
- * Примерочная хранит выбор в адресе, и ссылку на неё пересылают в
+ * Примерочная хранит выбор рамы в адресе, и ссылку на неё пересылают в
  * мессенджерах. Ломается это незаметно: опечатка в старой ссылке роняет
  * страницу, лишние параметры раздувают адрес, неподходящее покрытие даёт
  * раму, которой не бывает, а неверно прочитанный размер рисует картину
- * не того масштаба над диваном — по этой картинке покупатель решает,
+ * не того масштаба на стене — по этой картинке покупатель решает,
  * впишется ли холст в его комнату.
  */
-describe("parseRoomOptions", () => {
-  it("без параметров отдаёт значения по умолчанию — картину без рамы", () => {
-    expect(parseRoomOptions({})).toEqual(defaultRoomOptions);
-    expect(parseRoomOptions({}).frame).toBe("none");
+describe("parseFrameChoice", () => {
+  it("без параметров отдаёт картину без рамы", () => {
+    expect(parseFrameChoice({})).toEqual(defaultFrameChoice);
+    expect(parseFrameChoice({}).frame).toBe("none");
   });
 
   it("читает выбор из адреса", () => {
-    expect(
-      parseRoomOptions({
-        frame: "thin",
-        finish: "navy",
-        wall: "olive",
-        light: "day",
-        sofa: "1",
-      }),
-    ).toEqual({ frame: "thin", finish: "navy", wall: "olive", light: "day", hasSofa: true });
+    expect(parseFrameChoice({ frame: "thin", finish: "navy" })).toEqual({
+      frame: "thin",
+      finish: "navy",
+    });
   });
 
   it("мусор откатывает к умолчанию, а не роняет страницу", () => {
-    expect(
-      parseRoomOptions({
-        frame: "purple",
-        finish: "rainbow",
-        wall: "",
-        light: "night",
-        sofa: "yes",
-      }),
-    ).toEqual(defaultRoomOptions);
+    expect(parseFrameChoice({ frame: "purple", finish: "rainbow" })).toEqual(defaultFrameChoice);
+  });
+
+  it("параметры старой примерочной не мешают", () => {
+    // Стены, свет и диван были до 23.10.2026 — такие ссылки ещё ходят.
+    expect(parseFrameChoice({ frame: "thin", wall: "olive", light: "evening", sofa: "1" })).toEqual(
+      { frame: "thin", finish: "black" },
+    );
   });
 
   it("без покрытия берёт основное покрытие модели", () => {
-    expect(parseRoomOptions({ frame: "floater" }).finish).toBe("black");
+    expect(parseFrameChoice({ frame: "floater" }).finish).toBe("black");
   });
 
   it("покрытие, которого у модели нет, заменяет основным", () => {
     // Тонкая алюминиевая рама из ореха не бывает.
-    expect(parseRoomOptions({ frame: "thin", finish: "walnut" }).finish).toBe("black");
+    expect(parseFrameChoice({ frame: "thin", finish: "walnut" }).finish).toBe("black");
   });
 
   it("из повторённого параметра берёт первый", () => {
-    expect(parseRoomOptions({ frame: ["modern", "thin"] }).frame).toBe("modern");
+    expect(parseFrameChoice({ frame: ["modern", "thin"] }).frame).toBe("modern");
+  });
+
+  it("читает и то, что отдаёт браузер: пустой параметр — null", () => {
+    const params = new URLSearchParams("?frame=classic");
+    expect(parseFrameChoice({ frame: params.get("frame"), finish: params.get("finish") })).toEqual({
+      frame: "classic",
+      finish: "gold",
+    });
   });
 });
 
@@ -84,32 +87,35 @@ describe("finishFor", () => {
   });
 });
 
-describe("roomQuery", () => {
+describe("frameQuery", () => {
   it("для выбора по умолчанию даёт пустую строку — ссылка остаётся чистой", () => {
-    expect(roomQuery(defaultRoomOptions)).toBe("");
-  });
-
-  it("пишет только то, что отличается от умолчаний", () => {
-    expect(roomQuery({ ...defaultRoomOptions, wall: "olive" })).toBe("?wall=olive");
+    expect(frameQuery(defaultFrameChoice)).toBe("");
   });
 
   it("основное покрытие модели в адрес не пишет", () => {
-    expect(roomQuery({ ...defaultRoomOptions, frame: "floater", finish: "black" })).toBe(
-      "?frame=floater",
-    );
+    expect(frameQuery({ frame: "floater", finish: "black" })).toBe("?frame=floater");
   });
 
   it("то, что записано, читается обратно тем же", () => {
-    const options: RoomOptions = {
-      frame: "modern",
-      finish: "cherry",
-      wall: "graphite",
-      light: "day",
-      hasSofa: true,
-    };
-    const params = Object.fromEntries(new URLSearchParams(roomQuery(options)));
+    const choice: FrameChoice = { frame: "modern", finish: "cherry" };
+    const params = Object.fromEntries(new URLSearchParams(frameQuery(choice)));
 
-    expect(parseRoomOptions(params)).toEqual(options);
+    expect(parseFrameChoice(params)).toEqual(choice);
+  });
+});
+
+describe("тона покрытий", () => {
+  it("идут от тени к блику — иначе профиль рамы вывернется наизнанку", () => {
+    // Яркость по формуле ITU-R BT.601: тёмное — меньше.
+    const brightness = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16));
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    };
+    for (const finish of new Set(roomFrames.flatMap((frame) => frame.finishes))) {
+      const { deep, shadow, mid, light, shine } = frameFinish(finish).tones;
+      const row = [deep, shadow, mid, light, shine].map(brightness);
+      expect(row, finish).toEqual([...row].sort((a, b) => a - b));
+    }
   });
 });
 
@@ -173,40 +179,33 @@ describe("framedSides", () => {
   });
 });
 
-describe("roomMessage", () => {
-  it("называет работу, раму с покрытием и стену и прикладывает ссылку", () => {
-    const text = roomMessage({
-      title: "Село",
-      options: { ...defaultRoomOptions, frame: "thin", finish: "black", wall: "olive" },
-      pageUrl: "https://example.test/gallery/1/room?frame=thin&wall=olive",
+describe("fittingMessage", () => {
+  const url = "https://example.test/gallery/1";
+
+  it("из камеры называет работу и раму с покрытием и прикладывает ссылку", () => {
+    expect(
+      fittingMessage({
+        works: [{ title: "Село", choice: { frame: "thin", finish: "black" }, url }],
+        place: "camera",
+        t: ruUi.room,
+      }),
+    ).toBe(
+      "Здравствуйте! Смотрю у себя на стене, через камеру: «Село» в раме «Тонкая», чёрная. https://example.test/gallery/1",
+    );
+  });
+
+  it("с фото стены перечисляет все картины и их ссылки", () => {
+    const text = fittingMessage({
+      works: [
+        { title: "Село", choice: { frame: "classic", finish: "gold" }, url },
+        { title: "Башня", choice: defaultFrameChoice, url: "https://example.test/gallery/2" },
+      ],
+      place: "photo",
       t: ruUi.room,
     });
 
     expect(text).toBe(
-      "Здравствуйте! Интересует работа «Село». Смотрю её в раме «Тонкая», чёрная, на оливковой стене. https://example.test/gallery/1/room?frame=thin&wall=olive",
+      "Здравствуйте! Смотрю у себя на стене, по фото: «Село» в раме «Классический багет», золото; «Башня» без рамы. https://example.test/gallery/1 https://example.test/gallery/2",
     );
-  });
-
-  it("без рамы так и пишет", () => {
-    expect(
-      roomMessage({
-        title: "Село",
-        options: { ...defaultRoomOptions, frame: "none" },
-        pageUrl: "",
-        t: ruUi.room,
-      }),
-    ).toContain("без рамы, на бежевой стене");
-  });
-
-  it("из камеры не называет нарисованную стену", () => {
-    expect(
-      roomMessage({
-        title: "Село",
-        options: { ...defaultRoomOptions, frame: "classic", finish: "gold" },
-        pageUrl: "",
-        place: "camera",
-        t: ruUi.room,
-      }),
-    ).toContain("в раме «Классический багет», золото, у себя на стене, через камеру.");
   });
 });

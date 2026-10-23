@@ -3,13 +3,13 @@ import { z } from "zod";
 import type { UiDictionary } from "@/lib/i18n/ru-ui";
 
 /**
- * Примерочная: какие рамы, покрытия, стены и свет можно выбрать и как
- * выбор живёт в адресе страницы.
+ * Рамы примерочной (TICKETS-primerka.md): какие модели и покрытия можно
+ * выбрать, как выбор живёт в адресе страницы, и размер холста.
  *
  * Выбор хранится в адресе, как фильтры галереи
  * ([architecture.md](../.ai/rules/architecture.md)): покупатель отправляет
- * ссылку в мессенджер — «смотри, в чёрной раме на оливковой стене», —
- * и у собеседника открывается ровно то же.
+ * ссылку в мессенджер — «смотри, в чёрной тонкой раме», — и у собеседника
+ * открывается ровно то же.
  *
  * Рама устроена как в багетной мастерской: сначала модель — профиль,
  * ширина, материал, узор, — потом покрытие, и у каждой модели свой набор
@@ -17,9 +17,9 @@ import type { UiDictionary } from "@/lib/i18n/ru-ui";
  * такие рамы обычно красят (золото, белая, чёрная); металлическую тонкую
  * красят в любой цвет.
  *
- * Здесь только данные и правила. Как выглядит каждая рама, покрытие
- * и стена — в globals.css, блок «примерочная», по атрибутам data-frame,
- * data-finish и data-wall.
+ * Здесь данные и правила. Как рама выглядит — профиль, узор, свет по
+ * сторонам — в lib/frame-look.ts: одно описание и для экрана (CSS), и для
+ * снимка стены (canvas).
  */
 
 const frameIds = ["none", "thin", "floater", "modern", "reverse", "classic", "baroque"] as const;
@@ -40,13 +40,9 @@ const finishIds = [
   "burgundy",
   "olive",
 ] as const;
-const wallIds = ["white", "beige", "grey", "olive", "terracotta", "graphite"] as const;
-const lightIds = ["day", "evening"] as const;
 
 export type RoomFrame = (typeof frameIds)[number];
 export type RoomFinish = (typeof finishIds)[number];
-export type RoomWall = (typeof wallIds)[number];
-export type RoomLight = (typeof lightIds)[number];
 
 /** Модель рамы — то, что в мастерской называют артикулом багета. */
 export type FrameModel = {
@@ -141,48 +137,115 @@ const frameModels: Record<RoomFrame, Omit<FrameModel, "id">> = {
   },
 };
 
-/** Покрытие: подпись и из чего оно — от этого зависит, видно ли волокно. */
+/** Пять тонов покрытия — от тени к блику: из них собран профиль рамы. */
+export type FinishTones = {
+  deep: string;
+  shadow: string;
+  mid: string;
+  light: string;
+  shine: string;
+};
+
+/** Покрытие: подпись, из чего оно — от этого зависит, видно ли волокно, — и тона. */
 export type FrameFinish = {
   id: RoomFinish;
   label: string;
   kind: "wood" | "metal" | "paint";
   /**
-   * Основной тон — тот же, что `--f-mid` в globals.css (сверяет тест).
-   * Рама в камере телефона одноцветная: узор рисует только примерочная.
+   * Тона одни на экран, снимок и камеру: экран получает их переменными
+   * CSS (lib/frame-look.ts), камера — только `mid`: рама в ней
+   * одноцветная, узор рисует только примерочная.
    */
-  tone: string;
+  tones: FinishTones;
 };
+
+const tones = (deep: string, shadow: string, mid: string, light: string, shine: string) => ({
+  deep,
+  shadow,
+  mid,
+  light,
+  shine,
+});
 
 const finishText: Record<RoomFinish, Omit<FrameFinish, "id">> = {
-  gold: { label: "Золото", kind: "metal", tone: "#a7803a" },
-  "old-gold": { label: "Старое золото", kind: "metal", tone: "#8a6e3a" },
-  silver: { label: "Серебро", kind: "metal", tone: "#9aa1a6" },
-  bronze: { label: "Бронза", kind: "metal", tone: "#8f6238" },
-  "oak-light": { label: "Светлый дуб", kind: "wood", tone: "#cfae80" },
-  oak: { label: "Дуб", kind: "wood", tone: "#b88e5e" },
-  walnut: { label: "Орех", kind: "wood", tone: "#6b4630" },
-  wenge: { label: "Венге", kind: "wood", tone: "#3c2c24" },
-  cherry: { label: "Вишня", kind: "wood", tone: "#8f3e22" },
-  white: { label: "Белая", kind: "paint", tone: "#ece8e1" },
-  black: { label: "Чёрная", kind: "paint", tone: "#1d1d1d" },
-  graphite: { label: "Графит", kind: "paint", tone: "#4a4d52" },
-  navy: { label: "Тёмно-синяя", kind: "paint", tone: "#213257" },
-  burgundy: { label: "Бордовая", kind: "paint", tone: "#5e1c25" },
-  olive: { label: "Оливковая", kind: "paint", tone: "#545a33" },
-};
-
-/** Шесть стен из реальных интерьеров — подобранные цвета выглядят лучше любого «любого». */
-const wallText: Record<RoomWall, { label: string; phrase: string }> = {
-  white: { label: "Белая", phrase: "на белой стене" },
-  beige: { label: "Бежевая", phrase: "на бежевой стене" },
-  grey: { label: "Серая", phrase: "на серой стене" },
-  olive: { label: "Оливковая", phrase: "на оливковой стене" },
-  terracotta: { label: "Терракотовая", phrase: "на терракотовой стене" },
-  graphite: { label: "Графитовая", phrase: "на графитовой стене" },
+  gold: {
+    label: "Золото",
+    kind: "metal",
+    tones: tones("#2b1d0a", "#684a1b", "#a7803a", "#deba6c", "#fbeab3"),
+  },
+  "old-gold": {
+    label: "Старое золото",
+    kind: "metal",
+    tones: tones("#231a0c", "#57401c", "#8a6e3a", "#b89a5e", "#d9c38a"),
+  },
+  silver: {
+    label: "Серебро",
+    kind: "metal",
+    tones: tones("#1f2224", "#5b6166", "#9aa1a6", "#d2d7da", "#f5f7f8"),
+  },
+  bronze: {
+    label: "Бронза",
+    kind: "metal",
+    tones: tones("#22150b", "#5a3a1f", "#8f6238", "#b98a5a", "#dcb88c"),
+  },
+  "oak-light": {
+    label: "Светлый дуб",
+    kind: "wood",
+    tones: tones("#7a5a35", "#b08b5c", "#cfae80", "#e2c8a0", "#f0dfc0"),
+  },
+  oak: {
+    label: "Дуб",
+    kind: "wood",
+    tones: tones("#5a3c22", "#8c6440", "#b88e5e", "#d6b182", "#e8cfa8"),
+  },
+  walnut: {
+    label: "Орех",
+    kind: "wood",
+    tones: tones("#2a1a10", "#4a2f1e", "#6b4630", "#8a5f43", "#a87b5c"),
+  },
+  wenge: {
+    label: "Венге",
+    kind: "wood",
+    tones: tones("#140e0b", "#2a1e18", "#3c2c24", "#54402f", "#6d5543"),
+  },
+  cherry: {
+    label: "Вишня",
+    kind: "wood",
+    tones: tones("#3a150c", "#6b2a17", "#8f3e22", "#b3593a", "#cc7a5a"),
+  },
+  white: {
+    label: "Белая",
+    kind: "paint",
+    tones: tones("#b7b1a8", "#d8d3cb", "#ece8e1", "#f7f5f1", "#ffffff"),
+  },
+  black: {
+    label: "Чёрная",
+    kind: "paint",
+    tones: tones("#050505", "#141414", "#1d1d1d", "#333333", "#4a4a4a"),
+  },
+  graphite: {
+    label: "Графит",
+    kind: "paint",
+    tones: tones("#1c1d1f", "#34363a", "#4a4d52", "#62666c", "#7d8187"),
+  },
+  navy: {
+    label: "Тёмно-синяя",
+    kind: "paint",
+    tones: tones("#0c1424", "#16233d", "#213257", "#2e4470", "#45598a"),
+  },
+  burgundy: {
+    label: "Бордовая",
+    kind: "paint",
+    tones: tones("#250a0e", "#43131a", "#5e1c25", "#7a2733", "#96394a"),
+  },
+  olive: {
+    label: "Оливковая",
+    kind: "paint",
+    tones: tones("#1f2213", "#3a3f22", "#545a33", "#6d7446", "#899060"),
+  },
 };
 
 export const roomFrames: FrameModel[] = frameIds.map((id) => ({ id, ...frameModels[id] }));
-export const roomWalls = wallIds.map((id) => ({ id, label: wallText[id].label }));
 
 export function frameModel(id: RoomFrame): FrameModel {
   return { id, ...frameModels[id] };
@@ -192,43 +255,16 @@ export function frameFinish(id: RoomFinish): FrameFinish {
   return { id, ...finishText[id] };
 }
 
-export type RoomOptions = {
-  frame: RoomFrame;
-  /** Покрытие рамы. У «без рамы» не используется, но хранится — вернёшься к раме, цвет тот же. */
-  finish: RoomFinish;
-  wall: RoomWall;
-  light: RoomLight;
-  /** Диван для масштаба. Рисуется, только если размер холста известен. */
-  hasSofa: boolean;
-};
+/** Выбор рамы: модель и покрытие. */
+export type FrameChoice = { frame: RoomFrame; finish: RoomFinish };
 
 /**
- * Выключатель примерочной — рама, стена, свет, диван. Скрыта 23.10.2026
- * по просьбе заказчика: её будут переделывать, а код остаётся основой.
- * Пока `false`, адреса /gallery/…/room и /ar ведут на страницу работы,
- * а значок на табличке открывает камеру телефона сразу (ArtworkFeed).
+ * Что открывается без параметров: картина без рамы — с 9 октября 2026
+ * (заказчик): сначала человек видит саму картину, а раму примеряет, если
+ * захочет. Покрытие «золото» хранится и у «без рамы»: выберешь раму —
+ * она сразу золотая.
  */
-export const isRoomOn = false;
-
-/**
- * Что открывается без параметров: картина без рамы на тёплой стене при
- * дневном свете. Вечер с лампой был по умолчанию, пока заказчик не
- * попросил начинать со светлого: картину сначала хотят разглядеть,
- * а подсветку — включить потом.
- *
- * Без рамы — с 9 октября 2026 (заказчик): сначала человек видит саму
- * картину, а раму примеряет, если захочет; панель с рамами для этого
- * открыта сразу (ArtworkRoom). Прежде по умолчанию стоял классический
- * золотой багет. Покрытие «золото» хранится и у «без рамы»: выберешь
- * раму — она сразу золотая.
- */
-export const defaultRoomOptions: RoomOptions = {
-  frame: "none",
-  finish: "gold",
-  wall: "beige",
-  light: "day",
-  hasSofa: false,
-};
+export const defaultFrameChoice: FrameChoice = { frame: "none", finish: "gold" };
 
 /**
  * Покрытие, допустимое для модели: выбранное, если модель его знает, иначе
@@ -241,69 +277,50 @@ export function finishFor(frame: RoomFrame, wanted: RoomFinish): RoomFinish {
   return allowed[0];
 }
 
+function defaultFinish(frame: RoomFrame): RoomFinish {
+  return frameModels[frame].finishes[0] ?? defaultFrameChoice.finish;
+}
+
 /**
  * Разбор адреса. Мусор — «?frame=purple» из опечатки или старой ссылки —
  * молча откатывается к значению по умолчанию: примерочная не должна падать
- * из-за чужой ссылки.
+ * из-за чужой ссылки. Параметры старой примерочной (wall, light, sofa)
+ * просто не читаются.
  */
-const optionsSchema = z.object({
-  frame: z.enum(frameIds).catch(defaultRoomOptions.frame),
+const choiceSchema = z.object({
+  frame: z.enum(frameIds).catch(defaultFrameChoice.frame),
   finish: z.enum(finishIds).optional().catch(undefined),
-  wall: z.enum(wallIds).catch(defaultRoomOptions.wall),
-  light: z.enum(lightIds).catch(defaultRoomOptions.light),
-  sofa: z
-    .string()
-    .optional()
-    .transform((value) => value === "1")
-    .catch(false),
 });
 
-type RawParams = Record<string, string | string[] | undefined>;
+type RawParams = Record<string, string | string[] | null | undefined>;
 
-export function parseRoomOptions(params: RawParams): RoomOptions {
+export function parseFrameChoice(params: RawParams): FrameChoice {
   // Повторённый параметр (?frame=a&frame=b) Next отдаёт массивом — берём первый.
-  const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+  const first = (value: RawParams[string]) =>
+    (Array.isArray(value) ? value[0] : value) ?? undefined;
 
-  const parsed = optionsSchema.parse({
-    frame: first(params.frame),
-    finish: first(params.finish),
-    wall: first(params.wall),
-    light: first(params.light),
-    sofa: first(params.sofa),
-  });
+  const parsed = choiceSchema.parse({ frame: first(params.frame), finish: first(params.finish) });
 
   // Без покрытия в адресе — основное покрытие модели; с неподходящим —
   // тоже оно: «тонкая рама, орех» такой рамы не бывает.
-  const finish = finishFor(parsed.frame, parsed.finish ?? defaultFinish(parsed.frame));
-
   return {
     frame: parsed.frame,
-    finish,
-    wall: parsed.wall,
-    light: parsed.light,
-    hasSofa: parsed.sofa,
+    finish: finishFor(parsed.frame, parsed.finish ?? defaultFinish(parsed.frame)),
   };
-}
-
-function defaultFinish(frame: RoomFrame): RoomFinish {
-  return frameModels[frame].finishes[0] ?? defaultRoomOptions.finish;
 }
 
 /**
  * Хвост адреса для выбора: только то, что отличается от умолчаний, — так
- * ссылка без изменений остаётся чистой, а «?frame=classic&finish=gold…»
+ * ссылка без изменений остаётся чистой, а «?frame=classic&finish=gold»
  * не расползается по мессенджерам. Покрытие пишется, только если оно
  * не основное для модели. Пустая строка, если менять нечего.
  */
-export function roomQuery(options: RoomOptions): string {
+export function frameQuery(choice: FrameChoice): string {
   const params = new URLSearchParams();
-  if (options.frame !== defaultRoomOptions.frame) params.set("frame", options.frame);
-  if (options.frame !== "none" && options.finish !== defaultFinish(options.frame)) {
-    params.set("finish", options.finish);
+  if (choice.frame !== defaultFrameChoice.frame) params.set("frame", choice.frame);
+  if (choice.frame !== "none" && choice.finish !== defaultFinish(choice.frame)) {
+    params.set("finish", choice.finish);
   }
-  if (options.wall !== defaultRoomOptions.wall) params.set("wall", options.wall);
-  if (options.light !== defaultRoomOptions.light) params.set("light", options.light);
-  if (options.hasSofa) params.set("sofa", "1");
 
   const query = params.toString();
   return query === "" ? "" : `?${query}`;
@@ -335,8 +352,8 @@ export function normalizeCanvasSize(text: string): string {
  * Стороны холста из строки размера: «50 × 60 см», «50x60», «120/120».
  *
  * null, если строку нельзя прочитать уверенно — нет двух чисел или единица
- * не сантиметры. Лучше не показать диван, чем показать картину не того
- * размера: покупатель по нему решает, впишется ли она над его диваном
+ * не сантиметры. Лучше не дать примерить, чем показать картину не того
+ * размера: покупатель по ней решает, впишется ли холст в его комнату
  * ([content.md](../.ai/rules/content.md)).
  *
  * Ориентации в базе нет (artworkSizes): «40 × 50» — один подрамник, как
@@ -355,6 +372,24 @@ export function parseCanvasSides(text: string | null): CanvasSides | null {
 }
 
 /**
+ * Холст на стене: ширина и высота в сантиметрах — уже с ориентацией,
+ * которую дала фотография (lib/ar-model.ts, canvasPlacement).
+ */
+export type CanvasCm = { width: number; height: number };
+
+/** То же, что `framedSides`, но с ориентацией: сколько картина в раме займёт на стене. */
+export function framedCanvas(canvas: CanvasCm, frame: RoomFrame): CanvasCm {
+  const { widthCm, gapCm } = frameModels[frame];
+  const add = 2 * (widthCm + gapCm);
+  return { width: Math.round(canvas.width + add), height: Math.round(canvas.height + add) };
+}
+
+/** «80 × 100 см» — ширина на высоту, как их меряют на стене. */
+export function canvasCmText(canvas: CanvasCm, cm: string): string {
+  return `${canvas.width} × ${canvas.height} ${cm}`;
+}
+
+/**
  * Размер картины в раме: к каждой стороне холста — две ширины рамы и два
  * зазора. Так считают в багетной мастерской, и это то, что покупателю
  * нужно знать, прикидывая место на стене. Округление до сантиметра:
@@ -366,38 +401,39 @@ export function framedSides(sides: CanvasSides, frame: RoomFrame): CanvasSides {
   return { short: Math.round(sides.short + add), long: Math.round(sides.long + add) };
 }
 
+/** Картина в сообщении художнице: название, рама и ссылка на неё. */
+export type MessageWork = { title: string; choice: FrameChoice; url: string };
+
 /**
- * Текст для WhatsApp из примерочной: какая работа и в каком виде её
- * смотрели. Художница сразу видит, что понравилось, и может предложить
- * раму, если делает их на заказ.
- *
- * Из примерки через камеру стена своя, настоящая, — называть цвет
- * нарисованной стены там было бы неправдой.
+ * Текст для WhatsApp из примерочной: какие работы и в каких рамах
+ * смотрели и где — через камеру или на фото своей стены. Художница сразу
+ * видит, что понравилось, и может предложить раму, если делает их на заказ.
  *
  * Текст — на языке страницы: из английской версии пишут по-английски.
- * Строки примерочной передаёт сама примерочная (`useDictionary().room`),
- * а не берёт функция по языку: иначе в браузер ушёл бы полный словарь
- * обоих языков — функция работает в клиентском компоненте (тикет О-12).
+ * Строки передаёт сама примерочная (`useDictionary().room`), а не берёт
+ * функция по языку: иначе в браузер ушёл бы полный словарь обоих языков —
+ * функция работает в клиентском компоненте (тикет О-12).
  */
-export function roomMessage({
-  title,
-  options,
-  pageUrl,
-  place = "room",
+export function fittingMessage({
+  works,
+  place,
   t,
 }: {
-  title: string;
-  options: RoomOptions;
-  pageUrl: string;
-  place?: "room" | "camera";
+  works: readonly MessageWork[];
+  place: "camera" | "photo";
   /** Строки примерочной на языке страницы. */
   t: UiDictionary["room"];
 }): string {
-  const framing =
-    options.frame === "none"
-      ? t.messageNoFrame
-      : t.messageFramed(t.frames[options.frame].label, t.finishes[options.finish]);
-  const where = place === "camera" ? t.messageCamera : t.walls[options.wall].phrase;
-  // «Смотрю её…», а не «примерял»: без рода — пишут и мужчины, и женщины.
-  return t.message(title, framing, where, pageUrl);
+  const items = works
+    .map(({ title, choice }) => {
+      const framing =
+        choice.frame === "none"
+          ? t.messageNoFrame
+          : t.messageFramed(t.frames[choice.frame].label, t.finishes[choice.finish]);
+      return t.messageWork(title, framing);
+    })
+    .join("; ");
+  const links = works.map((work) => work.url).join(" ");
+  // «Смотрю…», а не «примерял»: без рода — пишут и мужчины, и женщины.
+  return t.message(place === "camera" ? t.messageCamera : t.messagePhoto, items, links);
 }
