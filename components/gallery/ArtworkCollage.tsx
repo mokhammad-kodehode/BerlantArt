@@ -18,6 +18,9 @@ function subscribeHash(onChange: () => void): () => void {
 
 const readHash = (): string => decodeURIComponent(window.location.hash.slice(1));
 
+/** Задержка между соседними картинами развески, когда они проявляются вместе. */
+const revealStagger = 80;
+
 type HangStyle = CSSProperties & { "--r": number };
 const noHash = (): string => "";
 
@@ -82,6 +85,7 @@ export function ArtworkCollage({
   );
   const [shown, setShown] = useState(() => Math.min(layout.length, revealStep));
   const sentinel = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLUListElement>(null);
   const scrolledTo = useRef<string | null>(null);
 
   // Возврат со страницы работы: «← Все работы» ведёт на
@@ -133,12 +137,62 @@ export function ArtworkCollage({
     return () => cancelAnimationFrame(frame);
   }, [anchor, returnIndex]);
 
+  // Развеска проявляется при листании (заказчик, 23.10.2026): картина,
+  // дошедшая до экрана, всплывает на своё место — один раз, без повтора
+  // при прокрутке назад. Вид — в CSS (globals.css, .wall-hang
+  // [data-reveal]). Пометки ставятся прямо на элементы, а не в состояние:
+  // перерисовывать сорок плиток ради каждой незачем.
+  //
+  // Без скрипта пометок нет и картины просто стоят на местах. То, что уже
+  // на экране при загрузке, не прячется. У кого в системе включено
+  // «Уменьшить движение» — тоже без анимации.
+  useEffect(() => {
+    const wall = list.current;
+    if (mode !== "hang" || !wall || !("IntersectionObserver" in window)) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Картины, вошедшие в экран вместе (ряд), проявляются по очереди.
+    let order = 0;
+    let quiet: ReturnType<typeof setTimeout> | undefined;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const tile = entry.target;
+        if (!entry.isIntersecting || !(tile instanceof HTMLElement)) continue;
+        tile.style.setProperty("--reveal-delay", `${order * revealStagger}ms`);
+        tile.dataset.reveal = "shown";
+        order += 1;
+        observer.unobserve(tile);
+      }
+      clearTimeout(quiet);
+      quiet = setTimeout(() => (order = 0), 120);
+    });
+
+    for (const tile of wall.children) {
+      if (!(tile instanceof HTMLElement)) continue;
+      if (tile.dataset.reveal === "shown" || tile.dataset.reveal === "static") continue;
+      // Новая плитка (первая отрисовка или очередная порция) уже на экране —
+      // её не трогаем: проявиться заново значило бы мигнуть.
+      if (!tile.dataset.reveal && tile.getBoundingClientRect().top < window.innerHeight) {
+        tile.dataset.reveal = "static";
+        continue;
+      }
+      tile.dataset.reveal = "pending";
+      observer.observe(tile);
+    }
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(quiet);
+    };
+  }, [mode, visible]);
+
   return (
     <div className={cn("@container", className)}>
       {/* dense только на телефоне: мелкая работа закрывает клетку рядом
           с одиночной мелкой перед крупной (lib/collage.ts, mobileSpans).
           На компьютере раскладка блоками без дыр и так. */}
       <ul
+        ref={list}
         className={
           mode === "hang"
             ? "wall-hang"

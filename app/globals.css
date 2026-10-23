@@ -1286,6 +1286,30 @@
       --h: 54cqw;
     }
   }
+  /* Проявление при листании (заказчик, 23.10.2026, вариант 1, тихая
+     версия): картина всплывает на 18px и проявляется за 0,6 с, соседние —
+     с шагом 80 мс (ArtworkCollage). Анимацией с заполнением «backwards», а
+     не переходом: после неё снова действует обычный вид плитки, и
+     увеличение при наведении не ждёт задержки проявления. */
+  .wall-hang > li[data-reveal="pending"] {
+    opacity: 0;
+  }
+  .wall-hang > li[data-reveal="shown"] {
+    animation: wall-reveal 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms) backwards;
+  }
+  @keyframes wall-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wall-hang > li[data-reveal] {
+      opacity: 1;
+      animation: none;
+    }
+  }
+
   /* Название поверх картины — только при наведении. Без наведения
      (телефон) его не видно: на картине высотой 140px подпись закрыла бы
      половину холста, а название есть на табличке у самой работы.
