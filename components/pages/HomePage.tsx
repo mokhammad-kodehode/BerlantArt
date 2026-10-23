@@ -73,12 +73,12 @@ export async function HomePage({ lang }: { lang: Locale }) {
           58–115px вместо 48–96px), — тоже по просьбе заказчика: на главной
           стена — отдельная секция среди других, ей нужно больше воздуха.
 
-          Фон секции во всю ширину окна, а содержимое — не шире шапки
-          (--page-max, globals.css): на большом мониторе заголовок стоял
+          Фон секции во всю ширину окна, а содержимое — в колонке стены
+          (--wall-max, globals.css): на большом мониторе заголовок стоял
           у края окна, а картины — посередине.
         */}
         <section aria-labelledby="home-works-title" className="bg-wall">
-          <div className="mx-auto max-w-(--page-max) px-[clamp(24px,6vw,77px)] pt-[clamp(58px,8.4vw,115px)] pb-[clamp(24px,6vw,77px)]">
+          <div className="mx-auto max-w-(--wall-max) px-[clamp(24px,6vw,77px)] pt-[clamp(58px,8.4vw,115px)] pb-[clamp(24px,6vw,77px)]">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-x-10 gap-y-3 md:mb-8">
               <div>
                 <span className="text-accent mb-2 block text-[13px] font-semibold tracking-[0.1em] uppercase">

@@ -21,9 +21,10 @@ export type CollageTile = {
  * и `sizes`. Крупная (`isLarge` в админке) — самая большая в развеске.
  *
  * `sizes` — с запасом по самой широкой: ряд растягивается до краёв стены,
- * и горизонтальная в нём на компьютере занимает до ~45% ширины, на
- * телефоне в паре — до половины. Шире 1680px стена дальше не растёт
- * (--page-max), её 45% — около 720px.
+ * и горизонтальная в нём занимает до ~45% ширины при трёх в ряд
+ * (планшет), до ~34% при четырёх (со стены 1100px, окно ~1228px) и до
+ * половины в паре на телефоне. Шире 1932px стена дальше не растёт
+ * (--wall-max), её 34% — около 620px.
  */
 export function hangLayout<T extends { isLarge: boolean }>(
   items: readonly T[],
@@ -31,7 +32,7 @@ export function hangLayout<T extends { isLarge: boolean }>(
   return items.map((item) => ({
     item,
     className: item.isLarge ? "wall-hang-large" : "",
-    sizes: "(max-width: 767px) 50vw, (max-width: 1679px) 45vw, 720px",
+    sizes: "(max-width: 767px) 50vw, (max-width: 1227px) 45vw, (max-width: 1931px) 34vw, 660px",
   }));
 }
 

@@ -14,8 +14,9 @@ export default function GalleryListLayout({ children }: LayoutProps<"/gallery">)
     <div className="bg-wall flex min-h-svh flex-col">
       {/* Липкая, как на остальных страницах (заказчик, 12.10.2026). Днём
           раньше она здесь была не липкой — закрывала верхний ряд стены;
-          с шапкой в одну строку это больше не мешает. */}
-      <Header />
+          с шапкой в одну строку это больше не мешает. Шириной — по краям
+          стены, а не первого экрана главной (globals.css, --wall-max). */}
+      <Header isWide />
       {children}
     </div>
   );
