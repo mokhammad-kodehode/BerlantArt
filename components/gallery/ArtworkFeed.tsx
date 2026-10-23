@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  memo,
+  startTransition,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { CSSProperties } from "react";
 
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
@@ -13,7 +21,7 @@ import { tileAnchor } from "@/components/ui/ArtworkTile";
 import { fetchArtworkFeed, positionOf } from "@/lib/artwork-thumbs";
 import type { ArtworkFeedItem } from "@/lib/artworks";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
-import { localePath } from "@/lib/i18n/config";
+import { localePath, type Locale } from "@/lib/i18n/config";
 
 /**
  * Сколько картин по обе стороны от текущей получают «тяжёлое»: просмотр
@@ -151,17 +159,22 @@ export function ArtworkFeed({
     document.title = `${work.pageTitle[lang]} · ${t.site.artist}`;
   }, [work, lang, t.site.artist]);
 
-  function scrollToIndex(index: number): void {
+  // Один и тот же на все отрисовки: миниатюры под `memo` (FeedThumbs)
+  // не перерисовываются из-за нового обработчика.
+  const scrollToIndex = useCallback((index: number): void => {
     if (feedRef.current) scrollFeedTo(feedRef.current, index);
-  }
+  }, []);
 
   // Номер считается только по самой ленте, без `current` и `works` из
   // замыкания: обработчики событий ниже вешаются один раз и живут дольше
   // одной отрисовки. Одинаковый номер React отбрасывает сам — лишней
-  // отрисовки нет.
+  // отрисовки нет. Смена картины — не срочная (startTransition): React
+  // считает её между кадрами, и движение ленты не замирает.
   function handleScroll(): void {
     const feed = feedRef.current;
-    if (feed) setCurrent(indexOf(feed));
+    if (!feed) return;
+    const index = indexOf(feed);
+    startTransition(() => setCurrent(index));
   }
 
   // Стрелки и PageUp/PageDown листают картины, где бы ни стоял фокус.
@@ -251,58 +264,20 @@ export function ArtworkFeed({
       <div ref={feedRef} onScroll={handleScroll} className="feed">
         {works.map((item, index) => {
           const isNear = Math.abs(index - current) <= nearby;
-          const isMain = item.id === initial.id;
-          const style: SlideStyle = { "--ratio": item.ratio ?? 1 };
-          const art = (
-            <ArtworkImage
-              src={item.src}
-              alt={item.alt[lang]}
-              fit="contain"
-              sizes={artSizes}
-              priority={isMain}
-              eager={isNear}
-              loader
-              aspect={item.ratio ?? undefined}
-              className="feed-art-image"
-            />
-          );
-
           return (
-            <section
+            <FeedSlide
               key={item.id}
-              aria-label={item.title}
-              // По этой пометке CSS проявляет текущую картину и гасит
-              // уходящую (globals.css, «Лента работ», анимация).
-              data-current={index === current || undefined}
-              style={style}
-              className="feed-slide"
-            >
-              <div className="feed-work">
-                <div className="feed-art">
-                  {isNear && item.src ? (
-                    <ArtworkViewer
-                      src={item.src}
-                      title={item.title}
-                      prev={works[index - 1] ?? null}
-                      next={works[index + 1] ?? null}
-                      openOnHash={isMain}
-                    >
-                      {art}
-                    </ArtworkViewer>
-                  ) : (
-                    art
-                  )}
-                </div>
-
-                <WallLabel
-                  work={item}
-                  isMain={isMain}
-                  isNear={isNear}
-                  isCurrent={index === current}
-                  siteUrl={siteUrl}
-                />
-              </div>
-            </section>
+              item={item}
+              isMain={item.id === initial.id}
+              isNear={isNear}
+              isCurrent={index === current}
+              // Соседи нужны только просмотру во весь экран, а он есть лишь
+              // у ближних картин; дальним — null, чтобы их пропсы не менялись.
+              prev={isNear ? (works[index - 1] ?? null) : null}
+              next={isNear ? (works[index + 1] ?? null) : null}
+              siteUrl={siteUrl}
+              lang={lang}
+            />
           );
         })}
       </div>
@@ -333,3 +308,83 @@ export function ArtworkFeed({
     </>
   );
 }
+
+/**
+ * Одна картина ленты с табличкой. Отдельным компонентом под `memo`: при
+ * смене текущей картины перерисовываются только задетые — уходящая, новая
+ * и соседи, — а не все двести. Прежде лента перерисовывала каждую на
+ * каждом шаге, и посреди листания кадр зависал: на боевой сборке ~70 мс,
+ * в режиме разработки ~200 мс — уходящая картина «зависала наверху»
+ * (заказчик, 23.10.2026).
+ */
+const FeedSlide = memo(function FeedSlide({
+  item,
+  isMain,
+  isNear,
+  isCurrent,
+  prev,
+  next,
+  siteUrl,
+  lang,
+}: {
+  item: ArtworkFeedItem;
+  isMain: boolean;
+  isNear: boolean;
+  isCurrent: boolean;
+  prev: ArtworkFeedItem | null;
+  next: ArtworkFeedItem | null;
+  siteUrl: string;
+  lang: Locale;
+}) {
+  const style: SlideStyle = { "--ratio": item.ratio ?? 1 };
+  const art = (
+    <ArtworkImage
+      src={item.src}
+      alt={item.alt[lang]}
+      fit="contain"
+      sizes={artSizes}
+      priority={isMain}
+      eager={isNear}
+      loader
+      aspect={item.ratio ?? undefined}
+      className="feed-art-image"
+    />
+  );
+
+  return (
+    <section
+      aria-label={item.title}
+      // По этой пометке CSS проявляет текущую картину и гасит
+      // уходящую (globals.css, «Лента работ», анимация).
+      data-current={isCurrent || undefined}
+      style={style}
+      className="feed-slide"
+    >
+      <div className="feed-work">
+        <div className="feed-art">
+          {isNear && item.src ? (
+            <ArtworkViewer
+              src={item.src}
+              title={item.title}
+              prev={prev}
+              next={next}
+              openOnHash={isMain}
+            >
+              {art}
+            </ArtworkViewer>
+          ) : (
+            art
+          )}
+        </div>
+
+        <WallLabel
+          work={item}
+          isMain={isMain}
+          isNear={isNear}
+          isCurrent={isCurrent}
+          siteUrl={siteUrl}
+        />
+      </div>
+    </section>
+  );
+});

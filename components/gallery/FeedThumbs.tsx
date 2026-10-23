@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 
 import type { ArtworkFeedItem } from "@/lib/artworks";
@@ -59,33 +59,61 @@ export function FeedThumbs({
   return (
     <nav aria-label={t.navLabel} className="feed-thumbs">
       <ol ref={listRef} className="feed-thumbs-list">
-        {works.map((work, index) => {
-          const style: ThumbStyle = {
-            "--ratio": work.ratio ?? 1,
-            "--shift": `${shifts[index % shifts.length]}px`,
-          };
-          return (
-            // data-current — для CSS: на компьютере текущая выдвинута
-            // из столбика (globals.css), сдвиг задаётся у строки списка.
-            <li key={work.id} style={style} data-current={index === current || undefined}>
-              <button
-                type="button"
-                onClick={() => onPick(index)}
-                aria-current={index === current ? "true" : undefined}
-                aria-label={`${work.title}. ${t.position(index + 1, works.length)}`}
-                title={work.title}
-                className="feed-thumb"
-              >
-                {work.src ? (
-                  <Image src={work.src} alt="" fill sizes="96px" className="object-cover" />
-                ) : (
-                  <span className="feed-thumb-empty">{work.title}</span>
-                )}
-              </button>
-            </li>
-          );
-        })}
+        {works.map((work, index) => (
+          <Thumb
+            key={work.id}
+            work={work}
+            index={index}
+            isCurrent={index === current}
+            label={`${work.title}. ${t.position(index + 1, works.length)}`}
+            onPick={onPick}
+          />
+        ))}
       </ol>
     </nav>
   );
 }
+
+/**
+ * Одна миниатюра. Под `memo`: при смене картины перерисовываются две —
+ * прежняя текущая и новая, а не все двести (ArtworkFeed, FeedSlide —
+ * там же причина: перерисовка всех останавливала листание).
+ */
+const Thumb = memo(function Thumb({
+  work,
+  index,
+  isCurrent,
+  label,
+  onPick,
+}: {
+  work: ArtworkFeedItem;
+  index: number;
+  isCurrent: boolean;
+  label: string;
+  onPick: (index: number) => void;
+}) {
+  const style: ThumbStyle = {
+    "--ratio": work.ratio ?? 1,
+    "--shift": `${shifts[index % shifts.length]}px`,
+  };
+  return (
+    // data-current — для CSS: на компьютере текущая выдвинута
+    // из столбика (globals.css), сдвиг задаётся у строки списка.
+    <li style={style} data-current={isCurrent || undefined}>
+      <button
+        type="button"
+        onClick={() => onPick(index)}
+        aria-current={isCurrent ? "true" : undefined}
+        aria-label={label}
+        title={work.title}
+        className="feed-thumb"
+      >
+        {work.src ? (
+          <Image src={work.src} alt="" fill sizes="96px" className="object-cover" />
+        ) : (
+          <span className="feed-thumb-empty">{work.title}</span>
+        )}
+      </button>
+    </li>
+  );
+});
