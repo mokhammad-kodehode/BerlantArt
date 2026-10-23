@@ -245,7 +245,7 @@ export function FittingRoom({
           className="fit-back"
           aria-label={t.back}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="arrow arrow-back size-5">
             <path
               d="M15 5l-7 7 7 7"
               fill="none"

@@ -71,7 +71,7 @@ export const ru = {
   footer: {
     sections: "Разделы",
     contacts: "Контакты",
-    write: "Написать →",
+    write: "Написать",
     rights: (year: number, artist: string) =>
       `© ${year} ${artist}. Права на изображения работ принадлежат автору.`,
     privacy: "Политика конфиденциальности",
@@ -99,9 +99,9 @@ export const ru = {
   home: {
     wallKicker: "Из мастерской",
     wallTitle: "Работы",
-    allGallery: "Вся галерея →",
+    allGallery: "Вся галерея",
     empty: "Работы для главной пока не выбраны. Все картины — в галерее.",
-    seeAll: "Смотреть всю галерею →",
+    seeAll: "Смотреть всю галерею",
   },
 
   /**

@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import Link from "next/link";
 
+import { Arrow } from "@/components/ui/Arrow";
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
@@ -130,18 +131,9 @@ export function Hero({ lang }: { lang: Locale }) {
             </ButtonLink>
             <Link
               href={localePath(lang, "/about")}
-              className="group text-ink decoration-ink/35 hover:decoration-ink text-base font-medium underline underline-offset-[6px] transition-colors"
+              className="text-ink decoration-ink/35 hover:decoration-ink text-base font-medium underline underline-offset-[6px] transition-colors"
             >
-              {t.hero.toAbout}{" "}
-              {/* Стрелка уезжает вправо при наведении и фокусе — подсказка
-                  «туда», а не украшение. inline-block — иначе transform на
-                  строчном элементе не работает. */}
-              <span
-                aria-hidden="true"
-                className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-focus-visible:translate-x-1.5"
-              >
-                →
-              </span>
+              {t.hero.toAbout} <Arrow />
             </Link>
           </div>
         </div>

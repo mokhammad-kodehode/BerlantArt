@@ -528,7 +528,7 @@ export function WallEditor({
     <div className="wall" data-step={step}>
       <header className="fit-bar wall-bar">
         <button type="button" className="fit-back" onClick={onClose} aria-label={t.wall.back}>
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="arrow arrow-back size-5">
             <path
               d="M15 5l-7 7 7 7"
               fill="none"

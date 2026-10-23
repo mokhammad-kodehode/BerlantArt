@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState, type CSSProperties, type MouseEvent, type SyntheticEvent } from "react";
 
+import { Arrow } from "@/components/ui/Arrow";
+import { tileAnchor } from "@/components/ui/ArtworkTile";
 import { BrushStroke } from "@/components/ui/BrushStroke";
 import { ButtonLink } from "@/components/ui/Button";
 import { ContactIcon } from "@/components/ui/ContactIcon";
@@ -79,6 +81,17 @@ export function HeaderBar({
 
   const isCurrent = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
   const otherLang = lang === "ru" ? "en" : "ru";
+
+  // «← Все работы» в выезжающей шапке страницы работы (заказчик,
+  // 23.10.2026): выезжая, шапка закрывает такую же ссылку ленты в левом
+  // верхнем углу. Ведёт туда же — к плитке картины на стене. Адрес лента
+  // меняет на текущую картину, пока её листают (replaceState), а Next
+  // передаёт эту смену в usePathname — ссылка следует за лентой.
+  const stageWork = variant === "stage" ? /^\/gallery\/([^/]+)$/.exec(path)?.[1] : undefined;
+  const backToAll =
+    stageWork === undefined
+      ? undefined
+      : `${localePath(lang, "/gallery")}#${tileAnchor(stageWork)}`;
 
   /**
    * Меню — встроенный в браузер `<dialog>`, как просмотр картины: окно
@@ -223,6 +236,11 @@ export function HeaderBar({
             и первый экран всё равно отдаёт картине больше прежнего. */}
         <div className="hidden h-[86px] grid-cols-[1fr_auto_1fr] items-center lg:grid">
           <div className="flex items-center gap-3">
+            {backToAll !== undefined && (
+              <Link href={backToAll} className="feed-top-link mr-3">
+                <Arrow dir="back" /> {t.work.backToAll}
+              </Link>
+            )}
             <ThemeSwitch />
             {languageLink("lang-switch")}
           </div>

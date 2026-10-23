@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Arrow } from "@/components/ui/Arrow";
 import { ContactIcon } from "@/components/ui/ContactIcon";
 import { Container } from "@/components/ui/Container";
 import { contactList } from "@/lib/contacts";
@@ -74,7 +75,7 @@ export function Footer({ lang }: { lang: Locale }) {
               href={localePath(lang, "/contact")}
               className="text-accent no-underline hover:underline"
             >
-              {t.footer.write}
+              {t.footer.write} <Arrow />
             </Link>
           </div>
         </div>

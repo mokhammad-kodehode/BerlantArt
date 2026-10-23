@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { Header } from "@/components/layout/Header";
+import { Arrow } from "@/components/ui/Arrow";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ThemeSwitch } from "@/components/ui/ThemeSwitch";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -166,7 +167,7 @@ export default function StyleguidePage() {
                 Вторичная
               </ButtonLink>
               <ButtonLink href="/styleguide" variant="ghost">
-                Призрачная →
+                Призрачная <Arrow />
               </ButtonLink>
               <ButtonLink href="/styleguide" variant="primary" size="lg">
                 Крупная

@@ -57,7 +57,7 @@ export const enUi: UiDictionary = {
 
   work: {
     notFound: "Work not found",
-    backToAll: "← All works",
+    backToAll: "All works",
     tryOnCamera: "Try it on",
     tryOnNudge: "Try it on your own wall",
     share: "Share",
@@ -220,7 +220,7 @@ export const enUi: UiDictionary = {
         },
         {
           title: "Mark the reference",
-          text: "You need a rectangle of known size in the same wall: an A4 sheet taped to it or a closed door. Drag the four dots exactly to its corners — they tell the site the scale and angle of the wall. For a door, enter its real size: usually 80 × 200 cm, but better measure it.",
+          text: "You need a rectangle of known size in the same wall. The easiest is an A4 sheet taped to it. No A4? A closed door works: choose “Door” and enter its width and height (usually 80 × 200 cm, but better measure it with a tape). Any other rectangle you can measure will do too — choose “Other”. Drag the four dots exactly to its corners — they tell the site the scale and angle of the wall.",
         },
         {
           title: "Hang the painting",

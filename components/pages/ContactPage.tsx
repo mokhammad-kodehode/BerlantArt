@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ContactForm } from "@/components/contact/ContactForm";
 import { Header } from "@/components/layout/Header";
+import { Arrow } from "@/components/ui/Arrow";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { ExternalButtonLink } from "@/components/ui/Button";
 import { ContactIcon } from "@/components/ui/ContactIcon";
@@ -140,7 +141,7 @@ export async function ContactPage({ lang }: { lang: Locale }) {
                         ? { target: "_blank", rel: "noopener noreferrer" }
                         : {})}
                       className={cn(
-                        "group rounded-card flex w-full flex-col gap-8 p-7 no-underline transition-transform duration-300 hover:-translate-y-1",
+                        "rounded-card flex w-full flex-col gap-8 p-7 no-underline transition-transform duration-300 hover:-translate-y-1",
                         isMain ? "bg-btn text-btn-ink" : "bg-surface text-ink",
                       )}
                     >
@@ -171,13 +172,7 @@ export async function ContactPage({ lang }: { lang: Locale }) {
                             isMain ? "text-btn-ink/85" : "text-ink-soft",
                           )}
                         >
-                          {contact.action}{" "}
-                          <span
-                            aria-hidden="true"
-                            className="inline-block transition-transform duration-300 group-hover:translate-x-1"
-                          >
-                            →
-                          </span>
+                          {contact.action} <Arrow />
                         </span>
                       </span>
                     </a>

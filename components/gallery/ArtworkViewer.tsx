@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 
+import { Arrow } from "@/components/ui/Arrow";
 import type { ArtworkLink } from "@/lib/artworks";
 import { useDictionary, useLocale } from "@/lib/i18n/client";
 import { localePath } from "@/lib/i18n/config";
@@ -245,7 +246,7 @@ export function ArtworkViewer({
             aria-label={t.prev(prev.title)}
             className="viewer-nav left-[calc(50%-52px)] lg:left-6"
           >
-            ←
+            <Arrow dir="back" />
           </Link>
         )}
         {next && (
@@ -254,7 +255,7 @@ export function ArtworkViewer({
             aria-label={t.next(next.title)}
             className="viewer-nav left-[calc(50%+8px)] lg:right-6 lg:left-auto"
           >
-            →
+            <Arrow />
           </Link>
         )}
 

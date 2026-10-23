@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { Header } from "@/components/layout/Header";
+import { Arrow } from "@/components/ui/Arrow";
 import { ArtworkTile } from "@/components/ui/ArtworkTile";
 import { ButtonLink, ExternalButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -206,7 +207,7 @@ export async function AboutPage({ lang }: { lang: Locale }) {
             <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
               <h2 className="m-0 text-[26px]">{a.latestTitle}</h2>
               <ExternalButtonLink href={site.instagram.url} variant="ghost">
-                Instagram @{site.instagram.handle} →
+                Instagram @{site.instagram.handle} <Arrow />
               </ExternalButtonLink>
             </div>
 

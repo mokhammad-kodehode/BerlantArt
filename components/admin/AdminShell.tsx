@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Arrow } from "@/components/ui/Arrow";
 import { Container } from "@/components/ui/Container";
 
 /**
@@ -38,7 +39,7 @@ export function AdminShell({
             href={back.href}
             className="text-ink-soft hover:text-accent mb-4 inline-block text-sm"
           >
-            ← {back.label}
+            <Arrow dir="back" /> {back.label}
           </Link>
         )}
 

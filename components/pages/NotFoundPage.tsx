@@ -1,4 +1,5 @@
 import { Header } from "@/components/layout/Header";
+import { Arrow } from "@/components/ui/Arrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { getDictionary, localePath, type Locale } from "@/lib/i18n";
@@ -40,7 +41,9 @@ export function NotFoundPage({
             {englishHint && (
               <p lang="en" className="text-ink-faint mt-0 mb-8 max-w-[52ch] text-[14px]">
                 {getDictionary("en").notFound.heading}.{" "}
-                <a href={localePath("en", "/")}>{getDictionary("en").notFound.toHome} →</a>
+                <a href={localePath("en", "/")}>
+                  {getDictionary("en").notFound.toHome} <Arrow />
+                </a>
               </p>
             )}
 

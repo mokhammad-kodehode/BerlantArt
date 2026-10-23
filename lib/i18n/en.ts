@@ -44,7 +44,7 @@ export const en: Dictionary = {
   footer: {
     sections: "Sections",
     contacts: "Contact",
-    write: "Get in touch →",
+    write: "Get in touch",
     rights: (year, artist) => `© ${year} ${artist}. All rights to the images belong to the artist.`,
     privacy: "Privacy policy",
   },
@@ -64,9 +64,9 @@ export const en: Dictionary = {
   home: {
     wallKicker: "From the studio",
     wallTitle: "Works",
-    allGallery: "Full gallery →",
+    allGallery: "Full gallery",
     empty: "Works for the home page haven't been chosen yet. All paintings are in the gallery.",
-    seeAll: "See the full gallery →",
+    seeAll: "See the full gallery",
   },
 
   categories: {

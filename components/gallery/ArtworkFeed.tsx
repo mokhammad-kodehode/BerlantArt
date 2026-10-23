@@ -7,6 +7,7 @@ import type { CSSProperties } from "react";
 import { ArtworkViewer } from "@/components/gallery/ArtworkViewer";
 import { FeedThumbs } from "@/components/gallery/FeedThumbs";
 import { WallLabel } from "@/components/gallery/WallLabel";
+import { Arrow } from "@/components/ui/Arrow";
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import { tileAnchor } from "@/components/ui/ArtworkTile";
 import { fetchArtworkFeed, positionOf } from "@/lib/artwork-thumbs";
@@ -137,12 +138,16 @@ export function ArtworkFeed({
 
   // Адрес и заголовок вкладки — текущей картины. replaceState, а не
   // pushState: иначе «назад» шло бы через все пролистанные работы.
-  // Next такой вызов понимает: переключатель языка в шапке и «назад»
-  // знают новый адрес.
+  //
+  // Состояние — null, а не window.history.state. Next принимает вызов
+  // за свой, если в состоянии его служебная пометка (__NA), и тогда не
+  // передаёт новый адрес в usePathname: «← Все работы» и переключатель
+  // языка в шапке вели к картине, с которой зашли, а не к текущей
+  // (поймано 23.10.2026). Служебное состояние Next дописывает сам.
   useEffect(() => {
     const path = localePath(lang, `/gallery/${work.id}`);
     if (window.location.pathname === path) return;
-    window.history.replaceState(window.history.state, "", path);
+    window.history.replaceState(null, "", path);
     document.title = `${work.pageTitle[lang]} · ${t.site.artist}`;
   }, [work, lang, t.site.artist]);
 
@@ -295,7 +300,7 @@ export function ArtworkFeed({
           где шапка спрятана, — в левом верхнем углу над столбиком. */}
       <div className="feed-top">
         <Link href={galleryHref} className="feed-top-link">
-          {t.work.backToAll}
+          <Arrow dir="back" /> {t.work.backToAll}
         </Link>
         {works.length > 1 && (
           <>

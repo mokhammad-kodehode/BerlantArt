@@ -533,6 +533,29 @@
 
   /* Диалог подтверждения. Встроенный в браузер <dialog>: ловушка фокуса,
      закрытие по Esc и доступность в нём уже есть, своего писать не надо. */
+  /* Стрелка в ссылке и кнопке (components/ui/Arrow.tsx) подаётся в свою
+     сторону при наведении и фокусе — у всех стрелок сайта (заказчик,
+     23.10.2026; первой так была сделана «О художнице →» в hero). Через
+     ссылку или кнопку вокруг, а не через класс group у каждой: стрелок
+     на сайте полтора десятка, и забытый group молча выключал бы
+     движение. inline-block — иначе transform у строчного элемента не
+     работает. С «Уменьшить движение» стрелка встаёт на место сразу. */
+  .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease-out;
+  }
+  :is(a, button):is(:hover, :focus-visible) .arrow {
+    transform: translateX(0.375rem);
+  }
+  :is(a, button):is(:hover, :focus-visible) .arrow-back {
+    transform: translateX(-0.375rem);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrow {
+      transition: none;
+    }
+  }
+
   /* margin: auto — так браузер ставит окно по центру; сброс Tailwind
      (preflight, «* { margin: 0 }») его обнулял, и окно прилипало к левому
      верхнему углу. */
@@ -1736,6 +1759,8 @@
   .feed-top-link {
     display: inline-flex;
     align-items: center;
+    /* Пробел между стрелкой и словами флекс съедает — вместо него зазор. */
+    gap: 6px;
     min-height: 44px;
     color: var(--color-ink);
     text-decoration: none;

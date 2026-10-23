@@ -11,7 +11,7 @@ app/                    маршруты App Router
   styleguide/           витрина дизайн-системы (закрыта от индексации)
 components/
   ui/                   примитивы: Button, Tag, Container, ArtworkImage, ThemeSwitch, BrushStroke,
-                        PopoverMenu (кнопка с меню), ContactIcon
+                        PopoverMenu (кнопка с меню), ContactIcon, Arrow (стрелка в ссылке)
   layout/               Header (серверная обёртка) и HeaderBar (сама шапка), Footer,
                         RootDocument (общий <html> для обоих языков), DictionaryRu и
                         DictionaryEn (строки интерфейса своего языка для клиентских)

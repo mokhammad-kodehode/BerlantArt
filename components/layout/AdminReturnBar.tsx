@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
+import { Arrow } from "@/components/ui/Arrow";
 import { forgetAdminReturn, readAdminReturn, subscribeAdminReturn } from "@/lib/admin-return";
 
 /**
@@ -35,7 +36,7 @@ export function AdminReturnBar() {
         onClick={forgetAdminReturn}
         className="text-sm text-neutral-100 no-underline"
       >
-        ← В панель управления
+        <Arrow dir="back" /> В панель управления
       </Link>
 
       {/* Полосу можно убрать, не уходя со страницы: художница может

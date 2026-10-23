@@ -4,6 +4,7 @@ import { ArtworkCollage } from "@/components/gallery/ArtworkCollage";
 import { Hero } from "@/components/home/Hero";
 import { PaintingReel } from "@/components/home/PaintingReel";
 import { Header } from "@/components/layout/Header";
+import { Arrow } from "@/components/ui/Arrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { countArtworks, galleryTile, getFeatured } from "@/lib/artworks";
@@ -92,7 +93,7 @@ export async function HomePage({ lang }: { lang: Locale }) {
                 href={localePath(lang, "/gallery")}
                 className="text-accent font-semibold no-underline hover:underline"
               >
-                {t.home.allGallery}
+                {t.home.allGallery} <Arrow />
               </Link>
             </div>
 
@@ -114,7 +115,7 @@ export async function HomePage({ lang }: { lang: Locale }) {
                 {hasMore && (
                   <div className="mt-[clamp(32px,4vw,48px)] flex justify-center">
                     <ButtonLink href={localePath(lang, "/gallery")} variant="primary" size="lg">
-                      {t.home.seeAll}
+                      {t.home.seeAll} <Arrow />
                     </ButtonLink>
                   </div>
                 )}
