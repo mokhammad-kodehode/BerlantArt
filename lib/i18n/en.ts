@@ -51,7 +51,6 @@ export const en: Dictionary = {
 
   hero: {
     motto: { lead: "Art has", accent: "no purpose!" },
-    subline: "First canvas at 53. She has painted every day since.",
     photoAlt:
       "Berlant Dzhabrailova lays a stroke on a canvas with a tower using a palette knife; a palette and oil paint tubes beside her",
     story: (year) =>
