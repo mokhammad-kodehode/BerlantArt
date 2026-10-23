@@ -65,7 +65,9 @@ export function FeedThumbs({
             "--shift": `${shifts[index % shifts.length]}px`,
           };
           return (
-            <li key={work.id} style={style}>
+            // data-current — для CSS: на компьютере текущая выдвинута
+            // из столбика (globals.css), сдвиг задаётся у строки списка.
+            <li key={work.id} style={style} data-current={index === current || undefined}>
               <button
                 type="button"
                 onClick={() => onPick(index)}
