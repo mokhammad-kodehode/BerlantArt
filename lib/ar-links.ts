@@ -34,6 +34,19 @@ export function arFileUrl(
 }
 
 /**
+ * Фото картины для снимка своей стены (TICKETS-primerka.md, П-4) — со
+ * своего адреса, а не из хранилища. Картину с чужого адреса браузер
+ * нарисует в canvas, но готовый снимок не отдаст: сохранить или
+ * отправить его будет нельзя. Отдаёт тот же обработчик, что и модели;
+ * версия та же — фото меняется, меняется и адрес.
+ */
+export const wallPhotoFile = "photo.jpg";
+
+export function wallPhotoUrl(workId: string, version: string): string {
+  return `/gallery/${workId}/ar/${wallPhotoFile}?v=${version}`;
+}
+
+/**
  * Примерочная с той же рамой (TICKETS-primerka.md). Умолчания в адрес не
  * пишутся. Сюда же ведут старые ссылки на страницу камеры
  * /gallery/[id]/ar (до 22.10.2026).

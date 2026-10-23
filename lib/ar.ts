@@ -25,7 +25,7 @@ import { buildUsdz } from "@/lib/usdz";
  * в котором фото лежат в хранилище. 2048px по длинной стороне — предел
  * текстуры, который держат все телефоны с AR; больше — только вес.
  */
-async function photoJpeg(photoUrl: URL): Promise<Uint8Array> {
+async function photoJpeg(photoUrl: URL, side = 2048): Promise<Uint8Array<ArrayBuffer>> {
   const response = await fetch(photoUrl);
   if (!response.ok) {
     throw new Error(`Фото для модели не скачалось (${response.status}): ${photoUrl}`);
@@ -33,11 +33,30 @@ async function photoJpeg(photoUrl: URL): Promise<Uint8Array> {
 
   const jpeg = await sharp(new Uint8Array(await response.arrayBuffer()))
     .rotate()
-    .resize({ width: 2048, height: 2048, fit: "inside", withoutEnlargement: true })
+    .resize({ width: side, height: side, fit: "inside", withoutEnlargement: true })
     .flatten({ background: "#ffffff" })
     .jpeg({ quality: 85 })
     .toBuffer();
   return new Uint8Array(jpeg);
+}
+
+/** Адрес главного фото работы, от которого собираются модель и фото для стены. */
+function photoSource(target: ArTarget): URL {
+  const src = imageUrl(target.photo);
+  if (src === undefined) {
+    throw new Error("Не задан NEXT_PUBLIC_R2_PUBLIC_URL — фото для модели взять неоткуда.");
+  }
+  return new URL(src, clientEnv.NEXT_PUBLIC_SITE_URL);
+}
+
+/**
+ * Фото картины для снимка своей стены (lib/ar-links.ts, wallPhotoUrl).
+ * 1400px по длинной стороне: на снимке 2000px картина занимает от силы
+ * половину ширины, больше — только вес. Каждая картина на стене — одно
+ * такое фото.
+ */
+export async function buildWallPhoto(target: ArTarget): Promise<Uint8Array<ArrayBuffer>> {
+  return photoJpeg(photoSource(target), 1400);
 }
 
 /**
@@ -56,13 +75,8 @@ export async function buildArFile({
   file: ArFile;
   options: FrameChoice;
 }): Promise<Uint8Array<ArrayBuffer>> {
-  const src = imageUrl(target.photo);
-  if (src === undefined) {
-    throw new Error("Не задан NEXT_PUBLIC_R2_PUBLIC_URL — фото для модели взять неоткуда.");
-  }
-
   const scene = buildPaintingScene({ canvas: target.canvas, ...options });
-  const jpeg = await photoJpeg(new URL(src, clientEnv.NEXT_PUBLIC_SITE_URL));
+  const jpeg = await photoJpeg(photoSource(target));
 
   return file === "model.usdz" ? buildUsdz(scene, jpeg) : buildGlb(scene, jpeg);
 }

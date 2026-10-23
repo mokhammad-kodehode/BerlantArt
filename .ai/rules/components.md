@@ -19,7 +19,8 @@ components/
   home/                 блоки только для главной: Hero, PaintingReel
   gallery/              блоки галереи: GalleryFilters, GallerySearch (поиск), ArtworkCollage, ArtworkFeed (лента на странице работы),
                         WallLabel (табличка), FeedThumbs (миниатюры), ArtworkViewer,
-                        ShareButton, FittingRoom, FramePicker и FramedPainting (примерочная), ArCamera и ArGuide (камера)
+                        ShareButton, FittingRoom, FramePicker и FramedPainting (примерочная), ArCamera и ArGuide (камера);
+    wall/               фото своей стены: WallEditor, MeasureLayer (мерка с лупой), AddWorkSheet
 lib/                    данные, утилиты, конфигурация
   site.ts               имя, контакты, состав навигации
   i18n/                 языки, адреса (localePath), словари ru и en
@@ -57,7 +58,8 @@ public/                 всё отсюда доступно из интерне
   и сама дорисовывает порцию с плиткой, к которой вернулись со страницы
   работы, — тикет О-11), `FittingRoom` (примерочная,
   TICKETS-primerka.md: выбор рамы без перезагрузки, с ним — адрес; внутри —
-  `FramePicker`, ряды моделей и цветов), `useArCamera`
+  `FramePicker`, ряды моделей и цветов; по фото своей стены — `WallEditor`,
+  он грузится, только когда выбрали фото), `useArCamera`
   (`ArCamera`: выбор просмотрщика телефона — камеру открывает кнопка
   в примерочной, `ArGuide`: подготовка перед камерой),
   `ContactForm` (проверка полей, сборка сообщения), `AdminReturnBar`
