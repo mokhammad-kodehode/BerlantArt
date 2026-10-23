@@ -159,24 +159,31 @@ export type GalleryTile = {
   src?: string;
   alt: string;
   isLarge: boolean;
+  /**
+   * Пропорции главного фото, ширина к высоте: по ним развеска на главной
+   * показывает картину целиком (lib/collage.ts, hangLayout). null — размера
+   * фото нет или его не выбирали: лёгкой выборке галереи он не нужен.
+   */
+  ratio: number | null;
 };
 
 /** Из чего собирается плитка: и лёгкая выборка галереи, и полная работа. */
 type TileSource = Pick<
   ArtworkWithImages,
   "id" | "title" | "technique" | "dimensions" | "isLarge"
-> & { images: { url: string }[] };
+> & { images: { url: string; width?: number | null; height?: number | null }[] };
 
 export function galleryTile(work: TileSource, lang: Locale = "ru"): GalleryTile {
   // Выборки кладут главное изображение первым (withImages, tileSelect).
-  const stored = work.images[0]?.url;
+  const primary = work.images[0];
   return {
     id: work.id,
     title: work.title,
     caption: artworkCaption(work, lang),
-    src: stored === undefined ? undefined : imageUrl(stored),
+    src: primary === undefined ? undefined : imageUrl(primary.url),
     alt: artworkImageAlt(work, lang),
     isLarge: work.isLarge,
+    ratio: primary?.width && primary.height ? primary.width / primary.height : null,
   };
 }
 

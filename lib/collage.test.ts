@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { collageLayout, revealCountFor, revealStep } from "@/lib/collage";
+import { collageLayout, hangLayout, revealCountFor, revealStep } from "@/lib/collage";
 
 /**
  * Проверяем два свойства раскладки, которые ломаются незаметно:
@@ -253,5 +253,25 @@ describe("revealCountFor", () => {
 
   it("порция кратна десяти — двум блокам коллажа, чтобы стык не рвал чередование", () => {
     expect(revealStep % 10).toBe(0);
+  });
+});
+
+describe("hangLayout — развеска на главной", () => {
+  const items = [
+    { id: "a", isLarge: false },
+    { id: "b", isLarge: true },
+    { id: "c", isLarge: false },
+  ];
+
+  it("порядок как пришёл: ячеек нет, переставлять крупные некуда", () => {
+    expect(hangLayout(items).map((tile) => tile.item.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("крупная работа из админки помечена — CSS делает её самой большой", () => {
+    expect(hangLayout(items).map((tile) => tile.className)).toEqual(["", "wall-hang-large", ""]);
+  });
+
+  it("sizes есть у каждой плитки — иначе браузер качает самый крупный файл", () => {
+    for (const tile of hangLayout(items)) expect(tile.sizes).toMatch(/vw/);
   });
 });

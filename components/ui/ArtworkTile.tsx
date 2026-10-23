@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 import { ArtworkImage } from "@/components/ui/ArtworkImage";
 import type { GalleryTile } from "@/lib/artworks";
@@ -30,18 +31,21 @@ export function ArtworkTile({
   tile,
   lang,
   className,
+  style,
   sizes = "(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 285px",
 }: {
   tile: GalleryTile;
   lang: Locale;
   className?: string;
+  /** Переменные раскладки — у развески пропорции фото (`--r`). */
+  style?: CSSProperties;
   /** Реальная ширина отрисовки плитки — без неё браузер качает самый крупный вариант. */
   sizes?: string;
 }) {
   return (
     // id — якорь: «← Все работы» на странице работы ведёт сюда,
     // к той же плитке, а не в начало стены (заказчик, 16.10.2026).
-    <li id={tileAnchor(tile.id)} className={cn("wall-tile list-none", className)}>
+    <li id={tileAnchor(tile.id)} className={cn("wall-tile list-none", className)} style={style}>
       {/*
         Ссылка растянута на всю плитку: кликается и репродукция, и подпись,
         а с клавиатуры это одна остановка, а не три.

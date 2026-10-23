@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { isFeedList, positionOf } from "@/lib/artwork-thumbs";
-import { artworkFeedItem, artworkLabel, labelDescription } from "@/lib/artworks";
+import { artworkFeedItem, artworkLabel, galleryTile, labelDescription } from "@/lib/artworks";
 
 // lib/artworks.ts тянет клиент базы; самой базы в тестах нет, и ни
 // один из проверяемых здесь вызовов в неё не ходит.
@@ -115,5 +115,17 @@ describe("positionOf", () => {
 
   it("работы нет в списке — номера нет", () => {
     expect(positionOf(works("a"), "x")).toBeNull();
+  });
+});
+
+describe("galleryTile — пропорции для развески на главной", () => {
+  it("из размера главного фото", () => {
+    expect(galleryTile({ ...work, isLarge: false }).ratio).toBeCloseTo(0.8);
+  });
+
+  it("без размера фото — null, развеска покажет квадрат", () => {
+    const light = { ...work, isLarge: false, images: [{ url: "/a.jpg" }] };
+    expect(galleryTile(light).ratio).toBeNull();
+    expect(galleryTile({ ...work, isLarge: false, images: [] }).ratio).toBeNull();
   });
 });

@@ -1233,6 +1233,70 @@
     }
   }
 
+  /* Развеска на главной (заказчик, 23.10.2026, вариант Д): картины
+     целиком, в своих пропорциях (--r с плитки), трёх размеров по очереди
+     и центром на одной линии — как на стене в зале, а не в сетке. Размер
+     в долях ширины стены (cqw: обёртка коллажа — @container), чтобы на
+     любом мониторе в ряду помещалось примерно столько же картин. Шире
+     стены картина не становится. Крупная работа из админки — самая
+     большая. */
+  .wall-hang {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(40px, 4.5cqw, 64px) clamp(40px, 5cqw, 72px);
+    margin: 0;
+    padding: 12px 0;
+    list-style: none;
+  }
+  .wall-hang > li {
+    --h: 23cqw;
+    flex: none;
+    width: min(calc(var(--h) * var(--r)), 100%);
+    aspect-ratio: var(--r);
+  }
+  .wall-hang > li:nth-child(3n + 1) {
+    --h: 27cqw;
+  }
+  .wall-hang > li:nth-child(3n + 2) {
+    --h: 19cqw;
+  }
+  .wall-hang > li.wall-hang-large {
+    --h: 31cqw;
+  }
+  /* Телефон — по две в ряд (вариант Д2): пары разной высоты, центром на
+     одной линии. Сетка в два столбца, а не перенос строк: иначе две
+     узкие вертикальные встали бы по три-четыре в ряд. */
+  @media (max-width: 767px) {
+    .wall-hang {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      justify-items: center;
+      gap: 36px 18px;
+    }
+    .wall-hang > li,
+    .wall-hang > li:nth-child(3n + 1),
+    .wall-hang > li:nth-child(3n + 2) {
+      --h: 40cqw;
+    }
+    .wall-hang > li:nth-child(4n + 1),
+    .wall-hang > li:nth-child(4n),
+    .wall-hang > li.wall-hang-large {
+      --h: 54cqw;
+    }
+  }
+  /* Название поверх картины — только при наведении. Без наведения
+     (телефон) его не видно: на картине высотой 140px подпись закрыла бы
+     половину холста, а название есть на табличке у самой работы.
+     Прозрачность, а не display: у подписи класс block из утилит, он
+     сильнее этого слоя; и скринридер название ссылки по-прежнему читает. */
+  @media (hover: none) {
+    .wall-hang .wall-caption {
+      opacity: 0;
+    }
+  }
+
   /* Пунктирная рамка пустого состояния — «здесь пока ничего нет». */
   .panel-dashed {
     border: 1.5px dashed var(--color-divider);

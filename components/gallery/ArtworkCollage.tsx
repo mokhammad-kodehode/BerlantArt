@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import type { CSSProperties } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { ArtworkTile, tileAnchor } from "@/components/ui/ArtworkTile";
 import type { GalleryTile } from "@/lib/artworks";
 import { cn } from "@/lib/cn";
-import { collageLayout, revealCountFor, revealStep } from "@/lib/collage";
+import { collageLayout, hangLayout, revealCountFor, revealStep } from "@/lib/collage";
 import type { Locale } from "@/lib/i18n/config";
 
 /** Якорь в адресе меняется и без перехода — например, кнопкой «назад». */
@@ -16,6 +17,8 @@ function subscribeHash(onChange: () => void): () => void {
 }
 
 const readHash = (): string => decodeURIComponent(window.location.hash.slice(1));
+
+type HangStyle = CSSProperties & { "--r": number };
 const noHash = (): string => "";
 
 /**
@@ -47,16 +50,24 @@ const noHash = (): string => "";
  * работ меньше порции, и он просто рисует все.
  *
  * `className` уходит обёртке: поля и `flex-1` задаёт вызывающая сторона.
+ *
+ * `layout="hang"` — развеска на главной (заказчик, 23.10.2026): картины
+ * целиком, разного размера, центром на одной линии, много стены вокруг
+ * (lib/collage.ts, hangLayout; globals.css, .wall-hang). Галерея остаётся
+ * плотной сеткой: там из двухсот работ выбирают, и в развеске их пришлось
+ * бы листать в разы дольше.
  */
 export function ArtworkCollage({
   tiles,
   lang,
   className,
   moreLabel,
+  layout: mode = "grid",
 }: {
   tiles: GalleryTile[];
   lang: Locale;
   className?: string;
+  layout?: "grid" | "hang";
   /**
    * Надпись кнопки «Показать ещё». Приходит со страницы, со словарём
    * языка: тащить в браузер словари ради одной надписи незачем (О-12).
@@ -65,7 +76,10 @@ export function ArtworkCollage({
 }) {
   // Порядок берётся из раскладки, а не из `tiles`: крупные работы могли
   // переехать в крупные ячейки.
-  const layout = useMemo(() => collageLayout(tiles), [tiles]);
+  const layout = useMemo(
+    () => (mode === "hang" ? hangLayout(tiles) : collageLayout(tiles)),
+    [mode, tiles],
+  );
   const [shown, setShown] = useState(() => Math.min(layout.length, revealStep));
   const sentinel = useRef<HTMLDivElement>(null);
   const scrolledTo = useRef<string | null>(null);
@@ -124,16 +138,27 @@ export function ArtworkCollage({
       {/* dense только на телефоне: мелкая работа закрывает клетку рядом
           с одиночной мелкой перед крупной (lib/collage.ts, mobileSpans).
           На компьютере раскладка блоками без дыр и так. */}
-      <ul className="wall m-0 grid list-none grid-flow-row-dense auto-rows-[calc((100cqw-10px)/2)] grid-cols-2 gap-2.5 p-0 md:grid-flow-row md:auto-rows-[calc((100cqw-30px)*3/16)] md:grid-cols-4">
-        {layout.slice(0, visible).map((tile) => (
-          <ArtworkTile
-            key={tile.item.id}
-            tile={tile.item}
-            lang={lang}
-            className={tile.className}
-            sizes={tile.sizes}
-          />
-        ))}
+      <ul
+        className={
+          mode === "hang"
+            ? "wall-hang"
+            : "wall m-0 grid list-none grid-flow-row-dense auto-rows-[calc((100cqw-10px)/2)] grid-cols-2 gap-2.5 p-0 md:grid-flow-row md:auto-rows-[calc((100cqw-30px)*3/16)] md:grid-cols-4"
+        }
+      >
+        {layout.slice(0, visible).map((tile) => {
+          // Без размера фото — квадрат: обрезка терпима для любого холста.
+          const hang: HangStyle = { "--r": tile.item.ratio ?? 1 };
+          return (
+            <ArtworkTile
+              key={tile.item.id}
+              tile={tile.item}
+              lang={lang}
+              className={tile.className}
+              style={mode === "hang" ? hang : undefined}
+              sizes={tile.sizes}
+            />
+          );
+        })}
       </ul>
 
       {hasMore && (

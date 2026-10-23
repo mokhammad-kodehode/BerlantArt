@@ -103,6 +103,7 @@ export async function HomePage({ lang }: { lang: Locale }) {
               <ArtworkCollage
                 tiles={featured.map((work) => galleryTile(work, lang))}
                 lang={lang}
+                layout="hang"
                 moreLabel={t.gallery.showMore}
               />
 
