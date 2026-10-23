@@ -79,7 +79,7 @@ export async function GalleryPage({ lang, query }: { lang: Locale; query: Galler
         а что работу можно открыть, видно и так. Единственный h1 страницы —
         «Галерея», оформленный надстрочником, как и был.
       */}
-      <div className="px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+      <div className="mx-auto w-full max-w-(--page-max) px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
         <h1 className="text-accent font-body mt-0 mb-3 text-[13px] font-semibold tracking-[0.1em] uppercase md:mb-4">
           {t.kicker}
         </h1>
@@ -127,7 +127,7 @@ export async function GalleryPage({ lang, query }: { lang: Locale; query: Galler
           tiles={tiles}
           lang={lang}
           moreLabel={t.showMore}
-          className="flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+          className="mx-auto w-full max-w-(--page-max) flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
         />
       )}
     </main>

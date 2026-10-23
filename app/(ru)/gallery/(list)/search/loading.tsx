@@ -29,7 +29,10 @@ export default function GalleryLoading() {
   return (
     <main className="flex flex-1 flex-col">
       {/* Шапка — как в GalleryPage: надстрочник, строка поиска, ряд категорий. */}
-      <div aria-hidden className="px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5">
+      <div
+        aria-hidden
+        className="mx-auto w-full max-w-(--page-max) px-[clamp(20px,5vw,64px)] pt-5 pb-4 md:pt-7 md:pb-5"
+      >
         <div className="bg-ink/15 mb-3 h-3 w-20 rounded-full md:mb-4" />
         <div className="border-divider flex h-14 max-w-[720px] items-center border-b md:h-16">
           <div className="bg-ink/10 h-5 w-40 rounded-full" />
@@ -43,7 +46,7 @@ export default function GalleryLoading() {
 
       <div
         aria-hidden
-        className="@container flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
+        className="@container mx-auto w-full max-w-(--page-max) flex-1 px-[clamp(20px,5vw,64px)] pb-[clamp(20px,5vw,64px)]"
       >
         <ul className="wall-hang">
           {tiles.map((style, index) => (

@@ -160,9 +160,9 @@ export type GalleryTile = {
   alt: string;
   isLarge: boolean;
   /**
-   * Пропорции главного фото, ширина к высоте: по ним развеска на главной
-   * показывает картину целиком (lib/collage.ts, hangLayout). null — размера
-   * фото нет или его не выбирали: лёгкой выборке галереи он не нужен.
+   * Пропорции главного фото, ширина к высоте: по ним развеска показывает
+   * картину целиком (lib/collage.ts, hangLayout). null — размера фото нет:
+   * у старых записей его не прочитали при загрузке.
    */
   ratio: number | null;
 };
@@ -365,7 +365,13 @@ const tileSelect = {
   technique: true,
   dimensions: true,
   isLarge: true,
-  images: { select: { url: true }, orderBy: withImages.images.orderBy, take: 1 },
+  // Размер фото — для пропорций в развеске: без него каждая картина
+  // галереи стояла квадратом и обрезалась (23.10.2026).
+  images: {
+    select: { url: true, width: true, height: true },
+    orderBy: withImages.images.orderBy,
+    take: 1,
+  },
 } satisfies Prisma.ArtworkSelect;
 
 /** Плитки галереи под фильтр — лёгкая выборка для стены (тикет О-11). */
